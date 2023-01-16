@@ -3,9 +3,7 @@
  *	Project: "masm-formatter" https://github.com/metablaster/masm-formatter
  *
  *	Copyright(C) 2023 metablaster (zebal@protonmail.ch)
- *
  *	Licensed under the MIT license
- *
 */
 
 /**
@@ -28,6 +26,14 @@
 
 // C++ Standard Header Files
 #include <iostream>
+#include <filesystem>
+#include <memory>
+#include <array>
+#include <string>
+#include <sstream>
+#include <cuchar>
+#include <regex>
+#include <bit>
 
 // Restore warnings disabled for precompiled header
 #pragma warning (pop)
