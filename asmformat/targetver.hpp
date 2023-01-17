@@ -1,13 +1,13 @@
 
 /*
- *	Project: "masm-formatter" https://github.com/metablaster/ASM-Formatter
+ *	Project: "ASM Formatter" https://github.com/metablaster/ASM-Formatter
  *	Copyright(C) 2023 metablaster (zebal@protonmail.ch)
  *	Licensed under the MIT license
  *
 */
 
 /**
- * @file mlfmt\targetver.hpp
+ * @file asmformat\targetver.hpp
  *
  * Including SDKDDKVer.h defines the highest available Windows platform.
  * If you wish to build your application for a previous Windows platform, include WinSDKVer.h and

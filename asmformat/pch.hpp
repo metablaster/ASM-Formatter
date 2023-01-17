@@ -1,12 +1,12 @@
 
 /*
- *	Project: "masm-formatter" https://github.com/metablaster/ASM-Formatter
+ *	Project: "ASM Formatter" https://github.com/metablaster/ASM-Formatter
  *	Copyright(C) 2023 metablaster (zebal@protonmail.ch)
  *	Licensed under the MIT license
 */
 
 /**
- * @file mlfmt\pch.hpp
+ * @file asmformat\pch.hpp
  *
  * This is a precompiled header file.
  * Files listed below are compiled only once, improving build performance for future builds.

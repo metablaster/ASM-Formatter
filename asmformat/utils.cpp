@@ -1,4 +1,18 @@
 
+/*
+ *	Project: "ASM Formatter" https://github.com/metablaster/ASM-Formatter
+ *	Copyright(C) 2023 metablaster (zebal@protonmail.ch)
+ *	Licensed under the MIT license
+ *
+*/
+
+/**
+ * @file asmformat\utils.cpp
+ *
+ * Utility function definitions
+ *
+*/
+
 #include "pch.hpp"
 #include "utils.hpp"
 

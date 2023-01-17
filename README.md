@@ -1,7 +1,7 @@
 
 # ASM Formatter
 
-This is an **experimental** formatter for assembly source files which is far from finished.\
+This is an **experimental** formatter for assembly source files which is far from being finished.\
 **NOTE:** please make a backup of your assembly sources before using it!
 
 It's currently designed for [MASM][masm] assembler syntax and at the moment supports the following:
@@ -9,9 +9,9 @@ It's currently designed for [MASM][masm] assembler syntax and at the moment supp
 - Consistent formatting of comments
 - Formatting inline comments so that all are equally distant from code
 - Consistent code indentation
-- It trims surplus white spaces
+- It removes trailing white spaces
 
-The following file encodings are supported at the moment (but not thoroughly tested):
+The following file encodings are supported at the moment:
 
 - ANSI
 - UTF-8
@@ -87,6 +87,6 @@ please open a new issue to discuss it first.
 
 The following sample animation demonstrates current rudimentary capabilities:
 
-![Demonstration](/assets/asm.gif)
+![Demonstration](/assets/presentation.gif)
 
 [masm]: https://learn.microsoft.com/en-us/cpp/assembler/masm/microsoft-macro-assembler-reference

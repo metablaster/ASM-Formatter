@@ -1,13 +1,13 @@
 
 /*
- *	Project: "masm-formatter" https://github.com/metablaster/ASM-Formatter
+ *	Project: "ASM Formatter" https://github.com/metablaster/ASM-Formatter
  *	Copyright(C) 2023 metablaster (zebal@protonmail.ch)
  *	Licensed under the MIT license
  *
 */
 
 /**
- * @file mlfmt\StringCast.hpp
+ * @file asmformat\StringCast.hpp
  *
  * String conversion function declarations
  *

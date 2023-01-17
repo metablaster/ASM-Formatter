@@ -1,13 +1,13 @@
 
 /*
- *	Project: "masm-formatter" https://github.com/metablaster/ASM-Formatter
+ *	Project: "ASM Formatter" https://github.com/metablaster/ASM-Formatter
  *	Copyright(C) 2023 metablaster (zebal@protonmail.ch)
  *	Licensed under the MIT license
  *
 */
 
 /**
- * @file mlfmt\ErrorMacros.hpp
+ * @file asmformat\ErrorMacros.hpp
  *
  * Error macros used for error reporting
  *
@@ -40,11 +40,9 @@
 
 // Global macros which could be used in build configurations,
 // some of these macros must always be defined since some non-ShowError
-// function use them, mostly UI project.
+// functions use them.
 
-// TODO: Implement macros for arithmetic exceptions using SafeInt.hpp, then conditionally check `static_cast`s with those macros
-
-// we need this workaround because msvc is not compliant
+// we need this workaround because MSVC is not compliant
 #define EXPAND(x) x
 
 // show only file name instead of full path ANSI version
@@ -52,15 +50,15 @@
 	(std::strrchr(__FILE__, '\\') ? \
 	std::strrchr(__FILE__, '\\') + 1 : __FILE__) POP
 
-// Wide string function name
+// string function name
 #define FUNC_NAME __FUNCTION__
 
-// Boilerplate macros
+// Boilerplate macro
 #define ERROR_INFO FILE_NAME, FUNC_NAME, __LINE__
 
 #if defined SHOW_ERRORS || defined _DEBUG
 
-// Wide ShowError function
+// ShowError function
 #define ERR_FUNC wsl::ShowErrorA
 #define ShowCrtError wsl::ShowCrtErrorA
 

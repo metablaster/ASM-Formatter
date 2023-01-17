@@ -1,15 +1,15 @@
 
 /*
- *	Project: "masm-formatter" https://github.com/metablaster/ASM-Formatter
+ *	Project: "ASM Formatter" https://github.com/metablaster/ASM-Formatter
  *	Copyright(C) 2023 metablaster (zebal@protonmail.ch)
  *	Licensed under the MIT license
  *
 */
 
 /**
- * @file mlfmt\FormatFile.cpp
+ * @file asmformat\FormatFile.cpp
  *
- * Source file function definitions
+ * File formatting function definitions
  *
 */
 
@@ -74,7 +74,14 @@ void FormatFileW(std::wstringstream& filedata)
 			reg = L"\\s+$";
 			line = std::regex_replace(line, reg, L"");
 
-			if (!line.starts_with(L";"))
+			if (line.starts_with(L";"))
+			{
+				// Make so that between semicolon and comment is only one space
+				reg = L";\\s+";
+				line = std::regex_replace(line, reg, L";");
+				line.insert(1, L" ");
+			}
+			else
 			{
 				// Insert tab to beginning of each line
 				line.insert(0, L"\t");
@@ -101,6 +108,11 @@ void FormatFileW(std::wstringstream& filedata)
 
 					std::wstring code = std::regex_replace(line, reg, L"$1$2");
 					std::wstring comment = std::regex_replace(line, reg, L"$4");
+
+					// Make so that between semicolon and comment is only one space
+					reg = L";\\s+";
+					comment = std::regex_replace(comment, reg, L";");
+					comment.insert(1, L" ");
 
 					// Character length difference of current code line compared to max length code line
 					std::size_t diff = maxcodelen - codelen;
@@ -201,7 +213,14 @@ void FormatFileA(std::stringstream& filedata)
 			reg = "\\s+$";
 			line = std::regex_replace(line, reg, "");
 
-			if (!line.starts_with(";"))
+			if (line.starts_with(";"))
+			{
+				// Make so that between semicolon and comment is only one space
+				reg = ";\\s+";
+				line = std::regex_replace(line, reg, ";");
+				line.insert(1, " ");
+			}
+			else
 			{
 				// Insert tab to beginning of each line
 				line.insert(0, "\t");
@@ -228,6 +247,11 @@ void FormatFileA(std::stringstream& filedata)
 
 					std::string code = std::regex_replace(line, reg, "$1$2");
 					std::string comment = std::regex_replace(line, reg, "$4");
+
+					// Make so that between semicolon and comment is only one space
+					reg = ";\\s+";
+					comment = std::regex_replace(comment, reg, ";");
+					comment.insert(1, " ");
 
 					// Character length difference of current code line compared to max length code line
 					std::size_t diff = maxcodelen - codelen;

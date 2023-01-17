@@ -1,16 +1,16 @@
 
 /*
- *	Project: "masm-formatter" https://github.com/metablaster/ASM-Formatter
+ *	Project: "ASM Formatter" https://github.com/metablaster/ASM-Formatter
  *	Copyright(C) 2023 metablaster (zebal@protonmail.ch)
  *	Licensed under the MIT license
  *
 */
 
 /**
- * @file mlfmt\SourceFile.cpp
+ * @file asmformat\SourceFile.cpp
  *
  * File read\write function definitions
- * TODO: Error handling is not fully implemented
+ * TODO: Error handling is not fully implemented, test failure with utf16be.asm
  *
 */
 

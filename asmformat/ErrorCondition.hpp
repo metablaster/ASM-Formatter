@@ -1,13 +1,13 @@
 
 /*
- *	Project: "masm-formatter" https://github.com/metablaster/ASM-Formatter
+ *	Project: "ASM Formatter" https://github.com/metablaster/ASM-Formatter
  *	Copyright(C) 2023 metablaster (zebal@protonmail.ch)
  *	Licensed under the MIT license
  *
 */
 
 /**
- * @file mlfmt\ErrorCondition.hpp
+ * @file asmformat\ErrorCondition.hpp
  *
  * Declaration of Error condition for error codes
  *
