@@ -1,13 +1,15 @@
 
-# ASM-Formatter
+# ASM Formatter
 
-This is an **experimental** formatter for assembly source files which is far from finished.
+This is an **experimental** formatter for assembly source files which is far from finished.\
+**NOTE:** please make a backup of your assembly sources before using it!
 
-It currently works only for `MASM` syntax and at the moment supports the following:
+It's currently designed for [MASM][masm] assembler syntax and at the moment supports the following:
 
-- Formatting comments
+- Consistent formatting of comments
 - Formatting inline comments so that all are equally distant from code
-- Code indentation
+- Consistent code indentation
+- It trims surplus white spaces
 
 The following file encodings are supported at the moment (but not thoroughly tested):
 
@@ -17,11 +19,11 @@ The following file encodings are supported at the moment (but not thoroughly tes
 - UTF-16LE
 
 You have to be careful to specify correct encoding which depends on encoding of your asm sources,\
-specifying wrong encoding will turn your sources into a pile garbage symbols.
+specifying wrong encoding may turn your sources into a pile garbage symbols.
 
 ## How to use
 
-Compile and put `asmformat.exe` into your project root directory.\
+Compile this project and put `asmformat.exe` into your project root directory.\
 Here is sample task configuration for `VSCode` which needs to be put into `.vscode\tasks.json` file.
 
 ```json
@@ -47,13 +49,13 @@ Here is sample task configuration for `VSCode` which needs to be put into `.vsco
 }
 ```
 
-Update configuration above to match correct encoding of source files, for ANSI encoded files you
+Update configuration above to match correct encoding of source files, for ANSI encoded files you\
 can omit `--encoding` option.
 
 Program syntax is simple: `asmformat.exe path\filename.asm [--encoding ansi|utf8|utf16|utf16le]`
 
-Then simply open some assembly file in `VSCode` and click on menu `Terminal -> Run Task...` and
-choose `asm: format` which will format currently opened file.
+Then simply open your assembly source file in `VSCode` and click on menu `Terminal -> Run Task...`\
+and choose `asm: format` option which will format currently opened file.
 
 If you're using some other code editor see if it's configurable to run executable against currently
 opened file.\
@@ -68,18 +70,23 @@ asmformat.exe .\filename.asm --encoding utf8
 Contributing is welcome problem however is that there are no well established community guidelines
 on how assembly source files should be formatted.
 
-For this reason only the following contributions are welcome:
+For this reason only the following contributions are acceptable:
 
 - Implementation for other assemblers which should at a minimum support everything that is already
-supported by this one.
+supported by this project.
 
-- Your implementation must be very basic and minimal.
+- Your implementation must be very basic and minimal because personal coding style preferences must
+not dictate how assembly formatter will work.
 
-If you wish to do something unorthodox please open a new issue to discuss it or alternatively fork
-this repo and customize it for yourself however you desire.
+- Support for more file encodings is the most wanted!
+
+If you wish to do something unorthodox or if you believe some other feature might be useful then
+please open a new issue to discuss it first.
 
 # Presentation
 
-The following animation demonstrates current functionality:
+The following sample animation demonstrates current rudimentary capabilities:
 
 ![Under construction](/TestFiles/asm.gif)
+
+[masm]: https://learn.microsoft.com/en-us/cpp/assembler/masm/microsoft-macro-assembler-reference
