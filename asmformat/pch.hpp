@@ -1,6 +1,6 @@
 
 /*
- *	Project: "masm-formatter" https://github.com/metablaster/masm-formatter
+ *	Project: "masm-formatter" https://github.com/metablaster/ASM-Formatter
  *	Copyright(C) 2023 metablaster (zebal@protonmail.ch)
  *	Licensed under the MIT license
 */

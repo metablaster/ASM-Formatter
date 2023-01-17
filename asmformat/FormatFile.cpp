@@ -1,6 +1,6 @@
 
 /*
- *	Project: "masm-formatter" https://github.com/metablaster/masm-formatter
+ *	Project: "masm-formatter" https://github.com/metablaster/ASM-Formatter
  *	Copyright(C) 2023 metablaster (zebal@protonmail.ch)
  *	Licensed under the MIT license
  *
@@ -68,61 +68,68 @@ void FormatFileW(std::wstringstream& filedata)
 
 	while (std::getline(filedata, line).good())
 	{
-		if (!line.empty() && !line.starts_with(L";"))
+		if (!line.empty())
 		{
-			// Insert tab to beginning of each line
-			line.insert(0, L"\t");
+			// Trim surplus spaces at the end of line
+			reg = L"\\s+$";
+			line = std::regex_replace(line, reg, L"");
 
-			// Is code line indented with tab?
-			bool isindented = true;
-
-			// Do not indent procedure labels
-			reg = L"\t\\w+\\s+(proc|endp)";
-			if (std::regex_search(line, reg))
+			if (!line.starts_with(L";"))
 			{
-				isindented = false;
-			}
+				// Insert tab to beginning of each line
+				line.insert(0, L"\t");
 
-			// Format inline comments to start on same column
-			// On which column depends on the longest code line containing inline comment
-			reg = L"^(\t)(.*?)(?=\\s*;)(\\s*)(;.*)";
-			std::wsmatch match;
+				// Is code line indented with tab?
+				bool isindented = true;
 
-			if (std::regex_search(line, match, reg))
-			{
-				// Character length of current code line, excluding indentation
-				const std::size_t codelen = match[2].str().length();
-
-				std::wstring code = std::regex_replace(line, reg, L"$1$2");
-				std::wstring comment = std::regex_replace(line, reg, L"$4");
-
-				// Character length difference of current code line compared to max length code line
-				std::size_t diff = maxcodelen - codelen;
-				// Also include characters that will be added to max length code line
-				diff += maxmissing;
-
-				std::size_t tabcount = diff / tab_width;
-
-				// Tab count must be multiple of tab width
-				if (diff % tab_width != 0)
+				// Do not indent procedure labels
+				reg = L"\t\\w+\\s+(proc|endp)";
+				if (std::regex_search(line, reg))
 				{
-					++tabcount;
+					isindented = false;
+				}
+
+				// Format inline comments to start on same column
+				// On which column depends on the longest code line containing inline comment
+				reg = L"^(\t)(.*?)(?=\\s*;)(\\s*)(;.*)";
+				std::wsmatch match;
+
+				if (std::regex_search(line, match, reg))
+				{
+					// Character length of current code line, excluding indentation
+					const std::size_t codelen = match[2].str().length();
+
+					std::wstring code = std::regex_replace(line, reg, L"$1$2");
+					std::wstring comment = std::regex_replace(line, reg, L"$4");
+
+					// Character length difference of current code line compared to max length code line
+					std::size_t diff = maxcodelen - codelen;
+					// Also include characters that will be added to max length code line
+					diff += maxmissing;
+
+					std::size_t tabcount = diff / tab_width;
+
+					// Tab count must be multiple of tab width
+					if (diff % tab_width != 0)
+					{
+						++tabcount;
+					}
+
+					if (!isindented)
+					{
+						// This accounts for removed tab at the start of line (later)
+						++tabcount;
+					}
+
+					code.append(tabcount, L'\t');
+					line = code.append(comment);
 				}
 
 				if (!isindented)
 				{
-					// This accounts for removed tab at the start of line (later)
-					++tabcount;
+					// Shift back to start by removing starting tab
+					line.erase(0, 1);
 				}
-
-				code.append(tabcount, L'\t');
-				line = code.append(comment);
-			}
-
-			if (!isindented)
-			{
-				// Shift back to start by removing starting tab
-				line.erase(0, 1);
 			}
 		}
 
@@ -188,61 +195,68 @@ void FormatFileA(std::stringstream& filedata)
 
 	while (std::getline(filedata, line).good())
 	{
-		if (!line.empty() && !line.starts_with(";"))
+		if (!line.empty())
 		{
-			// Insert tab to beginning of each line
-			line.insert(0, "\t");
+			// Trim surplus spaces at the end of line
+			reg = "\\s+$";
+			line = std::regex_replace(line, reg, "");
 
-			// Is code line indented with tab?
-			bool isindented = true;
-
-			// Do not indent procedure labels
-			reg = "\t\\w+\\s+(proc|endp)";
-			if (std::regex_search(line, reg))
+			if (!line.starts_with(";"))
 			{
-				isindented = false;
-			}
+				// Insert tab to beginning of each line
+				line.insert(0, "\t");
 
-			// Format inline comments to start on same column
-			// On which column depends on the longest code line containing inline comment
-			reg = "^(\t)(.*?)(?=\\s*;)(\\s*)(;.*)";
-			std::smatch match;
+				// Is code line indented with tab?
+				bool isindented = true;
 
-			if (std::regex_search(line, match, reg))
-			{
-				// Character length of current code line, excluding indentation
-				const std::size_t codelen = match[2].str().length();
-
-				std::string code = std::regex_replace(line, reg, "$1$2");
-				std::string comment = std::regex_replace(line, reg, "$4");
-
-				// Character length difference of current code line compared to max length code line
-				std::size_t diff = maxcodelen - codelen;
-				// Also include characters that will be added to max length code line
-				diff += maxmissing;
-
-				std::size_t tabcount = diff / tab_width;
-
-				// Tab count must be multiple of tab width
-				if (diff % tab_width != 0)
+				// Do not indent procedure labels
+				reg = "\t\\w+\\s+(proc|endp)";
+				if (std::regex_search(line, reg))
 				{
-					++tabcount;
+					isindented = false;
+				}
+
+				// Format inline comments to start on same column
+				// On which column depends on the longest code line containing inline comment
+				reg = "^(\t)(.*?)(?=\\s*;)(\\s*)(;.*)";
+				std::smatch match;
+
+				if (std::regex_search(line, match, reg))
+				{
+					// Character length of current code line, excluding indentation
+					const std::size_t codelen = match[2].str().length();
+
+					std::string code = std::regex_replace(line, reg, "$1$2");
+					std::string comment = std::regex_replace(line, reg, "$4");
+
+					// Character length difference of current code line compared to max length code line
+					std::size_t diff = maxcodelen - codelen;
+					// Also include characters that will be added to max length code line
+					diff += maxmissing;
+
+					std::size_t tabcount = diff / tab_width;
+
+					// Tab count must be multiple of tab width
+					if (diff % tab_width != 0)
+					{
+						++tabcount;
+					}
+
+					if (!isindented)
+					{
+						// This accounts for removed tab at the start of line (later)
+						++tabcount;
+					}
+
+					code.append(tabcount, '\t');
+					line = code.append(comment);
 				}
 
 				if (!isindented)
 				{
-					// This accounts for removed tab at the start of line (later)
-					++tabcount;
+					// Shift back to start by removing starting tab
+					line.erase(0, 1);
 				}
-
-				code.append(tabcount, '\t');
-				line = code.append(comment);
-			}
-
-			if (!isindented)
-			{
-				// Shift back to start by removing starting tab
-				line.erase(0, 1);
 			}
 		}
 
