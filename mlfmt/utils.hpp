@@ -16,10 +16,12 @@
 #pragma once
 #include <bit>
 
+
 /**
- * @brief Returns BOM Byte Order Mark for given char type
+ * @brief Returns BOM (Byte Order Mark) for given char type
  * Takes endianess into account
- * @tparam CharType One of the built in character types
+ * 
+ * @tparam CharType	One of the built in character types
  * @return Byte Order Mark
 */
 template<typename CharType>
@@ -54,4 +56,3 @@ template<typename CharType>
 		return static_cast<CharType>(0xEFBBBF);
 	}
 }
-

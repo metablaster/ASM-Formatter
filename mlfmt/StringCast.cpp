@@ -55,7 +55,7 @@ std::wstring StringCast(const std::string& param, UINT code_page)
 
 	if (wchar_size_needed == 0)
 	{
-		DWORD error_code = GetLastError();
+		const DWORD error_code = GetLastError();
 		DWORD dwChars = 0;
 		auto message = FormatErrorMessage(error_code, dwChars);
 
@@ -75,7 +75,7 @@ std::wstring StringCast(const std::string& param, UINT code_page)
 
 	if (!MultiByteToWideChar(code_page, flags, param.c_str(), source_char_size, &return_string[0], wchar_size_needed))
 	{
-		DWORD error_code = GetLastError();
+		const DWORD error_code = GetLastError();
 		DWORD dwChars = 0;
 		auto message = FormatErrorMessage(error_code, dwChars);
 
@@ -130,7 +130,7 @@ std::string StringCast(const std::wstring& param, UINT code_page)
 
 	if (char_size_needed == 0)
 	{
-		DWORD error_code = GetLastError();
+		const DWORD error_code = GetLastError();
 		DWORD dwChars = 0;
 		auto message = FormatErrorMessage(error_code, dwChars);
 
@@ -150,7 +150,7 @@ std::string StringCast(const std::wstring& param, UINT code_page)
 
 	if (!WideCharToMultiByte(code_page, flags, param.c_str(), source_wchar_size, &return_string[0], char_size_needed, nullptr, nullptr))
 	{
-		DWORD error_code = GetLastError();
+		const DWORD error_code = GetLastError();
 		DWORD dwChars = 0;
 		auto message = FormatErrorMessage(error_code, dwChars);
 

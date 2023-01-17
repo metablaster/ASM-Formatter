@@ -1,7 +1,6 @@
 
 /*
  *	Project: "masm-formatter" https://github.com/metablaster/masm-formatter
- *
  *	Copyright(C) 2023 metablaster (zebal@protonmail.ch)
  *	Licensed under the MIT license
 */
@@ -34,6 +33,9 @@
 #include <cuchar>
 #include <regex>
 #include <bit>
+
+// C Standard header files
+#include <stdio.h>
 
 // Restore warnings disabled for precompiled header
 #pragma warning (pop)

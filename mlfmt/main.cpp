@@ -17,17 +17,24 @@
 #include "console.hpp"
 #include "FormatFile.hpp"
 #include "SourceFile.hpp"
+#include "console.hpp"
+namespace fs = std::filesystem;
 
 
 int main(int argc, char* argv[])
 {
-	if (argc < 2)
+	if (!RegisterConsoleHandler())
 	{
-		std::cerr << "Usage: " << argv[0] << " path\\filename.asm [-encoding ansi|utf8|utf16|utf16le]" << std::endl;
 		return EXIT_FAILURE;
 	}
 
-	namespace fs = std::filesystem;
+	if (argc < 2)
+	{
+		std::string executable = fs::path(argv[0]).filename().string();
+		std::cerr << "Usage: " << executable << " path\\filename.asm [-encoding ansi|utf8|utf16|utf16le]" << std::endl;
+		return EXIT_FAILURE;
+	}
+
 	fs::path file_path;
 	Encoding encoding = Encoding::ANSI;
 

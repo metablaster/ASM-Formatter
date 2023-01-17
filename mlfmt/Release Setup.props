@@ -24,6 +24,7 @@
       <OmitFramePointers>true</OmitFramePointers>
       <StringPooling>true</StringPooling>
       <EnableParallelCodeGeneration>true</EnableParallelCodeGeneration>
+      <DebugInformationFormat>None</DebugInformationFormat>
     </ClCompile>
     <Link>
       <OptimizeReferences>true</OptimizeReferences>

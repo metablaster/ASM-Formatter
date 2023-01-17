@@ -19,22 +19,24 @@
 
 
 /**
-* Helper function to convert from string to wstring
+* Function to convert from string to wstring
 *
 * @param param	string to convert
 */
 [[nodiscard]] std::wstring StringCast(const std::string& param, UINT code_page = CP_UTF8);
 
 /**
-* Helper function to convert from wstring to string
+* Function to convert from wstring to string
 *
 * @param param	string to convert
 */
 [[nodiscard]] std::string StringCast(const std::wstring& param, UINT code_page = CP_UTF8);
 
-#if 0	// UNDONE: waiting for C++ 20
+// TODO: waiting for C++ 20
+#if 0
 /**
- * @brief Convert u8string or char32_t to wstring
+ * Convert u8string or char32_t to wstring
+ * 
  * @param param u8string or char8_t string
  * @return String converted to wchar_t
 */
@@ -42,14 +44,16 @@
 #endif
 
 /**
- * @brief Convert u16string or char16_t to wstring
+ * Convert u16string or char16_t to wstring
+ * 
  * @param param u16string or char16_t string
  * @return String converted to wchar_t
 */
 [[nodiscard]] std::wstring StringCast(const std::u16string& param);
 
 /**
- * @brief Convert u32string or char32_t to wstring
+ * Convert u32string or char32_t to wstring
+ * 
  * @param param u32string or char32_t string
  * @return String converted to wchar_t
 */

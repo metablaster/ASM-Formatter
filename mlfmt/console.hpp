@@ -22,7 +22,7 @@
  * A console process uses this function to handle control signals received by the process.
  * When the signal is received, the system creates a new thread in the process to execute the function.
 */
-BOOL HandlerRoutine(DWORD signal) noexcept;
+BOOL WINAPI HandlerRoutine(DWORD signal) noexcept;
 
 /**
  * Helper function to set console handler
