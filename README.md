@@ -87,6 +87,6 @@ please open a new issue to discuss it first.
 
 The following sample animation demonstrates current rudimentary capabilities:
 
-![Under construction](/TestFiles/asm.gif)
+![Demonstration](/assets/asm.gif)
 
 [masm]: https://learn.microsoft.com/en-us/cpp/assembler/masm/microsoft-macro-assembler-reference
