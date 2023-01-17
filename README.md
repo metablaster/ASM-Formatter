@@ -82,4 +82,4 @@ this repo and customize it for yourself however you desire.
 
 The following animation demonstrates current functionality:
 
-![Under construction](/TestFiles/asm.gif)
+![Under construction](/assets/asm.gif)
