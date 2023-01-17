@@ -9,7 +9,9 @@ It's currently designed for [MASM][masm] assembler syntax and at the moment supp
 - Consistent formatting of comments
 - Formatting inline comments so that all are equally distant from code
 - Consistent code indentation
-- It removes trailing white spaces
+- Removal of leading and trailing white spaces
+- Procedures are separated (sectioned) by blank line
+- First line in file is always blank
 
 The following file encodings are supported at the moment:
 
@@ -23,7 +25,12 @@ specifying wrong encoding may turn your sources into a pile garbage symbols.
 
 ## How to use
 
-Compile this project and put `asmformat.exe` into your project root directory.\
+Compile this project and put `asmformat.exe` somewhere where it will be visible, ex. `PATH`.\
+Program syntax is simple: `asmformat.exe path\filename.asm [--encoding ansi|utf8|utf16|utf16le]`
+
+Depending on your editor you should configure it so that `asmformat` is executed on demand for
+currently opened file.
+
 Here is sample task configuration for `VSCode` which needs to be put into `.vscode\tasks.json` file.
 
 ```json
@@ -52,13 +59,9 @@ Here is sample task configuration for `VSCode` which needs to be put into `.vsco
 Update configuration above to match correct encoding of source files, for ANSI encoded files you\
 can omit `--encoding` option.
 
-Program syntax is simple: `asmformat.exe path\filename.asm [--encoding ansi|utf8|utf16|utf16le]`
-
 Then simply open your assembly source file in `VSCode` and click on menu `Terminal -> Run Task...`\
 and choose `asm: format` option which will format currently opened file.
 
-If you're using some other code editor see if it's configurable to run executable against currently
-opened file.\
 Otherwise you can as well run the formatter on command line, ex:
 
 ```batch
@@ -72,15 +75,17 @@ on how assembly source files should be formatted.
 
 For this reason only the following contributions are acceptable:
 
-- Implementation for other assemblers which should at a minimum support everything that is already
-supported by this project.
+- Implementation for other assemblers which should support everything that is already supported by
+this project.
 
 - Your implementation must be very basic and minimal because personal coding style preferences must
 not dictate how assembly formatter will work.
 
-- Support for more file encodings is the most wanted!
+- Support for more file encodings
 
-If you wish to do something unorthodox or if you believe some other feature might be useful then
+- Bugfixes and improvements of existing functionalities
+
+If you wish to do something unorthodox or if you believe some new feature might be useful then
 please open a new issue to discuss it first.
 
 # Presentation

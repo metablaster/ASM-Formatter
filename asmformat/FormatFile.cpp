@@ -18,6 +18,12 @@
 #include "StringCast.hpp"
 
 
+// Was previous line blank?
+static bool previous_blank = false;
+
+// Insert new blank line?
+static bool insert_blankline = false;
+
 void FormatFileW(std::wstringstream& filedata)
 {
 	std::wregex reg;
@@ -68,9 +74,15 @@ void FormatFileW(std::wstringstream& filedata)
 
 	while (std::getline(filedata, line).good())
 	{
-		if (!line.empty())
+		if (line.empty())
 		{
-			// Trim surplus spaces at the end of line
+			previous_blank = true;
+		}
+		else
+		{
+			previous_blank = false;
+
+			// Trim trailing spaces at the end of line
 			reg = L"\\s+$";
 			line = std::regex_replace(line, reg, L"");
 
@@ -86,14 +98,25 @@ void FormatFileW(std::wstringstream& filedata)
 				// Insert tab to beginning of each line
 				line.insert(0, L"\t");
 
-				// Is code line indented with tab?
-				bool isindented = true;
+				reg = L"\t\\w+\\s+proc";
+				const bool is_proc = std::regex_search(line, reg);
 
+				reg = L"\t\\w+\\s+endp";
+				const bool is_endproc = std::regex_search(line, reg);
+
+				// Is code line indented with tab?
 				// Do not indent procedure labels
-				reg = L"\t\\w+\\s+(proc|endp)";
-				if (std::regex_search(line, reg))
+				const bool isindented = !(is_proc || is_endproc);
+
+				// if previous line is not blank and this is procedure inset blank line so that procedure blocks are sectioned
+				if (is_proc && !previous_blank)
 				{
-					isindented = false;
+					result += L"\n";
+				}
+				else if (is_endproc)
+				{
+					// Insert blank line later when done processing current line
+					insert_blankline = true;
 				}
 
 				// Format inline comments to start on same column
@@ -146,6 +169,17 @@ void FormatFileW(std::wstringstream& filedata)
 		}
 
 		result += line.append(L"\n");
+		if (insert_blankline)
+		{
+			result += L"\n";
+			insert_blankline = false;
+		}
+	}
+
+	// Make sure first line is blank
+	if (result.front() != L'\n')
+	{
+		result.insert(0, L"\n");
 	}
 
 	filedata.str(result);
@@ -207,9 +241,15 @@ void FormatFileA(std::stringstream& filedata)
 
 	while (std::getline(filedata, line).good())
 	{
-		if (!line.empty())
+		if (line.empty())
 		{
-			// Trim surplus spaces at the end of line
+			previous_blank = true;
+		}
+		else
+		{
+			previous_blank = false;
+
+			// Trim trailing spaces at the end of line
 			reg = "\\s+$";
 			line = std::regex_replace(line, reg, "");
 
@@ -225,14 +265,25 @@ void FormatFileA(std::stringstream& filedata)
 				// Insert tab to beginning of each line
 				line.insert(0, "\t");
 
-				// Is code line indented with tab?
-				bool isindented = true;
+				reg = "\t\\w+\\s+proc";
+				const bool is_proc = std::regex_search(line, reg);
 
+				reg = "\t\\w+\\s+endp";
+				const bool is_endproc = std::regex_search(line, reg);
+
+				// Is code line indented with tab?
 				// Do not indent procedure labels
-				reg = "\t\\w+\\s+(proc|endp)";
-				if (std::regex_search(line, reg))
+				const bool isindented = !(is_proc || is_endproc);
+
+				// if previous line is not blank and this is procedure inset blank line so that procedure blocks are sectioned
+				if (is_proc && !previous_blank)
 				{
-					isindented = false;
+					result += "\n";
+				}
+				else if (is_endproc)
+				{
+					// Insert blank line later when done processing current line
+					insert_blankline = true;
 				}
 
 				// Format inline comments to start on same column
@@ -285,6 +336,17 @@ void FormatFileA(std::stringstream& filedata)
 		}
 
 		result += line.append("\n");
+		if (insert_blankline)
+		{
+			result += "\n";
+			insert_blankline = false;
+		}
+	}
+
+	// Make sure first line is blank
+	if (result.front() != '\n')
+	{
+		result.insert(0, "\n");
 	}
 
 	filedata.str(result);

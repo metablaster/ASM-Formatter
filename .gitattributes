@@ -1,0 +1,51 @@
+
+# https://git-scm.com/docs/gitattributes
+# https://git-scm.com/docs/git-config
+# https://stackoverflow.com/questions/13819764/indentation-configuration-only-for-some-files
+
+###########################################################################################
+# Set default behavior to automatically normalize line endings.
+# When text is set to "auto", the path is marked for automatic end-of-line conversion.
+# If Git decides that the content is text, its line endings are converted to LF on checkin.
+# When the file has been committed with CRLF, no conversion is done.
+###########################################################################################
+* text=auto
+
+###########################################################################################
+# "text" attribute sets a specific line-ending style to be used in the working directory.
+# It enables end-of-line conversion without any content checks, setting the text attribute.
+# This setting forces Git to normalize line endings for this file on checkin and convert
+# them to CRLF when the file is checked out.
+# "eol" attribute sets a specific line-ending style to be used in the working directory.
+# "whitespace" defines what diff and apply should consider whitespace errors for all paths.
+# "trailing-space" warns on trailing white space characters at the end-of-line or end-of-file.
+# "space-before-tab" to catch spaces hidden before and between the tabs.
+# "indent-with-non-tab" warns when "tabwidth" or more spaces are used at the start of a line.
+# "tab-in-indent" treats a tab character in the initial indent part of the line as an error.
+# "tabwidth" in the whitespace option is used to determine when and how to replace the
+# tab and space characters, allowed values are 1 to 63
+# Run git check-attr --all <path\to\>file.ext to verify attributes of the file
+###########################################################################################
+
+# Binary files
+*.gif		binary
+# Text files to interpret as binary due to issues with encoding
+ansi.asm		binary
+ANSI.txt		binary
+ASCII.txt		binary
+utf16be.asm		binary
+utf16le.asm		binary
+utf8.asm		binary
+# C++ code files
+*.cpp		text eol=crlf whitespace=trailing-space,space-before-tab,indent-with-non-tab,tabwidth=4
+*.hpp		text eol=crlf whitespace=trailing-space,space-before-tab,indent-with-non-tab,tabwidth=4
+# Text files
+*.md		text eol=crlf whitespace=trailing-space,space-before-tab,tab-in-indent,tabwidth=2
+*.txt		text eol=crlf whitespace=trailing-space,space-before-tab,indent-with-non-tab,tabwidth=4
+# VS files
+*.ruleset	text eol=crlf whitespace=trailing-space,space-before-tab,indent-with-non-tab,tabwidth=2
+*.vcxproj	text eol=crlf whitespace=trailing-space,space-before-tab,indent-with-non-tab,tabwidth=2
+*.filters	text eol=crlf whitespace=trailing-space,space-before-tab,indent-with-non-tab,tabwidth=2
+*.props		text eol=crlf whitespace=trailing-space,space-before-tab,indent-with-non-tab,tabwidth=2
+# Files without extensions
+LICENSE		text eol=crlf whitespace=trailing-space,space-before-tab,indent-with-non-tab,tabwidth=4
