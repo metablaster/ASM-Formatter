@@ -24,6 +24,7 @@
     <ProjectGuid>{d1e2e50e-71de-4c93-a968-030d9b5b8f04}</ProjectGuid>
     <RootNamespace>mlfmt</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>asmformat</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">

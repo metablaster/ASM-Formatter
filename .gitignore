@@ -47,7 +47,7 @@
 *.tlog
 *.lastbuildstate
 *.txt
-!/TestFiles/*
+!/assets/*
 
 # Visual Studio linker files (VS 2019)
 *.ilk
