@@ -133,7 +133,7 @@ void FormatFileW(std::wstringstream& filedata)
 	filedata.clear();
 
 	#ifdef _DEBUG
-	std::cout << StringCast(filedata.str()) << std::endl;
+	std::cout << wsl::StringCast(filedata.str()) << std::endl;
 	std::cout << "longest code line is: " << maxcodelen << std::endl;
 	#endif
 }

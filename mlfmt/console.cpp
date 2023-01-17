@@ -15,6 +15,10 @@
 
 #include "pch.hpp"
 #include "console.hpp"
+#include "error.hpp"
+#include "ErrorMacros.hpp"
+#include "ErrorCode.hpp"
+using namespace wsl;
 
 
 BOOL WINAPI HandlerRoutine(DWORD signal) noexcept
@@ -41,7 +45,7 @@ bool RegisterConsoleHandler()
 {
 	if (!SetConsoleCtrlHandler(HandlerRoutine, TRUE))
 	{
-		std::wcerr << L"FunctionFailed, Could not set console handler" << std::endl;
+		ShowError(ErrorCode::FunctionFailed, "ERROR: Could not set console handler");
 		return false;
 	}
 
@@ -54,7 +58,7 @@ bool SetProjectConsole(DWORD code_page)
 
 	if (failed)
 	{
-		std::wcerr << L"FunctionFailed, Code page is not valid" << std::endl;
+		ShowError(ErrorCode::FunctionFailed, "Code page is not valid");
 		return false;
 	}
 
@@ -63,13 +67,13 @@ bool SetProjectConsole(DWORD code_page)
 
 	if (failed)
 	{
-		std::wcerr << L"FunctionFailed, Failed to set console output code page" << std::endl;
+		ShowError(ErrorCode::FunctionFailed, "Failed to set console output code page");
 	}
 
 	if (SetConsoleCP(code_page) == 0)
 	{
 		failed = true;
-		std::wcerr << L"FunctionFailed, Failed to set console input code page" << std::endl;
+		ShowError(ErrorCode::FunctionFailed, "Failed to set console input code page");
 	}
 
 	return !failed;

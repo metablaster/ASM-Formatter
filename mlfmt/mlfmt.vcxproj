@@ -104,6 +104,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="console.cpp" />
+    <ClCompile Include="ErrorCode.cpp" />
+    <ClCompile Include="ErrorCondition.cpp" />
+    <ClCompile Include="exception.cpp" />
     <ClCompile Include="FormatFile.cpp" />
     <ClCompile Include="StringCast.cpp" />
     <ClCompile Include="error.cpp" />
@@ -115,10 +118,15 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="SourceFile.cpp" />
+    <ClCompile Include="utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="console.hpp" />
     <ClInclude Include="error.hpp" />
+    <ClInclude Include="ErrorCode.hpp" />
+    <ClInclude Include="ErrorCondition.hpp" />
+    <ClInclude Include="ErrorMacros.hpp" />
+    <ClInclude Include="exception.hpp" />
     <ClInclude Include="FormatFile.hpp" />
     <ClInclude Include="pch.hpp" />
     <ClInclude Include="pragmas.hpp" />

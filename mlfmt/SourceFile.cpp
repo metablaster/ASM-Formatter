@@ -10,12 +10,15 @@
  * @file mlfmt\SourceFile.cpp
  *
  * File read\write function definitions
- * TODO: Error handling is not implemented
+ * TODO: Error handling is not fully implemented
  *
 */
 
 #include "pch.hpp"
 #include "SourceFile.hpp"
+#include "error.hpp"
+#include "ErrorCode.hpp"
+using namespace wsl;
 
 
 std::size_t GetFileSize(const std::filesystem::path& file_path)
@@ -45,7 +48,7 @@ std::wstringstream LoadFileW(const std::filesystem::path& file_path, const Encod
 		mode += ", ccs=UTF-16LE";
 		break;
 	default:
-		std::cerr << "Encoding not supported by LoadFileW";
+		ShowError(ErrorCode::UnsuportedOperation, "Encoding not supported by LoadFileW");
 		return std::wstringstream();
 	}
 
@@ -68,7 +71,7 @@ std::wstringstream LoadFileW(const std::filesystem::path& file_path, const Encod
 	}
 	else
 	{
-		std::cerr << "Failed to read file " << file_path.string().c_str() << std::endl;
+		ShowError(ErrorCode::FunctionFailed, std::string("Failed to read file ") + file_path.string().c_str());
 	}
 
 	return std::wstringstream(buffer);
@@ -99,7 +102,7 @@ std::stringstream LoadFileA(const std::filesystem::path& file_path)
 	}
 	else
 	{
-		std::cerr << "Failed to read file " << file_path.string().c_str() << std::endl;
+		ShowError(ErrorCode::FunctionFailed, std::string("Failed to read file ") + file_path.string().c_str());
 	}
 
 	return std::stringstream(buffer);
@@ -124,7 +127,7 @@ void WriteFileW(const std::filesystem::path& file_path, const std::wstringstream
 		mode += ", ccs=UTF-16LE";
 		break;
 	default:
-		std::cerr << "Encoding not supported by WriteFileW" << std::endl;
+		ShowError(ErrorCode::UnsuportedOperation, "Encoding not supported by WriteFileW");
 		return;
 	}
 
@@ -137,7 +140,7 @@ void WriteFileW(const std::filesystem::path& file_path, const std::wstringstream
 	}
 	else
 	{
-		std::cerr << "Failed to write file " << file_path.string().c_str() << std::endl;
+		ShowError(ErrorCode::FunctionFailed, std::string("Failed to write file ") + file_path.string().c_str());
 	}
 }
 
@@ -153,6 +156,6 @@ void WriteFileA(const std::filesystem::path& file_path, const std::stringstream&
 	}
 	else
 	{
-		std::cerr << "Failed to write file " << file_path.string().c_str() << std::endl;
+		ShowError(ErrorCode::FunctionFailed, std::string("Failed to write file ") + file_path.string().c_str());
 	}
 }

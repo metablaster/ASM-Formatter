@@ -9,6 +9,12 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
     </Filter>
+    <Filter Include="Header Files\Error">
+      <UniqueIdentifier>{f5122a6f-9a6a-4f26-b2d8-08765dda79a5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Error">
+      <UniqueIdentifier>{4a3c2928-b4f2-482c-a921-4966dc0ead8c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -20,9 +26,6 @@
     <ClCompile Include="console.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="error.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="SourceFile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -31,6 +34,21 @@
     </ClCompile>
     <ClCompile Include="FormatFile.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="utils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ErrorCode.cpp">
+      <Filter>Source Files\Error</Filter>
+    </ClCompile>
+    <ClCompile Include="error.cpp">
+      <Filter>Source Files\Error</Filter>
+    </ClCompile>
+    <ClCompile Include="exception.cpp">
+      <Filter>Source Files\Error</Filter>
+    </ClCompile>
+    <ClCompile Include="ErrorCondition.cpp">
+      <Filter>Source Files\Error</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -46,9 +64,6 @@
     <ClInclude Include="console.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="error.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="SourceFile.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -60,6 +75,21 @@
     </ClInclude>
     <ClInclude Include="utils.hpp">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="error.hpp">
+      <Filter>Header Files\Error</Filter>
+    </ClInclude>
+    <ClInclude Include="ErrorCode.hpp">
+      <Filter>Header Files\Error</Filter>
+    </ClInclude>
+    <ClInclude Include="ErrorCondition.hpp">
+      <Filter>Header Files\Error</Filter>
+    </ClInclude>
+    <ClInclude Include="ErrorMacros.hpp">
+      <Filter>Header Files\Error</Filter>
+    </ClInclude>
+    <ClInclude Include="exception.hpp">
+      <Filter>Header Files\Error</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
