@@ -175,18 +175,20 @@ namespace wsl
 		std::string error_title = GenerateErrorTitle(flags);
 		std::string error_message("File:\t\t");
 
-		error_message.append("\r\nFile:\t\t");
 		error_message.append(file_name);
 		error_message.append("\r\nFunction:\t");
 		error_message.append(func_name);
 		error_message.append("\r\nLine:\t\t");
 		error_message.append(std::to_string(line));
-		error_message.append("\r\nError:\t\t");
+		error_message.append("\r\nCategory:\t");
 
 		// If HRESULT is omitted or S_OK
 		// format last error code message
 		if (hr == S_OK)
 		{
+			error_message.append("Win32 error");
+			error_message.append("\r\nError:\t\t");
+
 			if (!error_code)
 			{
 				error_title = "No error";
@@ -214,6 +216,9 @@ namespace wsl
 		}
 		else // Format com error code into a message
 		{
+			error_message.append("COM error");
+			error_message.append("\r\nError:\t\t");
+
 			error_code = static_cast<unsigned long>(hr);
 			if (SUCCEEDED(error_code))
 			{
@@ -278,10 +283,8 @@ namespace wsl
 			flags = MB_ICONINFORMATION;
 		}
 
-		error_message.append("\r\nCondition:\t");
-		error_message.append(exception.ConditionName());
 		error_message.append("\r\nCategory:\t");
-		error_message.append(exception.CategoryName());
+		error_message.append(exception.ConditionName());
 
 		error_message.append("\r\nError:\t\t");
 		error_message.append(exception.what());
@@ -290,11 +293,8 @@ namespace wsl
 		SUPPRESS(6054 26485);	// String might not be zero-terminated and No array to pointer decay
 		error_message.append(crt_error);
 
-		std::string info_data{ };
-
-		info_data = exception.GetInfo();
-
 		std::string error_info{};
+		std::string info_data = exception.GetInfo();
 
 		if (!info_data.empty())
 			error_info.append(info_data);

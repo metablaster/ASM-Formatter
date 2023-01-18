@@ -19,7 +19,7 @@
 /**
 * Tab width expressed in spaces
 */
-constexpr unsigned tab_width = 4;
+extern unsigned tab_width;
 
 /**
 * Format nasm source file encoded as UTF-8, UTF-16 or UTF-16LE

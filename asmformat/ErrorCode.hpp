@@ -9,7 +9,7 @@
 /**
  * @file asmformat\ErrorCode.hpp
  *
- * Declaration of code error code
+ * Declaration of custom error_code
  *
 */
 
@@ -26,6 +26,8 @@ namespace wsl
 	enum class ErrorCode : std::uint16_t
 	{
 		Success = 0,		// No error
+
+		// Code error
 		BadArgument = 100,	// bad argument passed to function
 		InvalidPointer,		// Pointer is invalid
 		NoImplementation,	// No implementation
@@ -53,7 +55,13 @@ namespace wsl
 		BadVariableData,	// unexpected variable data
 		BadCast,			// Bad cast
 		NotFound,			// Item not found
-		UnknownError = 1000	// the type of error is not known
+
+		// User errors
+		UnknownOption,		// Unrecognized option passed to program
+		InvalidParameter,	// Invalid program option parameter specified
+		InvalidCommand,		// Invalid command line
+
+		UnspecifiedError = 1000	// the type of error is undefined
 	};
 
 	/** Exit status code from error enum */
@@ -75,9 +83,9 @@ namespace std
 namespace wsl
 {
 	//
-	// This function is called by error_code's constructor for error code enum types,
+	// This function is called by error_code constructor for error code enum types,
 	// and should be overloaded for all custom error code enum types defined in order to
 	// provide a mechanism to generate the appropriate error_code objects from them.
 	//
-	[[nodiscard]] std::error_code make_error_code(ErrorCode err_code_value) noexcept;
+	[[nodiscard]] std::error_code make_error_code(ErrorCode code) noexcept;
 }

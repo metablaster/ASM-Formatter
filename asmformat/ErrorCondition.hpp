@@ -9,7 +9,7 @@
 /**
  * @file asmformat\ErrorCondition.hpp
  *
- * Declaration of Error condition for error codes
+ * Declaration of custom error_condition
  *
 */
 
@@ -25,9 +25,10 @@ namespace wsl
 	*/
 	enum class ErrorCondition : std::uint16_t
 	{
-		no_error,
-		code_error,
-		unknown_error
+		no_error,		// No error
+		code_error,		// An error in code
+		user_error,		// An error mady by user
+		unspecified_error	// Unspecified error condition
 	};
 }
 
@@ -46,9 +47,9 @@ namespace std
 namespace wsl
 {
 	//
-	// This function is called by error_condition's constructor for error condition enum types,
+	// This function is called by error_condition constructor for error condition enum types,
 	// and should be overloaded for all custom error condition enum types in order to
 	// provide a mechanism to generate the appropriate error_condition objects from them.
 	//
-	[[nodiscard]] std::error_condition make_error_condition(ErrorCondition cond_err_value) noexcept;
+	[[nodiscard]] std::error_condition make_error_condition(ErrorCondition condition) noexcept;
 }

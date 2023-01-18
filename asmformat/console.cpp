@@ -18,63 +18,65 @@
 #include "error.hpp"
 #include "ErrorMacros.hpp"
 #include "ErrorCode.hpp"
-using namespace wsl;
 
 
-BOOL WINAPI HandlerRoutine(DWORD signal) noexcept
+namespace wsl
 {
-	switch (signal)
+	BOOL WINAPI HandlerRoutine(DWORD signal) noexcept
 	{
-	case CTRL_C_EVENT:
-		ExitProcess(0);
-	case CTRL_BREAK_EVENT:
-		break;
-	case CTRL_CLOSE_EVENT:
-		ExitProcess(0);
-	case CTRL_LOGOFF_EVENT:
-	case CTRL_SHUTDOWN_EVENT:
-		break;
-	default:
-		break;
+		switch (signal)
+		{
+		case CTRL_C_EVENT:
+			ExitProcess(0);
+		case CTRL_BREAK_EVENT:
+			break;
+		case CTRL_CLOSE_EVENT:
+			ExitProcess(0);
+		case CTRL_LOGOFF_EVENT:
+		case CTRL_SHUTDOWN_EVENT:
+			break;
+		default:
+			break;
+		}
+
+		return TRUE;
 	}
 
-	return TRUE;
-}
-
-bool RegisterConsoleHandler()
-{
-	if (!SetConsoleCtrlHandler(HandlerRoutine, TRUE))
+	bool RegisterConsoleHandler()
 	{
-		ShowError(ErrorCode::FunctionFailed, "ERROR: Could not set console handler");
-		return false;
+		if (!SetConsoleCtrlHandler(HandlerRoutine, TRUE))
+		{
+			ShowError(ErrorCode::FunctionFailed, "ERROR: Could not set console handler");
+			return false;
+		}
+
+		return true;
 	}
 
-	return true;
-}
-
-bool SetProjectConsole(DWORD code_page)
-{
-	bool failed = IsValidCodePage(code_page) == 0;
-
-	if (failed)
+	bool SetProjectConsole(DWORD code_page)
 	{
-		ShowError(ErrorCode::FunctionFailed, "Code page is not valid");
-		return false;
+		bool failed = IsValidCodePage(code_page) == 0;
+
+		if (failed)
+		{
+			ShowError(ErrorCode::FunctionFailed, "Code page is not valid");
+			return false;
+		}
+
+		// set console output and input code page
+		failed = SetConsoleOutputCP(code_page) == 0;
+
+		if (failed)
+		{
+			ShowError(ErrorCode::FunctionFailed, "Failed to set console output code page");
+		}
+
+		if (SetConsoleCP(code_page) == 0)
+		{
+			failed = true;
+			ShowError(ErrorCode::FunctionFailed, "Failed to set console input code page");
+		}
+
+		return !failed;
 	}
-
-	// set console output and input code page
-	failed = SetConsoleOutputCP(code_page) == 0;
-
-	if (failed)
-	{
-		ShowError(ErrorCode::FunctionFailed, "Failed to set console output code page");
-	}
-
-	if (SetConsoleCP(code_page) == 0)
-	{
-		failed = true;
-		ShowError(ErrorCode::FunctionFailed, "Failed to set console input code page");
-	}
-
-	return !failed;
 }

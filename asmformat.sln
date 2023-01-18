@@ -24,6 +24,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "assets", "assets", "{4713F9
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "asmformat", "asmformat\asmformat.vcxproj", "{D1E2E50E-71DE-4C93-A968-030D9B5B8F04}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Temp", "Temp", "{0B9D7AA3-13A5-47A4-8681-D36F1ABE9D27}"
+	ProjectSection(SolutionItems) = preProject
+		Build\x64\Debug\utf8-2.asm = Build\x64\Debug\utf8-2.asm
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64

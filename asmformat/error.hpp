@@ -34,6 +34,12 @@ namespace wsl
 	{
 	};
 
+	template<>
+	struct is_cutom_exception<Exception> :
+		public std::true_type
+	{
+	};
+
 	/* error message buffer size used by ForamtMessage API **/
 	constexpr short msg_buff_size = 512;
 
@@ -99,7 +105,7 @@ namespace wsl
 		long flags = MB_ICONERROR) noexcept;
 
 	/**
-	* show error message from exception objects in MessageBoxW or Console
+	* Show error message from exception objects in MessageBox or Console
 	* accepts std exceptions and custom Exception class
 	*
 	* @param exception		exception object
@@ -127,6 +133,7 @@ namespace wsl
 		error_message.append(func_name);
 		error_message.append("\r\nLine:\t\t");
 		error_message.append(std::to_string(line));
+		error_message.append("\r\nCategory:\t");
 
 		SUPPRESS(26496);	// The variable is assigned only once, mark it as const
 		DWORD error_code{};
@@ -146,10 +153,12 @@ namespace wsl
 				flags = MB_ICONINFORMATION;
 			}
 
-			error_message.append("\r\nCondition:\t");
 			error_message.append(ref_code.default_error_condition().message());
-			error_message.append("\r\nCategory:\t");
-			error_message.append(ref_code.category().name());
+		}
+		else
+		{
+			// TODO: Category name for uncategorized exceptions
+			error_message.append("-");
 		}
 
 		std::string error_info{};

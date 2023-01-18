@@ -9,30 +9,38 @@
 /**
  * @file asmformat\ErrorCode.cpp
  *
- * Definition of code error code
+ * Definition of custom error_code
  *
 */
 
 #include "pch.hpp"
 #include "ErrorCode.hpp"
-#include "error.hpp"
+#include "ErrorMacros.hpp"
 #include "ErrorCondition.hpp"
 
 
 /*
-* Explanation of std error handling
-*
-* 1. std::system_error		(exception class/object being thrown) takes std::error_code (or individual parts of error_code) for construction
-* 2. std::error_code		(object explaining the error) takes int error value and std::error_category or custom error enum for it's construction
-*							in case of custom error enum 'make_error_code' must be overridden to construct error_code from error_category instance and error value
-*
-* 3. std::error_category	should be inherited and only a single instance of that class is used to describe error category,
-*							see comment in declaration of error_category below for more info
-* 4. std::error_condition	Stores an abstract error code and category.
-*							Objects of this type describe errors in a generic way so that they may be portable across different systems.
-*							This is in contrast with error_code objects, that may contain system-specific information.
-*							error_condition objects are generally used to check whether a particular error_code obtained from the system matches a specific
-*							error condition no matter the system.
+ * Explanation of std error handling
+ *
+ * 1. std::system_error		(exception class/object being thrown) takes std::error_code (or individual parts of error_code) for construction
+ * 
+ * 2. std::error_code		It's used for storing and transmitting error codes as they were produced by originating library, unchanged.
+ * 
+ * (object explaining the error) takes int error value and std::error_category or custom error enum for it's construction
+ * in case of custom error enum 'make_error_code' must be overridden to construct error_code from error_category instance and error value.
+ *
+ * 3. std::error_category	It's used as a technical detail for implementing custom error_condition and error_code.
+ * 
+ * should be inherited and only a single instance of that class is used to describe error category,
+ * see comment in declaration of error_category below for more info.
+ *							
+ * 4. std::error_condition	It's used for performing queries on error_codes, for the purpose of grouping or classification or translation.
+ * 
+ * Stores an abstract error code and category.
+ * Objects of this type describe errors in a generic way so that they may be portable across different systems.
+ * This is in contrast with error_code objects, that may contain system-specific information.
+ * error_condition objects are generally used to check whether a particular error_code obtained from the system matches a specific
+ * error condition no matter the system.
 */
 
 namespace wsl
@@ -52,10 +60,10 @@ namespace wsl
 
 	private:
 		/*
-		* Objects of these types have no distinct values and are not-copyable and not-assignable,
-		* and thus can only be passed by reference.
-		* As such, only one object of each of these types shall exist, each uniquely identifying its own category:
-		* all error codes and conditions of a same category shall return a reference to same object.
+		 * Objects of these types have no distinct values and are not-copyable and not-assignable,
+		 * and thus can only be passed by reference.
+		 * As such, only one object of each of these types shall exist, each uniquely identifying its own category:
+		 * all error codes and conditions of a same category shall return a reference to same object.
 		*/
 		ErrorCodeCategory(const ErrorCodeCategory&) = delete;
 		ErrorCodeCategory(ErrorCodeCategory&&) = delete;
@@ -70,54 +78,66 @@ namespace wsl
 		// Overrides from std::error_category
 		//
 	public:
+		/**
+		 * @brief Category name
+		 * @return A pointer to a null-terminated byte string that specifies the name of the error category.
+		*/
 		const char* name() const noexcept override;
-		std::error_condition default_error_condition(int err_code_value) const noexcept override;
-		bool equivalent(const std::error_code& err_code, int cond_err_value) const noexcept override;
-		bool equivalent(int err_code_value, const std::error_condition& err_cond) const noexcept override;
-		std::string message(int err_value) const override;
-	};
 
-	// this is preferred method than global variable to avoid C26426
-	inline static const ErrorCodeCategory& getGenericErrorCategory() noexcept
-	{
-		static const ErrorCodeCategory static_GenericErrorCategory;
-		return static_GenericErrorCategory;
-	}
+		/**
+		 * @brief Maps error_code to error_condition
+		 * 
+		 * Returns the default error_condition object of this category that is associated with
+		 * the error_code identified by a value of code.
+		 * 
+		 * @param code A numerical value identifying an error
+		 * @return The default error_condition associated with error value
+		*/
+		std::error_condition default_error_condition(int code) const noexcept override;
+		
+		/**
+		 * @brief Compares error_code and error_condition for equivalence
+		 * Checks whether, for the category, an error code is equivalent to an error condition, specifically
+		 * Checks whether error code is equivalent to an error condition for the error category represented by *this
+		 *
+		 * @param code An object of an error_code type
+		 * @param condition A numerical value identifying an error condition
+		 * @return true if equivalent, false otherwise
+		*/
+		bool equivalent(const std::error_code& code, int condition) const noexcept override;
+		
+		/**
+		 * @brief Compares error_code and error_condition for equivalence
+		 * Checks whether, for the category, an error code is equivalent to an error condition, specifically
+		 * Checks whether error code is equivalent to an error condition for the error category represented by *this
+		 *
+		 * @param code A numerical value identifying an error code
+		 * @param condition An object of an error_condition type
+		 * @return true if equivalent, false otherwise
+		*/
+		bool equivalent(int code, const std::error_condition& condition) const noexcept override;
 
-	std::error_code make_error_code(ErrorCode err_code_value) noexcept
-	{
-		return std::error_code(static_cast<int>(err_code_value), getGenericErrorCategory());
-	}
+		/**
+		 * @brief Returns a string describing the given error
+		 * 
+		 * In derived classes, the function returns a string object with a message describing the error condition denoted by err_value.
+		 * This function is called both by error_code::message and error_condition::message to obtain the corresponding message in the category.
+		 * Therefore, numerical values used by custom error codes and error conditions should only match for a category if they describe the same error.
+		 *
+		 * @param code A numerical value identifying an error
+		 * @return A string object with the message
+		*/
+		std::string message(int code) const override;
+	} ErrorCategory;
 
-	// Returns a pointer to a null-terminated byte string that specifies the name of the error category.
 	const char* ErrorCodeCategory::name() const noexcept
 	{
-		return "WSL Error";
+		return "Error type";
 	}
 
-	// compares error_code and error_condition for equivalence
-	// Checks whether, for the category, an error code is equivalent to an error condition, specifically
-	// Checks whether error code is equivalent to an error condition for the error category represented by *this
-	bool ErrorCodeCategory::equivalent(const std::error_code& err_code, int cond_err_value) const noexcept
+	std::error_condition ErrorCodeCategory::default_error_condition(int code) const noexcept
 	{
-		return *this == err_code.category() &&
-			static_cast<int>(default_error_condition(err_code.value()).value()) == cond_err_value;
-	}
-
-	// compares error_code and error_condition for equivalence
-	// Checks whether, for the category, an error code is equivalent to an error condition, specifically
-	// Checks whether error code is equivalent to an error condition for the error category represented by *this
-	bool ErrorCodeCategory::equivalent(int err_code_value, const std::error_condition& err_cond) const noexcept
-	{
-		return default_error_condition(err_code_value) == err_cond;
-	}
-
-	// maps error_code to error_condition.
-	// Returns the error condition for the given error code.
-	// Returns the default error_condition object of this category that is associated with the error_code identified by a value of err_value.
-	std::error_condition ErrorCodeCategory::default_error_condition(int err_code_value) const noexcept
-	{
-		switch (static_cast<ErrorCode>(err_code_value))
+		switch (static_cast<ErrorCode>(code))
 		{
 		case ErrorCode::Success:
 			return make_error_condition(ErrorCondition::no_error);
@@ -149,21 +169,31 @@ namespace wsl
 		case ErrorCode::BadCast:
 		case ErrorCode::NotFound:
 			return make_error_condition(ErrorCondition::code_error);
-		case ErrorCode::UnknownError:
-			return make_error_condition(ErrorCondition::unknown_error);
+		case ErrorCode::UnknownOption:
+		case ErrorCode::InvalidParameter:
+		case ErrorCode::InvalidCommand:
+			return make_error_condition(ErrorCondition::user_error);
+		case ErrorCode::UnspecifiedError:
+			return make_error_condition(ErrorCondition::unspecified_error);
 		default:
 			// we cant show error here because function must be noexcept
-			return make_error_condition(ErrorCondition::unknown_error);
+			return make_error_condition(ErrorCondition::unspecified_error);
 		}
 	}
 
-	// Returns a string describing the given error condition for the error category represented by *this
-	// In derived classes, the function returns a string object with a message describing the error condition denoted by err_value.
-	// This function is called both by error_code::message and error_condition::message to obtain the corresponding message in the category.
-	// Therefore, numerical values used by custom error codes and error conditions should only match for a category if they describe the same error.
-	std::string ErrorCodeCategory::message(int err_value) const
+	bool ErrorCodeCategory::equivalent(const std::error_code& code, int condition) const noexcept
 	{
-		switch (static_cast<ErrorCode>(err_value))
+		return (*this == code.category()) && (code.value() == condition);
+	}
+
+	bool ErrorCodeCategory::equivalent(int code, const std::error_condition& condition) const noexcept
+	{
+		return default_error_condition(code) == condition;
+	}
+
+	std::string ErrorCodeCategory::message(int code) const
+	{
+		switch (static_cast<ErrorCode>(code))
 		{
 		case ErrorCode::Success:
 			return "All operations completed successfully";
@@ -217,16 +247,31 @@ namespace wsl
 			return "Unsupported operation";
 		case ErrorCode::BadVariableData:
 			return "Bad variable data";
-		case ErrorCode::UnknownError:
-			return "Unknown error";
 		case ErrorCode::BadCast:
 			return "Bad cast";
 		case ErrorCode::NotFound:
 			return "Item not found";
+		case ErrorCode::UnknownOption:
+			return "Unknown option";
+		case ErrorCode::InvalidParameter:
+			return "Invalid option parameter";
+		case ErrorCode::InvalidCommand:
+			return "Invalid command";
+		case ErrorCode::UnspecifiedError:
+			return "Unspecified error";
 		default:
-			ShowError(ErrorCode::Unexpected);
-			return "UNHANDLED CASE!!";
+			return "Unknown error";
 		}
+	}
+
+	std::error_code make_error_code(ErrorCode code) noexcept
+	{
+		return std::error_code(
+			// A numerical value identifying an error code
+			static_cast<int>(code),
+
+			// A reference to an error_category object
+			ErrorCategory);
 	}
 
 	SUPPRESS(26497);	// function could be marked constexpr (yes but, can't be inlined)

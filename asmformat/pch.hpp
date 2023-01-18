@@ -40,6 +40,7 @@
 #include <stdexcept>	// std::runtime_error (exception.hpp)
 #include <type_traits>	// std::false_type (error.hpp, utils.hpp)
 #include <cstdint>		// std::uint16_t (ErrorCode.hpp)
+#include <vector>		// std::vector (main.cpp)
 
 // C Standard header files
 #include <stdio.h>		// fopen_s (SourceFile.cpp)

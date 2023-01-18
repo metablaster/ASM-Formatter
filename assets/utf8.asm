@@ -1,4 +1,12 @@
-﻿ ;		   very bad source file					       
+﻿ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ ;		   very bad source file					       
 	nl = 10                ; 4 (+1)					       
 	maxLen = 256                 ; 2 (+1)					       
 	public getTitle   ; 2
@@ -24,3 +32,10 @@ lea rcx, fmtStr   ; ASCII code
 	   ret                          ; ASCII code					       
 asmMain endp					       
   end					       
+
+
+
+
+
+
+

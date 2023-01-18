@@ -10,8 +10,8 @@ It's currently designed for [MASM][masm] assembler syntax and at the moment supp
 - Formatting inline comments so that all are equally distant from code
 - Consistent code indentation
 - Removal of leading and trailing white spaces
+- Removal of starting and ending surplus blank lines
 - Procedures are separated (sectioned) by blank line
-- First line in file is always blank
 
 The following file encodings are supported at the moment:
 
@@ -20,13 +20,18 @@ The following file encodings are supported at the moment:
 - UTF-16
 - UTF-16LE
 
-You have to be careful to specify correct encoding which depends on encoding of your asm sources,\
-specifying wrong encoding may turn your sources into a pile garbage symbols.
-
 ## How to use
 
 Compile this project and put `asmformat.exe` somewhere where it will be visible, ex. `PATH`.\
-Program syntax is simple: `asmformat.exe path\filename.asm [--encoding ansi|utf8|utf16|utf16le]`
+Program syntax is: `asmformat.exe path\\file1.asm path\\file2.asm ... [--encoding ansi|utf8|utf16|utf16le] [--tabwidth N]`
+
+Default encoding, if not specified is `utf8`\
+Default tabwidth, if not specified is 4
+
+You have to be careful to specify correct encoding which depends on encoding of your asm sources,\
+specifying incorrect encoding may turn your sources into a pile garbage symbols.\
+Also tabwidth option must be correct, which depends on your editor configuration,
+specifiying incorrect tabwidth will produce unexpected results.
 
 Depending on your editor you should configure it so that `asmformat` is executed on demand for
 currently opened file.
@@ -45,7 +50,9 @@ Here is sample task configuration for `VSCode` which needs to be put into `.vsco
 			"args": [
 				"${file}",
 				"--encoding",
-				"utf8"
+				"utf8",
+				"--tabwidth",
+				"4"
 			],
 			"presentation": {
 				"showReuseMessage": false
@@ -56,17 +63,16 @@ Here is sample task configuration for `VSCode` which needs to be put into `.vsco
 }
 ```
 
-Update configuration above to match correct encoding of source files, for ANSI encoded files you\
-can omit `--encoding` option.
-
 Then simply open your assembly source file in `VSCode` and click on menu `Terminal -> Run Task...`\
 and choose `asm: format` option which will format currently opened file.
 
 Otherwise you can as well run the formatter on command line, ex:
 
 ```batch
-asmformat.exe .\filename.asm --encoding utf8
+asmformat.exe .\filename.asm --encoding utf8 --tabwidth 4
 ```
+
+Any command line argument which doesn't start with `--` is considered to be path to asm file.
 
 # Contributing
 

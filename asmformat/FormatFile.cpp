@@ -181,6 +181,16 @@ void FormatFileW(std::wstringstream& filedata)
 	{
 		result.insert(0, L"\n");
 	}
+	else
+	{
+		// Make sure only one blank line is at the top of file
+		reg = L"^\n+";
+		result = std::regex_replace(result, reg, L"\n");
+
+		// Remove surplus blank lines at the end of file
+		reg = L"\n+$";
+		result = std::regex_replace(result, reg, L"\n");
+	}
 
 	filedata.str(result);
 	filedata.clear();
@@ -347,6 +357,16 @@ void FormatFileA(std::stringstream& filedata)
 	if (result.front() != '\n')
 	{
 		result.insert(0, "\n");
+	}
+	else
+	{
+		// Make sure only one blank line is at the top of file
+		reg = "^\n+";
+		result = std::regex_replace(result, reg, "\n");
+
+		// Remove surplus blank lines at the end of file
+		reg = "\n+$";
+		result = std::regex_replace(result, reg, "\n");
 	}
 
 	filedata.str(result);

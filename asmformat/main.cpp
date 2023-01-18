@@ -10,6 +10,7 @@
  * @file asmformat\main.cpp
  *
  * Defines the entry point for application
+ * Debug command line: $(SolutionDir)assets\utf8.asm --encoding utf8 --tabwidth 4 $(SolutionDir)assets\utf8-2.asm
  *
 */
 
@@ -17,93 +18,130 @@
 #include "console.hpp"
 #include "FormatFile.hpp"
 #include "SourceFile.hpp"
-#include "console.hpp"
+#include "error.hpp"
+#include "ErrorCode.hpp"
+using namespace wsl;
 namespace fs = std::filesystem;
 
+// Default tab width if not specified on command line
+unsigned tab_width = 4;
 
 int main(int argc, char* argv[])
 {
 	if (!RegisterConsoleHandler())
 	{
-		return EXIT_FAILURE;
+		return ExitCode(ErrorCode::FunctionFailed);
 	}
+
+	fs::path executable_path = argv[0];
 
 	if (argc < 2)
 	{
-		std::string executable = fs::path(argv[0]).filename().string();
-		std::cerr << "Usage: " << executable << " path\\filename.asm [-encoding ansi|utf8|utf16|utf16le]" << std::endl;
-		return EXIT_FAILURE;
+		std::cerr << "Usage: " << executable_path.filename()
+			<< " path\\file1.asm path\\file2.asm ... [--encoding ansi|utf8|utf16|utf16le] [--tabwidth N]"
+			<< std::endl;
+
+		return ExitCode(ErrorCode::InvalidCommand);
 	}
 
-	fs::path file_path;
-	Encoding encoding = Encoding::ANSI;
+	// Default encoding if not specified on command line
+	Encoding encoding = Encoding::UTF8;
+	std::vector<fs::path> files;
 
 	for (int i = 1; i < argc; ++i)
 	{
-		if (std::string(argv[i]) == "--encoding")
-		{
-			// Make sure we aren't at the end of argv!
-			if (i + 1 < argc)
-			{
-				std::string param = argv[++i];
+		std::string param = argv[i];
 
-				if (param == "utf8")
+		if (param.starts_with("--"))
+		{
+			// Make sure we aren't at the end of argv
+			if (i + 1 == argc)
+			{
+				ShowError(ErrorCode::InvalidParameter, param + " option requires one argument");
+				return ExitCode(ErrorCode::InvalidParameter);
+			}
+
+			std::string arg = argv[++i];
+
+			if (param == "--encoding")
+			{
+				if (arg == "ansi")
 				{
-					encoding = Encoding::UTF8;
+					encoding = Encoding::ANSI;
 				}
-				else if (param == "utf16")
+				else if (arg == "utf16")
 				{
 					encoding = Encoding::UTF16;
 				}
-				else if (param == "utf16le")
+				else if (arg == "utf16le")
 				{
 					encoding = Encoding::UTF16LE;
 				}
-				else if (param != "ansi")
+				else if (arg != "utf8")
 				{
-					std::cerr << "The specified encoding '" << param << "' is not recognized" << std::endl;
-					return EXIT_FAILURE;
+					ShowError(ErrorCode::InvalidParameter, "The specified encoding '" + arg + "' was not recognized");
+					return ExitCode(ErrorCode::InvalidParameter);
 				}
+			}
+			else if (param == "--tabwidth")
+			{
+				const long width = std::stoi(arg);
+				if (width < 1)
+				{
+					ShowError(ErrorCode::InvalidParameter, "Tab width must be a number grater than zero");
+					return ExitCode(ErrorCode::InvalidParameter);
+				}
+
+				tab_width = width;
 			}
 			else
 			{
-				std::wcerr << L"--encoding option requires one argument" << std::endl;
-				return EXIT_FAILURE;
-			}
-		}
-		else if (std::string(argv[i]).starts_with("--"))
-		{
-			std::cerr << "option " << argv[i] << " was not recognized" << std::endl;
-			return EXIT_FAILURE;
-		}
-		else if (file_path.empty())
-		{
-			file_path = argv[i];
-
-			if (!fs::exists(file_path))
-			{
-				std::cerr << "File " << argv[i] << " was not found" << std::endl;
-				return EXIT_FAILURE;
+				ShowError(ErrorCode::UnknownOption, "option '" + param + "' was not recognized");
+				return ExitCode(ErrorCode::UnknownOption);
 			}
 		}
 		else
 		{
-			std::cerr << "Only one file path can be specified" << std::endl;
-			return EXIT_FAILURE;
+			fs::path file_path = param;
+
+			if (fs::exists(file_path))
+			{
+				files.push_back(file_path);
+			}
+			else
+			{
+				// Check if file is in current working directory
+				file_path = executable_path.parent_path().append(file_path.string());
+
+				if (fs::exists(file_path))
+				{
+					files.push_back(file_path);
+				}
+				else
+				{
+					ShowError(ErrorCode::InvalidParameter, "File '" + file_path.filename().string() + "' was not found");
+					return ExitCode(ErrorCode::InvalidParameter);
+				}
+			}
 		}
 	}
 
-	if (encoding == Encoding::ANSI)
+	for (const auto& file_path : files)
 	{
-		std::stringstream filedata = LoadFileA(file_path.string());
-		FormatFileA(filedata);
-		WriteFileA(file_path, filedata);
-	}
-	else
-	{
-		std::wstringstream filedata = LoadFileW(file_path, encoding);
-		FormatFileW(filedata);
-		WriteFileW(file_path, filedata, encoding);
+		std::cout << "Formatting file '" << file_path.filename() << "'" << std::endl;
+
+		if (encoding == Encoding::ANSI)
+		{
+			std::stringstream filedata = LoadFileA(file_path.string());
+			FormatFileA(filedata);
+			WriteFileA(file_path, filedata);
+		}
+		else
+		{
+			std::wstringstream filedata = LoadFileW(file_path, encoding);
+			FormatFileW(filedata);
+			WriteFileW(file_path, filedata, encoding);
+		}
 	}
 
 	return 0;
