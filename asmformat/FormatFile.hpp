@@ -16,21 +16,17 @@
 #pragma once
 #include <sstream>
 
-/**
-* Tab width expressed in spaces
-*/
-extern unsigned tab_width;
 
 /**
-* Format nasm source file encoded as UTF-8, UTF-16 or UTF-16LE
+* Format asm source file encoded as UTF-8, UTF-16 or UTF-16LE
 *
 * @param filedata	file contents loaded into memory
 */
-void FormatFileW(std::wstringstream& filedata);
+void FormatFileW(std::wstringstream& filedata, unsigned tab_width, bool spaces);
 
 /**
-* Format nasm source file encoded as ANSI
+* Format asm source file encoded as ANSI
 *
 * @param filedata	file contents loaded into memory
 */
-void FormatFileA(std::stringstream& filedata);
+void FormatFileA(std::stringstream& filedata, unsigned tab_width, bool spaces);

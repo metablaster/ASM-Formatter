@@ -23,6 +23,7 @@
 // Windows Header Files
 #include <Windows.h>
 #include <comdef.h>		// _com_error (error.cpp)
+#include <strsafe.h>	// StringCbCopyA (error.cpp)
 
 // C++ Standard Header Files
 #include <iostream>

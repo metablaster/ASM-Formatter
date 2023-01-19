@@ -207,8 +207,7 @@ namespace wsl
 			}
 			else // If the function fails, the return value is zero
 			{
-				error_message.append("Format message failed with\t\t");
-				error_message.append(std::to_string(error_code));
+				error_message.append("FormatErrorMessage failed to translate " + std::to_string(error_code));
 
 				// for some odd reason it will print newline on it's own
 				// error_message.append(L"\n");
@@ -259,10 +258,9 @@ namespace wsl
 		// If execution is allowed to continue, the functions return EINVAL and set errno to EINVAL
 		const errno_t status = strerror_s<size>(crt_error, errno);
 
-		if (status == EINVAL)
+		if (status != 0)
 		{
-			ShowError(ErrorCode::BadArgument);
-			return;
+			StringCbCopyA(crt_error, size, ("strerror_s failed with " + std::to_string(status) + " to translate " + std::to_string(errno)).c_str());
 		}
 
 		std::string error_title = GenerateErrorTitle(flags);

@@ -23,10 +23,13 @@ The following file encodings are supported at the moment:
 ## How to use
 
 Compile this project and put `asmformat.exe` somewhere where it will be visible, ex. `PATH`.\
-Program syntax is: `asmformat.exe path\\file1.asm path\\file2.asm ... [--encoding ansi|utf8|utf16|utf16le] [--tabwidth N]`
+Program syntax is: `asmformat.exe path\file1.asm path\file2.asm ... [--encoding ansi|utf8|utf16|utf16le] [--tabwidth N] [--spaces]`
 
 Default encoding, if not specified is `utf8`\
 Default tabwidth, if not specified is 4
+By default tabs are used is `--spaces` is not specified
+
+For help run `asmformat.exe --help`
 
 You have to be careful to specify correct encoding which depends on encoding of your asm sources,\
 specifying incorrect encoding may turn your sources into a pile garbage symbols.\
@@ -89,7 +92,7 @@ not dictate how assembly formatter will work.
 
 - Support for more file encodings
 
-- Bugfixes and improvements of existing functionalities
+- Bugfixes, optimization and improvements of existing functionalities
 
 If you wish to do something unorthodox or if you believe some new feature might be useful then
 please open a new issue to discuss it first.

@@ -19,6 +19,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "assets", "assets", "{4713F9
 		assets\ASCII.txt = assets\ASCII.txt
 		assets\utf16be.asm = assets\utf16be.asm
 		assets\utf16le.asm = assets\utf16le.asm
+		assets\utf8-BOM.asm = assets\utf8-BOM.asm
 		assets\utf8.asm = assets\utf8.asm
 	EndProjectSection
 EndProject

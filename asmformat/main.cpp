@@ -23,8 +23,6 @@
 using namespace wsl;
 namespace fs = std::filesystem;
 
-// Default tab width if not specified on command line
-unsigned tab_width = 4;
 
 int main(int argc, char* argv[])
 {
@@ -37,15 +35,34 @@ int main(int argc, char* argv[])
 
 	if (argc < 2)
 	{
-		std::cerr << "Usage: " << executable_path.filename()
+		std::cerr << "Usage: " << executable_path.filename().string()
 			<< " path\\file1.asm path\\file2.asm ... [--encoding ansi|utf8|utf16|utf16le] [--tabwidth N]"
 			<< std::endl;
 
 		return ExitCode(ErrorCode::InvalidCommand);
 	}
 
-	// Default encoding if not specified on command line
+	// Show help if --help was specified
+	std::vector<std::string> all_params(argv + 1, argv + argc);
+
+	if (std::find(all_params.begin(), all_params.end(), "--help") != all_params.end())
+	{
+		std::cout << std::endl << executable_path.filename().string()
+			<< " path\\file1.asm path\\file2.asm ... [--encoding ansi|utf8|utf16|utf16le] [--tabwidth N] [--spaces]"
+			<< std::endl << std::endl;
+
+		std::cout << " --encoding\tspecifies encoding of source files (defalt: utf8)" << std::endl;
+		std::cout << " --tabwidth\tspecifies tab width used in source files (defalt: 4)" << std::endl;
+		std::cout << " --spaces\tuse spaces instead of tabs (by defalt tabs are used)" << std::endl << std::endl;
+
+		return 0;
+	}
+
+	// Default values
+	bool spaces = false;
+	unsigned tab_width = 4;
 	Encoding encoding = Encoding::UTF8;
+
 	std::vector<fs::path> files;
 
 	for (int i = 1; i < argc; ++i)
@@ -54,6 +71,12 @@ int main(int argc, char* argv[])
 
 		if (param.starts_with("--"))
 		{
+			if (param == "--spaces")
+			{
+				spaces = true;
+				continue;
+			}
+
 			// Make sure we aren't at the end of argv
 			if (i + 1 == argc)
 			{
@@ -128,18 +151,18 @@ int main(int argc, char* argv[])
 
 	for (const auto& file_path : files)
 	{
-		std::cout << "Formatting file '" << file_path.filename() << "'" << std::endl;
+		std::cout << "Formatting file " << file_path.filename() << std::endl;
 
 		if (encoding == Encoding::ANSI)
 		{
 			std::stringstream filedata = LoadFileA(file_path.string());
-			FormatFileA(filedata);
+			FormatFileA(filedata, tab_width, spaces);
 			WriteFileA(file_path, filedata);
 		}
 		else
 		{
 			std::wstringstream filedata = LoadFileW(file_path, encoding);
-			FormatFileW(filedata);
+			FormatFileW(filedata, tab_width, spaces);
 			WriteFileW(file_path, filedata, encoding);
 		}
 	}

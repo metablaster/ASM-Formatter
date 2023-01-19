@@ -29,7 +29,11 @@ enum class Encoding
 	UTF16LE
 };
 
-[[nodiscard]] std::size_t GetFileSize(const std::filesystem::path& file_path);
+/**
+ * Get size of the file in bytes
+ * @param file_path file path for which to get byte count
+*/
+[[nodiscard]] std::size_t GetFileBytesCount(const std::filesystem::path& file_path);
 
 /**
 * Read MASM source file into memory encoded as UTF-8, UTF-16 or UTF-16LE

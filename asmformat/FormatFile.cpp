@@ -24,11 +24,21 @@ static bool previous_blank = false;
 // Insert new blank line?
 static bool insert_blankline = false;
 
-void FormatFileW(std::wstringstream& filedata)
+void FormatFileW(std::wstringstream& filedata, unsigned tab_width, bool spaces)
 {
+	#ifdef _DEBUG
+	std::wstring maxlenline = L"";
+	#endif // DEBUG
+
 	std::wregex reg;
 	std::wstring line;
 	std::wstring result;
+	std::wstring tab = L"\t";
+
+	if (spaces)
+	{
+		tab = std::wstring(tab_width, L' ');
+	}
 
 	// Count of characters of the longest code line that contains inline comment
 	// inline comments will be shifted according to longest code line
@@ -56,6 +66,10 @@ void FormatFileW(std::wstringstream& filedata)
 					if (codelen > maxcodelen)
 					{
 						maxcodelen = codelen;
+
+						#ifdef _DEBUG
+						maxlenline = line;
+						#endif // DEBUG
 					}
 				}
 			}
@@ -70,7 +84,7 @@ void FormatFileW(std::wstringstream& filedata)
 	result.clear();
 
 	// Count of characters missing to make a full tab of the max length code line
-	const std::size_t maxmissing = 4 - maxcodelen % 4;
+	const std::size_t maxmissing = tab_width - maxcodelen % tab_width;
 
 	while (std::getline(filedata, line).good())
 	{
@@ -96,12 +110,12 @@ void FormatFileW(std::wstringstream& filedata)
 			else
 			{
 				// Insert tab to beginning of each line
-				line.insert(0, L"\t");
+				line.insert(0, tab);
 
-				reg = L"\t\\w+\\s+proc";
+				reg = tab + L"\\w+\\s+proc";
 				const bool is_proc = std::regex_search(line, reg);
 
-				reg = L"\t\\w+\\s+endp";
+				reg = tab + L"\\w+\\s+endp";
 				const bool is_endproc = std::regex_search(line, reg);
 
 				// Is code line indented with tab?
@@ -121,7 +135,7 @@ void FormatFileW(std::wstringstream& filedata)
 
 				// Format inline comments to start on same column
 				// On which column depends on the longest code line containing inline comment
-				reg = L"^(\t)(.*?)(?=\\s*;)(\\s*)(;.*)";
+				reg = L"^(" + tab + L")(.*?)(?=\\s*;)(\\s*)(;.*)";
 				std::wsmatch match;
 
 				if (std::regex_search(line, match, reg))
@@ -139,7 +153,7 @@ void FormatFileW(std::wstringstream& filedata)
 
 					// Character length difference of current code line compared to max length code line
 					std::size_t diff = maxcodelen - codelen;
-					// Also include characters that will be added to max length code line
+					// Also include characters which will be added to max length code line
 					diff += maxmissing;
 
 					std::size_t tabcount = diff / tab_width;
@@ -153,17 +167,32 @@ void FormatFileW(std::wstringstream& filedata)
 					if (!isindented)
 					{
 						// This accounts for removed tab at the start of line (later)
-						++tabcount;
+						if (spaces)
+						{
+							diff += tab_width;
+						}
+						else
+						{
+							++tabcount;
+						}
 					}
 
-					code.append(tabcount, L'\t');
+					if (spaces)
+					{
+						code.append(diff, L' ');
+					}
+					else
+					{
+						code.append(tabcount, L'\t');
+					}
+
 					line = code.append(comment);
 				}
 
 				if (!isindented)
 				{
 					// Shift back to start by removing starting tab
-					line.erase(0, 1);
+					line.erase(0, tab.size());
 				}
 			}
 		}
@@ -186,26 +215,36 @@ void FormatFileW(std::wstringstream& filedata)
 		// Make sure only one blank line is at the top of file
 		reg = L"^\n+";
 		result = std::regex_replace(result, reg, L"\n");
-
-		// Remove surplus blank lines at the end of file
-		reg = L"\n+$";
-		result = std::regex_replace(result, reg, L"\n");
 	}
+
+	// Remove surplus blank lines at the end of file
+	reg = L"\n+$";
+	result = std::regex_replace(result, reg, L"\n");
 
 	filedata.str(result);
 	filedata.clear();
 
 	#ifdef _DEBUG
-	std::cout << wsl::StringCast(filedata.str()) << std::endl;
-	std::cout << "longest code line is: " << maxcodelen << std::endl;
+	//std::cout << wsl::StringCast(filedata.str()) << std::endl;
+	std::cout << "longest code line " << "(" << maxcodelen << ")" << " is: " << wsl::StringCast(maxlenline) << std::endl;
 	#endif
 }
 
-void FormatFileA(std::stringstream& filedata)
+void FormatFileA(std::stringstream& filedata, unsigned tab_width, bool spaces)
 {
+	#ifdef _DEBUG
+	std::string maxlenline = "";
+	#endif // DEBUG
+
 	std::regex reg;
 	std::string line;
 	std::string result;
+	std::string tab = "\t";
+
+	if (spaces)
+	{
+		tab = std::string(tab_width, L' ');
+	}
 
 	// Count of characters of the longest code line that contains inline comment
 	// inline comments will be shifted according to longest code line
@@ -233,6 +272,10 @@ void FormatFileA(std::stringstream& filedata)
 					if (codelen > maxcodelen)
 					{
 						maxcodelen = codelen;
+
+						#ifdef _DEBUG
+						maxlenline = line;
+						#endif // DEBUG
 					}
 				}
 			}
@@ -273,12 +316,12 @@ void FormatFileA(std::stringstream& filedata)
 			else
 			{
 				// Insert tab to beginning of each line
-				line.insert(0, "\t");
+				line.insert(0, tab);
 
-				reg = "\t\\w+\\s+proc";
+				reg = tab + "\\w+\\s+proc";
 				const bool is_proc = std::regex_search(line, reg);
 
-				reg = "\t\\w+\\s+endp";
+				reg = tab + "\\w+\\s+endp";
 				const bool is_endproc = std::regex_search(line, reg);
 
 				// Is code line indented with tab?
@@ -298,7 +341,7 @@ void FormatFileA(std::stringstream& filedata)
 
 				// Format inline comments to start on same column
 				// On which column depends on the longest code line containing inline comment
-				reg = "^(\t)(.*?)(?=\\s*;)(\\s*)(;.*)";
+				reg = "^(" + tab + ")(.*?)(?=\\s*;)(\\s*)(;.*)";
 				std::smatch match;
 
 				if (std::regex_search(line, match, reg))
@@ -330,17 +373,32 @@ void FormatFileA(std::stringstream& filedata)
 					if (!isindented)
 					{
 						// This accounts for removed tab at the start of line (later)
-						++tabcount;
+						if (spaces)
+						{
+							diff += tab_width;
+						}
+						else
+						{
+							++tabcount;
+						}
 					}
 
-					code.append(tabcount, '\t');
+					if (spaces)
+					{
+						code.append(diff, ' ');
+					}
+					else
+					{
+						code.append(tabcount, '\t');
+					}
+
 					line = code.append(comment);
 				}
 
 				if (!isindented)
 				{
 					// Shift back to start by removing starting tab
-					line.erase(0, 1);
+					line.erase(0, tab.size());
 				}
 			}
 		}
@@ -363,17 +421,17 @@ void FormatFileA(std::stringstream& filedata)
 		// Make sure only one blank line is at the top of file
 		reg = "^\n+";
 		result = std::regex_replace(result, reg, "\n");
-
-		// Remove surplus blank lines at the end of file
-		reg = "\n+$";
-		result = std::regex_replace(result, reg, "\n");
 	}
+
+	// Remove surplus blank lines at the end of file
+	reg = "\n+$";
+	result = std::regex_replace(result, reg, "\n");
 
 	filedata.str(result);
 	filedata.clear();
 
 	#ifdef _DEBUG
-	std::cout << filedata.str() << std::endl;
+	//std::cout << filedata.str() << std::endl;
 	std::cout << "longest code line is: " << maxcodelen << std::endl;
 	#endif
 }
