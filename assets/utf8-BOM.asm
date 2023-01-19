@@ -16,7 +16,7 @@
 		  ; comment
 	  getTitle endp     ;ASCII code
 	public asmMain                ;.Οὐχὶ ταὐτὰ παρίσταταί μοι γιγνώσκειν, ὦ ἄνδρες ᾿Αθηναῖοι,
-		asmMain proc											;			ASCII code					       
+		asmMain PROC											;			ASCII code					       
 	lea rcx, prompt                          ;  Зарегистрируйтесь сейчас на Десятую Международную Конференцию по					       
 	   call printf                       ;ASCII code		
 	   ;some comment

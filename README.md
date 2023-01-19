@@ -22,12 +22,15 @@ The following file encodings are supported at the moment:
 
 ## How to use
 
-Compile this project and put `asmformat.exe` somewhere where it will be visible, ex. `PATH`.\
-Program syntax is: `asmformat.exe path\file1.asm path\file2.asm ... [--encoding ansi|utf8|utf16|utf16le] [--tabwidth N] [--spaces]`
+Open VS solution, select `Release` configuration and compile this project, then copy `asmformat.exe`
+from `Build` directory somewhere where it will be accessible, ex. `PATH`.\
+
+Program command line syntax is:\
+`asmformat.exe path\file1.asm path\file2.asm ... [--encoding ansi|utf8|utf16|utf16le] [--tabwidth N] [--spaces]`
 
 Default encoding, if not specified is `utf8`\
-Default tabwidth, if not specified is 4
-By default tabs are used is `--spaces` is not specified
+Default tabwidth, if not specified is 4\
+By default tabs are used if `--spaces` is not specified
 
 For help run `asmformat.exe --help`
 

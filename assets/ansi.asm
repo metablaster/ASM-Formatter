@@ -1,3 +1,6 @@
+ 
+ 
+ 
  ;		   € ‚ƒ„…†‡ˆ‰Š‹Œ Žýþÿ÷ø \			
 	nl = 10                ; 4 (+1)
 	maxLen = 256                 ; 2 (+1)
@@ -7,7 +10,7 @@
 ; ANSI comment: € ‚ƒ„…†‡ˆ‰Š‹Œ Žýþÿ÷ø
 	ret                               ; 5 (+2)
 		  ; comment
-	  getTitle endp     ;ASCII code
+	  getTitle ENDP     ;ASCII code
 	public asmMain                ;.€ ‚ƒ„…†‡ˆ‰Š‹Œ Žýþÿ÷ø
 		asmMain proc											;			ASCII code
 	lea rcx, prompt                          ; € ‚ƒ„…†‡ˆ‰Š‹Œ Žýþÿ÷ø
@@ -25,3 +28,8 @@ lea rcx, fmtStr   ; € ‚ƒ„…†‡ˆ‰Š‹Œ Žýþÿ÷ø
 	   ret                          ; ASCII code
 asmMain endp
   end
+
+
+
+
+

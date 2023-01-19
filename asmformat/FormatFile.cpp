@@ -24,23 +24,45 @@ static bool previous_blank = false;
 // Insert new blank line?
 static bool insert_blankline = false;
 
+// Check if line should be indented
+inline bool TestIndentLine(const std::wstring& line)
+{
+	const bool proc = std::regex_search(line, std::wregex(L"\\w+\\s+(proc|endp)", std::regex_constants::icase));
+	return !proc;
+}
+
+inline bool TestIndentLine(const std::string& line)
+{
+	const bool proc = std::regex_search(line, std::regex("\\w+\\s+(proc|endp)", std::regex_constants::icase));
+	return !proc;
+}
+
+inline void PeekNextLine(std::wstringstream& filedata, std::wstring& nextline)
+{
+	const std::streampos pos = filedata.tellg();
+	std::getline(filedata, nextline);
+	filedata.seekg(pos);
+}
+
+inline void PeekNextLine(std::stringstream& filedata, std::string& nextline)
+{
+	const std::streampos pos = filedata.tellg();
+	std::getline(filedata, nextline);
+	filedata.seekg(pos);
+}
+
 void FormatFileW(std::wstringstream& filedata, unsigned tab_width, bool spaces)
 {
 	#ifdef _DEBUG
 	std::wstring maxlenline = L"";
 	#endif // DEBUG
 
-	std::wregex reg;
+	std::wregex regex;
 	std::wstring line;
 	std::wstring result;
-	std::wstring tab = L"\t";
+	std::wstring tab = spaces ? std::wstring(tab_width, L' ') : L"\t";
 
-	if (spaces)
-	{
-		tab = std::wstring(tab_width, L' ');
-	}
-
-	// Count of characters of the longest code line that contains inline comment
+	// Count of characters of the longest code line which contains inline comment
 	// inline comments will be shifted according to longest code line
 	std::size_t maxcodelen = 0;
 	
@@ -48,19 +70,23 @@ void FormatFileW(std::wstringstream& filedata, unsigned tab_width, bool spaces)
 	{
 		if (!line.empty())
 		{
-			// Shift line to start by removing all starting spaces and tabs
-			reg = L"^\\s+(.*)";
-			line = std::regex_replace(line, reg, L"$1");
+			// Shift line to beginning by trimming leading spaces and tabs
+			regex = L"^\\s+(.*)";
+			line = std::regex_replace(line, regex, L"$1");
+
+			// Trim trailing spaces and tabs
+			regex = L"\\s+$";
+			line = std::regex_replace(line, regex, L"");
 
 			// Calculate longest code line with inline comment, excluding indentation
 			if (!line.starts_with(L";"))
 			{
-				reg = L"^(.*?)(?=\\s*;)";
+				regex = L"^(.*?)(?=\\s*;)";
 				std::wsmatch match;
 
-				if (std::regex_search(line, match, reg))
+				if (std::regex_search(line, match, regex))
 				{
-					std::wssub_match code = match[1];
+					const std::wssub_match code = match[1];
 					const std::size_t codelen = code.str().length();
 
 					if (codelen > maxcodelen)
@@ -94,35 +120,37 @@ void FormatFileW(std::wstringstream& filedata, unsigned tab_width, bool spaces)
 		}
 		else
 		{
-			previous_blank = false;
-
-			// Trim trailing spaces at the end of line
-			reg = L"\\s+$";
-			line = std::regex_replace(line, reg, L"");
-
 			if (line.starts_with(L";"))
 			{
-				// Make so that between semicolon and comment is only one space
-				reg = L";\\s+";
-				line = std::regex_replace(line, reg, L";");
-				line.insert(1, L" ");
+				std::wstring nextline;
+
+				// Peek at next line
+				PeekNextLine(filedata, nextline);
+
+				// Will next line be indented?
+				const bool next_indent = TestIndentLine(nextline);
+
+				// Make only one space between semicolon and comment
+				regex = L";\\s*";
+				const std::wstring replacement = next_indent ? tab + L"; " : L"; ";
+				line = std::regex_replace(line, regex, replacement);
 			}
 			else
 			{
-				// Insert tab to beginning of each line
-				line.insert(0, tab);
-
-				reg = tab + L"\\w+\\s+proc";
-				const bool is_proc = std::regex_search(line, reg);
-
-				reg = tab + L"\\w+\\s+endp";
-				const bool is_endproc = std::regex_search(line, reg);
+				const bool is_proc = std::regex_search(line, std::wregex(L"\\w+\\s+proc", std::regex_constants::icase));
+				const bool is_endproc = std::regex_search(line, std::wregex(L"\\w+\\s+endp", std::regex_constants::icase));
 
 				// Is code line indented with tab?
 				// Do not indent procedure labels
-				const bool isindented = !(is_proc || is_endproc);
+				const bool indent = !(is_proc || is_endproc);
 
-				// if previous line is not blank and this is procedure inset blank line so that procedure blocks are sectioned
+				if (indent)
+				{
+					// Indent line by inserting tab
+					line.insert(0, tab);
+				}
+
+				// if previous line is not blank and this is procedure insert blank line so that procedure blocks are sectioned
 				if (is_proc && !previous_blank)
 				{
 					result += L"\n";
@@ -135,66 +163,60 @@ void FormatFileW(std::wstringstream& filedata, unsigned tab_width, bool spaces)
 
 				// Format inline comments to start on same column
 				// On which column depends on the longest code line containing inline comment
-				reg = L"^(" + tab + L")(.*?)(?=\\s*;)(\\s*)(;.*)";
+				regex = L"^(" + tab + L")?(.*?)(?=\\s*;)(\\s*)(;.*)";
 				std::wsmatch match;
 
-				if (std::regex_search(line, match, reg))
+				if (std::regex_search(line, match, regex))
 				{
-					// Character length of current code line, excluding indentation
+					// Character length of the current code line, excluding indentation
 					const std::size_t codelen = match[2].str().length();
 
-					std::wstring code = std::regex_replace(line, reg, L"$1$2");
-					std::wstring comment = std::regex_replace(line, reg, L"$4");
+					std::wstring code = std::regex_replace(line, regex, L"$1$2");
+					std::wstring comment = std::regex_replace(line, regex, L"$4");
 
-					// Make so that between semicolon and comment is only one space
-					reg = L";\\s+";
-					comment = std::regex_replace(comment, reg, L";");
-					comment.insert(1, L" ");
+					// Make between semicolon and comment only one space
+					regex = L";\\s*";
+					comment = std::regex_replace(comment, regex, L"; ");
 
 					// Character length difference of current code line compared to max length code line
 					std::size_t diff = maxcodelen - codelen;
 					// Also include characters which will be added to max length code line
 					diff += maxmissing;
 
-					std::size_t tabcount = diff / tab_width;
-
-					// Tab count must be multiple of tab width
-					if (diff % tab_width != 0)
-					{
-						++tabcount;
-					}
-
-					if (!isindented)
-					{
-						// This accounts for removed tab at the start of line (later)
-						if (spaces)
-						{
-							diff += tab_width;
-						}
-						else
-						{
-							++tabcount;
-						}
-					}
-
 					if (spaces)
 					{
+						if (!indent)
+						{
+							// This accounts for removed tab at the start of line
+							diff += tab_width;
+						}
+
 						code.append(diff, L' ');
 					}
 					else
 					{
+						std::size_t tabcount = diff / tab_width;
+
+						if (!indent)
+						{
+							// This accounts for removed tab at the start of line
+							++tabcount;
+						}
+
+						// Tab count must be multiple of tab width
+						if (diff % tab_width != 0)
+						{
+							++tabcount;
+						}
+
 						code.append(tabcount, L'\t');
 					}
 
 					line = code.append(comment);
 				}
-
-				if (!isindented)
-				{
-					// Shift back to start by removing starting tab
-					line.erase(0, tab.size());
-				}
 			}
+
+			previous_blank = false;
 		}
 
 		result += line.append(L"\n");
@@ -212,14 +234,14 @@ void FormatFileW(std::wstringstream& filedata, unsigned tab_width, bool spaces)
 	}
 	else
 	{
-		// Make sure only one blank line is at the top of file
-		reg = L"^\n+";
-		result = std::regex_replace(result, reg, L"\n");
+		// Remove surplus blank lines at the top of a file
+		regex = L"^\n+";
+		result = std::regex_replace(result, regex, L"\n");
 	}
 
-	// Remove surplus blank lines at the end of file
-	reg = L"\n+$";
-	result = std::regex_replace(result, reg, L"\n");
+	// Remove surplus blank lines at the end of a file
+	regex = L"\n+$";
+	result = std::regex_replace(result, regex, L"\n");
 
 	filedata.str(result);
 	filedata.clear();
@@ -236,17 +258,12 @@ void FormatFileA(std::stringstream& filedata, unsigned tab_width, bool spaces)
 	std::string maxlenline = "";
 	#endif // DEBUG
 
-	std::regex reg;
+	std::regex regex;
 	std::string line;
 	std::string result;
-	std::string tab = "\t";
+	std::string tab = spaces ? std::string(tab_width, L' ') : "\t";
 
-	if (spaces)
-	{
-		tab = std::string(tab_width, L' ');
-	}
-
-	// Count of characters of the longest code line that contains inline comment
+	// Count of characters of the longest code line which contains inline comment
 	// inline comments will be shifted according to longest code line
 	std::size_t maxcodelen = 0;
 
@@ -254,19 +271,23 @@ void FormatFileA(std::stringstream& filedata, unsigned tab_width, bool spaces)
 	{
 		if (!line.empty())
 		{
-			// Shift line to start by removing all starting spaces and tabs
-			reg = "^\\s+(.*)";
-			line = std::regex_replace(line, reg, "$1");
+			// Shift line to beginning by trimming leading spaces and tabs
+			regex = "^\\s+(.*)";
+			line = std::regex_replace(line, regex, "$1");
+
+			// Trim trailing spaces and tabs
+			regex = "\\s+$";
+			line = std::regex_replace(line, regex, "");
 
 			// Calculate longest code line with inline comment, excluding indentation
 			if (!line.starts_with(";"))
 			{
-				reg = "^(.*?)(?=\\s*;)";
+				regex = "^(.*?)(?=\\s*;)";
 				std::smatch match;
 
-				if (std::regex_search(line, match, reg))
+				if (std::regex_search(line, match, regex))
 				{
-					std::ssub_match code = match[1];
+					const std::ssub_match code = match[1];
 					const std::size_t codelen = code.str().length();
 
 					if (codelen > maxcodelen)
@@ -300,35 +321,37 @@ void FormatFileA(std::stringstream& filedata, unsigned tab_width, bool spaces)
 		}
 		else
 		{
-			previous_blank = false;
-
-			// Trim trailing spaces at the end of line
-			reg = "\\s+$";
-			line = std::regex_replace(line, reg, "");
-
 			if (line.starts_with(";"))
 			{
-				// Make so that between semicolon and comment is only one space
-				reg = ";\\s+";
-				line = std::regex_replace(line, reg, ";");
-				line.insert(1, " ");
+				std::string nextline;
+
+				// Peek at next line
+				PeekNextLine(filedata, nextline);
+
+				// Will next line be indented?
+				const bool next_indent = TestIndentLine(nextline);
+
+				// Make only one space between semicolon and comment
+				regex = ";\\s*";
+				const std::string replacement = next_indent ? tab + "; " : "; ";
+				line = std::regex_replace(line, regex, replacement);
 			}
 			else
 			{
-				// Insert tab to beginning of each line
-				line.insert(0, tab);
-
-				reg = tab + "\\w+\\s+proc";
-				const bool is_proc = std::regex_search(line, reg);
-
-				reg = tab + "\\w+\\s+endp";
-				const bool is_endproc = std::regex_search(line, reg);
+				const bool is_proc = std::regex_search(line, std::regex(tab + "\\w+\\s+proc", std::regex_constants::icase));
+				const bool is_endproc = std::regex_search(line, std::regex(tab + "\\w+\\s+endp", std::regex_constants::icase));
 
 				// Is code line indented with tab?
 				// Do not indent procedure labels
-				const bool isindented = !(is_proc || is_endproc);
+				const bool indent = !(is_proc || is_endproc);
 
-				// if previous line is not blank and this is procedure inset blank line so that procedure blocks are sectioned
+				if (indent)
+				{
+					// Indent line by inserting tab
+					line.insert(0, tab);
+				}
+
+				// if previous line is not blank and this is procedure insert blank line so that procedure blocks are sectioned
 				if (is_proc && !previous_blank)
 				{
 					result += "\n";
@@ -341,66 +364,60 @@ void FormatFileA(std::stringstream& filedata, unsigned tab_width, bool spaces)
 
 				// Format inline comments to start on same column
 				// On which column depends on the longest code line containing inline comment
-				reg = "^(" + tab + ")(.*?)(?=\\s*;)(\\s*)(;.*)";
+				regex = "^(" + tab + ")?(.*?)(?=\\s*;)(\\s*)(;.*)";
 				std::smatch match;
 
-				if (std::regex_search(line, match, reg))
+				if (std::regex_search(line, match, regex))
 				{
-					// Character length of current code line, excluding indentation
+					// Character length of the current code line, excluding indentation
 					const std::size_t codelen = match[2].str().length();
 
-					std::string code = std::regex_replace(line, reg, "$1$2");
-					std::string comment = std::regex_replace(line, reg, "$4");
+					std::string code = std::regex_replace(line, regex, "$1$2");
+					std::string comment = std::regex_replace(line, regex, "$4");
 
-					// Make so that between semicolon and comment is only one space
-					reg = ";\\s+";
-					comment = std::regex_replace(comment, reg, ";");
-					comment.insert(1, " ");
+					// Make between semicolon and comment only one space
+					regex = ";\\s*";
+					comment = std::regex_replace(comment, regex, "; ");
 
 					// Character length difference of current code line compared to max length code line
 					std::size_t diff = maxcodelen - codelen;
 					// Also include characters that will be added to max length code line
 					diff += maxmissing;
 
-					std::size_t tabcount = diff / tab_width;
-
-					// Tab count must be multiple of tab width
-					if (diff % tab_width != 0)
-					{
-						++tabcount;
-					}
-
-					if (!isindented)
-					{
-						// This accounts for removed tab at the start of line (later)
-						if (spaces)
-						{
-							diff += tab_width;
-						}
-						else
-						{
-							++tabcount;
-						}
-					}
-
 					if (spaces)
 					{
+						if (!indent)
+						{
+							// This accounts for removed tab at the start of line
+							diff += tab_width;
+						}
+
 						code.append(diff, ' ');
 					}
 					else
 					{
+						std::size_t tabcount = diff / tab_width;
+
+						if (!indent)
+						{
+							// This accounts for removed tab at the start of line
+							++tabcount;
+						}
+
+						// Tab count must be multiple of tab width
+						if (diff % tab_width != 0)
+						{
+							++tabcount;
+						}
+
 						code.append(tabcount, '\t');
 					}
 
 					line = code.append(comment);
 				}
-
-				if (!isindented)
-				{
-					// Shift back to start by removing starting tab
-					line.erase(0, tab.size());
-				}
 			}
+
+			previous_blank = false;
 		}
 
 		result += line.append("\n");
@@ -418,14 +435,14 @@ void FormatFileA(std::stringstream& filedata, unsigned tab_width, bool spaces)
 	}
 	else
 	{
-		// Make sure only one blank line is at the top of file
-		reg = "^\n+";
-		result = std::regex_replace(result, reg, "\n");
+		// Remove surplus blank lines at the top of a file
+		regex = "^\n+";
+		result = std::regex_replace(result, regex, "\n");
 	}
 
-	// Remove surplus blank lines at the end of file
-	reg = "\n+$";
-	result = std::regex_replace(result, reg, "\n");
+	// Remove surplus blank lines at the end of a file
+	regex = "\n+$";
+	result = std::regex_replace(result, regex, "\n");
 
 	filedata.str(result);
 	filedata.clear();
