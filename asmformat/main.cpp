@@ -22,6 +22,7 @@
 #include "SourceFile.hpp"
 #include "error.hpp"
 #include "ErrorCode.hpp"
+#include "StringCast.hpp"
 using namespace wsl;
 namespace fs = std::filesystem;
 
@@ -38,13 +39,11 @@ int main(int argc, char* argv[])
 	#endif
 
 	fs::path executable_path = argv[0];
+	constexpr const char* syntax = " path\\file1.asm path\\file2.asm ... [--encoding ansi|utf8|utf16le] [--tabwidth N] [--spaces]";
 
 	if (argc < 2)
 	{
-		std::cerr << "Usage: " << executable_path.filename().string()
-			<< " path\\file1.asm path\\file2.asm ... [--encoding ansi|utf8|utf16|utf16le] [--tabwidth N]"
-			<< std::endl;
-
+		std::cerr << "Usage: " << executable_path.filename().string() << syntax << std::endl;
 		return ExitCode(ErrorCode::InvalidCommand);
 	}
 
@@ -53,11 +52,9 @@ int main(int argc, char* argv[])
 
 	if (std::find(all_params.begin(), all_params.end(), "--help") != all_params.end())
 	{
-		std::cout << std::endl << executable_path.filename().string()
-			<< " path\\file1.asm path\\file2.asm ... [--encoding ansi|utf8|utf16|utf16le] [--tabwidth N] [--spaces]"
-			<< std::endl << std::endl;
+		std::cout << std::endl << executable_path.filename().string() << syntax << std::endl << std::endl;
 
-		std::cout << " --encoding\tspecifies encoding of source files (defalt: utf8)" << std::endl;
+		std::cout << " --encoding\tspecifies encoding of source files if no BOM is present (defalt: utf8)" << std::endl;
 		std::cout << " --tabwidth\tspecifies tab width used in source files (defalt: 4)" << std::endl;
 		std::cout << " --spaces\tuse spaces instead of tabs (by defalt tabs are used)" << std::endl << std::endl;
 
@@ -97,10 +94,6 @@ int main(int argc, char* argv[])
 				if (arg == "ansi")
 				{
 					encoding = Encoding::ANSI;
-				}
-				else if (arg == "utf16")
-				{
-					encoding = Encoding::UTF16;
 				}
 				else if (arg == "utf16le")
 				{
@@ -170,17 +163,40 @@ int main(int argc, char* argv[])
 	{
 		std::cout << "Formatting file " << file_path.filename() << std::endl;
 
-		if (encoding == Encoding::ANSI)
+		#ifdef _DEBUG
+		BOM bom;
+		std::string bom_string = GetBOM(file_path, bom);
+		#endif
+
+		switch (encoding)
 		{
-			std::stringstream filedata = LoadFileA(file_path.string());
+		case Encoding::ANSI:
+		{
+			std::stringstream filedata(LoadFileA(file_path.string()));
 			FormatFileA(filedata, tab_width, spaces);
-			WriteFileA(file_path, filedata);
+			WriteFileA(file_path, filedata.str());
+			break;
 		}
-		else
+		case Encoding::UTF8:
 		{
-			std::wstringstream filedata = LoadFileW(file_path, encoding);
+			std::string filebytes = LoadFileBytes(file_path);
+			std::wstringstream filedata(StringCast(filebytes));
+
 			FormatFileW(filedata, tab_width, spaces);
-			WriteFileW(file_path, filedata, encoding);
+
+			filebytes = StringCast(filedata.str());
+			WriteFileBytes(file_path, filebytes);
+			break;
+		}
+		case Encoding::UTF16LE:
+		{
+			std::wstringstream filedata(LoadFileW(file_path, encoding));
+			FormatFileW(filedata, tab_width, spaces);
+			WriteFileW(file_path, filedata.str(), encoding);
+			break;
+		}
+		default:
+			break;
 		}
 	}
 

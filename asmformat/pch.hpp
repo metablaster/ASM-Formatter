@@ -43,6 +43,7 @@
 #include <cstdint>		// std::uint16_t (ErrorCode.hpp)
 #include <vector>		// std::vector (main.cpp)
 #include <cassert>		// assert (FormatFile.cpp)
+#include <limits>		// std::numeric_limits (SourceFile.spp)
 
 // C Standard header files
 #include <stdio.h>		// fopen_s (SourceFile.cpp)

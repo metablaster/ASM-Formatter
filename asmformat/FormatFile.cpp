@@ -200,7 +200,7 @@ void FormatFileW(std::wstringstream& filedata, unsigned tab_width, bool spaces)
 		}
 		else
 		{
-			// How comments are indented depends on what after those comments
+			// How comments are indented depends on what's after those comments
 			if (line.starts_with(L";"))
 			{
 				std::wstring nextline;
@@ -427,7 +427,7 @@ void FormatFileA(std::stringstream& filedata, unsigned tab_width, bool spaces)
 		}
 		else
 		{
-			// How comments are indented depends on what after those comments
+			// How comments are indented depends on what's after those comments
 			if (line.starts_with(";"))
 			{
 				std::string nextline;

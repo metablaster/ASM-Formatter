@@ -17,7 +17,6 @@ The following file encodings are supported at the moment:
 
 - ANSI
 - UTF-8
-- UTF-16
 - UTF-16LE
 
 ## License
@@ -27,7 +26,7 @@ The following file encodings are supported at the moment:
 This project `ASM Formatter` is licensed under the `MIT` license.
 
 A small portion of code is not `MIT` licensed or may have their own authors,\
-license and Copyright notices are maintained **"per file"**.
+license and Copyright notices are maintained ["per file"][file scope].
 
 ## How to use
 
@@ -40,7 +39,7 @@ Default encoding, if not specified is `utf8`\
 Default tab width, if not specified is 4\
 By default tabs are used if `--spaces` is not specified
 
-For help and program command line syntax run `asmformat.exe --help`
+For more help and program command line syntax run `asmformat.exe --help`
 
 You have to be careful to specify correct encoding which depends on encoding of your asm sources,\
 specifying incorrect encoding may turn your sources into a pile garbage symbols.\
@@ -86,7 +85,7 @@ Otherwise you can as well run the formatter on command line, ex:
 asmformat.exe .\filename.asm --encoding utf8 --tabwidth 4
 ```
 
-Any command line argument which doesn't start with `--` is considered to be path to asm file.
+Any command line argument which doesn't start with `"--"` is interpreted as path to asm file.
 
 # Contributing
 
@@ -95,15 +94,17 @@ on how assembly source files should be formatted.
 
 For this reason only the following contributions are acceptable:
 
-- Implementation for other assemblers which should support everything that is already supported by
-this project.
-
 - Your implementation must be very basic and minimal because personal coding style preferences must
-not dictate how assembly formatter will work.
+not dictate how the formatter will work.
 
 - Support for more file encodings
 
 - Bugfixes, optimization and improvements of existing functionalities
+
+- Implementation for other assemblers which should support everything that is already supported by
+this project.
+
+- Implementation for other operating systems
 
 If you wish to do something unorthodox or if you believe some new feature might be useful then
 please open a new issue to discuss it first.
@@ -116,3 +117,4 @@ The following sample animation demonstrates current rudimentary capabilities:
 
 [masm]: https://learn.microsoft.com/en-us/cpp/assembler/masm/microsoft-macro-assembler-reference
 [badge license]: https://img.shields.io/static/v1?label=License&message=MIT&color=success&style=plastic
+[file scope]: https://softwarefreedom.org/resources/2012/ManagingCopyrightInformation.html#maintaining-file-scope-copyright-notices

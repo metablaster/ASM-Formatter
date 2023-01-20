@@ -4,6 +4,10 @@
 
 
 
+  ;***************************************
+; Do not indent source file description
+  ; Test me: $(SolutionDir)assets\utf8-BOM.asm
+				;***************************************
 
 
  ;		   very bad source file
@@ -32,11 +36,6 @@ lea rcx, fmtStr   ; ASCII code
 	   ret                          ; ASCII code
 asmMain endp
   end
-
-
-
-
-
 
 
 
