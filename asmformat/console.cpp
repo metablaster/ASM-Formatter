@@ -1,8 +1,8 @@
 
 /*
- *	Project: "ASM Formatter" https://github.com/metablaster/ASM-Formatter
- *	Copyright(C) 2023 metablaster (zebal@protonmail.ch)
- *	Licensed under the MIT license
+ * Project: "ASM Formatter" https://github.com/metablaster/ASM-Formatter
+ * Copyright(C) 2023 metablaster (zebal@protonmail.ch)
+ * Licensed under the MIT license
  *
 */
 
@@ -44,39 +44,67 @@ namespace wsl
 
 	bool RegisterConsoleHandler()
 	{
-		if (!SetConsoleCtrlHandler(HandlerRoutine, TRUE))
+		// MSDN: If the function fails, the return value is zero.
+		// To get extended error information, call GetLastError
+		if (SetConsoleCtrlHandler(HandlerRoutine, TRUE) == 0)
 		{
-			ShowError(ErrorCode::FunctionFailed, "ERROR: Could not set console handler");
+			ShowError(ERROR_INFO_HR, "Could not set console handler");
 			return false;
 		}
 
 		return true;
 	}
 
-	bool SetProjectConsole(DWORD code_page)
+	bool SetConsoleCodePage(DWORD input, DWORD output)
 	{
-		bool failed = IsValidCodePage(code_page) == 0;
+		// MSDN: Determines if a specified code page is valid
+		// Returns a nonzero value if the code page is valid, or 0 if the code page is invalid
+		bool failed = (IsValidCodePage(input) == 0) || (IsValidCodePage(output) == 0);
 
 		if (failed)
 		{
-			ShowError(ErrorCode::FunctionFailed, "Code page is not valid");
+			ShowError(ErrorCode::BadArgument, "Code page is not valid");
 			return false;
 		}
 
-		// set console output and input code page
-		failed = SetConsoleOutputCP(code_page) == 0;
+		// MSDN: Sets the output code page used by the console associated with the calling process
+		// If the function succeeds, the return value is nonzero
+		failed = SetConsoleOutputCP(output) == 0;
 
 		if (failed)
 		{
-			ShowError(ErrorCode::FunctionFailed, "Failed to set console output code page");
+			ShowError(ERROR_INFO_HR, "Failed to set console output code page");
 		}
 
-		if (SetConsoleCP(code_page) == 0)
+		// MSDN: Sets the input code page used by the console associated with the calling process
+		// If the function succeeds, the return value is nonzero
+		if (SetConsoleCP(input) == 0)
 		{
 			failed = true;
-			ShowError(ErrorCode::FunctionFailed, "Failed to set console input code page");
+			ShowError(ERROR_INFO_HR, "Failed to set console input code page");
 		}
 
 		return !failed;
+	}
+
+	std::pair<UINT, UINT> GetConsoleCodePage()
+	{
+		// MSDN: If the return value is zero, the function has failed.
+		// To get extended error information, call GetLastError
+		const UINT input = GetConsoleCP();
+		if (input == 0)
+		{
+			ShowError(ERROR_INFO);
+			return std::make_pair(0u, 0u);
+		}
+
+		const UINT output = GetConsoleOutputCP();
+		if (output == 0)
+		{
+			ShowError(ERROR_INFO);
+			return std::make_pair(0u, 0u);
+		}
+
+		return std::make_pair(input, output);
 	}
 }

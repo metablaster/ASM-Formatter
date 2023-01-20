@@ -1,8 +1,8 @@
 
 /*
- *	Project: "ASM Formatter" https://github.com/metablaster/ASM-Formatter
- *	Copyright(C) 2023 metablaster (zebal@protonmail.ch)
- *	Licensed under the MIT license
+ * Project: "ASM Formatter" https://github.com/metablaster/ASM-Formatter
+ * Copyright(C) 2023 metablaster (zebal@protonmail.ch)
+ * Licensed under the MIT license
  *
 */
 
@@ -11,6 +11,8 @@
  *
  * File read\write function definitions
  * TODO: Testing needed with better samples
+ * TODO: CRT error handling is not well implemented, ex. override invalid parameter handler,
+ * see docs for function used in this source
  *
 */
 

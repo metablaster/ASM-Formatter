@@ -1,8 +1,8 @@
 
 /*
- *	Project: "ASM Formatter" https://github.com/metablaster/ASM-Formatter
- *	Copyright(C) 2023 metablaster (zebal@protonmail.ch)
- *	Licensed under the MIT license
+ * Project: "ASM Formatter" https://github.com/metablaster/ASM-Formatter
+ * Copyright(C) 2023 metablaster (zebal@protonmail.ch)
+ * Licensed under the MIT license
 */
 
 /**
@@ -37,7 +37,7 @@
 #include <memory>		// std::shared_ptr (error.hpp)
 #include <cwchar>		// std::wcsrchr, std::size_t (ErrorMacros.hpp)
 #include <system_error>	// std::is_error_code_enum (ErrorCode.hpp)
-#include <utility>		// std::declval, std::move (utils.hpp, exception.cpp)
+#include <utility>		// std::declval, std::move (utils.hpp, exception.cpp, console.hpp)
 #include <stdexcept>	// std::runtime_error (exception.hpp)
 #include <type_traits>	// std::false_type (error.hpp, utils.hpp)
 #include <cstdint>		// std::uint16_t (ErrorCode.hpp)

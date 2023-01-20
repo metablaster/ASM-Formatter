@@ -1,8 +1,8 @@
 
 /*
- *	Project: "ASM Formatter" https://github.com/metablaster/ASM-Formatter
- *	Copyright(C) 2023 metablaster (zebal@protonmail.ch)
- *	Licensed under the MIT license
+ * Project: "ASM Formatter" https://github.com/metablaster/ASM-Formatter
+ * Copyright(C) 2023 metablaster (zebal@protonmail.ch)
+ * Licensed under the MIT license
  *
 */
 
@@ -59,7 +59,7 @@ namespace wsl
 	/** Generate error message title depending on flags */
 	[[nodiscard]] std::string GenerateErrorTitle(const long& flags);
 
-	/** show error message to the user and return response */
+	/** Ask user how to deal with an error */
 	[[nodiscard]] void GetUserResponse(
 		const std::string& error_title,
 		std::string& error_message,

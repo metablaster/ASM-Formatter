@@ -1,8 +1,8 @@
 
 /*
- *	Project: "ASM Formatter" https://github.com/metablaster/ASM-Formatter
- *	Copyright(C) 2023 metablaster (zebal@protonmail.ch)
- *	Licensed under the MIT license
+ * Project: "ASM Formatter" https://github.com/metablaster/ASM-Formatter
+ * Copyright(C) 2023 metablaster (zebal@protonmail.ch)
+ * Licensed under the MIT license
  *
 */
 
@@ -19,6 +19,7 @@
 #include "StringCast.hpp"
 #include "error.hpp"
 #include "ErrorCode.hpp"
+#include "utils.hpp"
 
 
 // Minimum capacity for strings
@@ -333,7 +334,10 @@ void FormatFileW(std::wstringstream& filedata, unsigned tab_width, bool spaces)
 	filedata.str(result);
 
 	#ifdef _DEBUG
-	//std::cout << wsl::StringCast(filedata.str()) << std::endl;
+	// TODO: Reason why output is incorrect in the console is because not all tabs consume tab_width spaces
+	std::string str = wsl::StringCast(result);
+	wsl::ReplaceAll(str, "\t", std::string(tab_width, ' '));
+	std::cout << str << std::endl;
 	std::cout << "longest code line " << "(" << maxcodelen << ")" << " is: " << wsl::StringCast(maxlenline) << std::endl;
 	#endif
 }
@@ -557,7 +561,9 @@ void FormatFileA(std::stringstream& filedata, unsigned tab_width, bool spaces)
 	filedata.str(result);
 
 	#ifdef _DEBUG
-	//std::cout << filedata.str() << std::endl;
+	// TODO: Reason why output is incorrect in the console is because not all tabs consume tab_width spaces
+	wsl::ReplaceAll(result, "\t", std::string(tab_width, ' '));
+	std::cout << result << std::endl;
 	std::cout << "longest code line " << "(" << maxcodelen << ")" << " is: " << maxlenline << std::endl;
 	#endif
 }

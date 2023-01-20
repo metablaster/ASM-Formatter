@@ -1,8 +1,8 @@
 
 /*
- *	Project: "ASM Formatter" https://github.com/metablaster/ASM-Formatter
- *	Copyright(C) 2023 metablaster (zebal@protonmail.ch)
- *	Licensed under the MIT license
+ * Project: "ASM Formatter" https://github.com/metablaster/ASM-Formatter
+ * Copyright(C) 2023 metablaster (zebal@protonmail.ch)
+ * Licensed under the MIT license
  *
 */
 
@@ -66,27 +66,27 @@ namespace wsl
 		{
 			MessageBeep(static_cast<UINT>(flags));
 
-			std::wcerr << error_title.c_str() << std::endl;
-			std::wcerr << error_message.c_str() << std::endl;
+			std::cerr << error_title.c_str() << std::endl;
+			std::cerr << error_message.c_str() << std::endl;
 
 			const bool iconstop = flags & MB_ICONSTOP;
 			std::string message = "Your response?: OK [Any key]";
 			if (iconstop)
-				message = "Your response?: OK [O\\o], Cancel [Any key]";
+				message = "Your response?: Continue [C], Cancel [Any key]";
 
 			std::cout << (message += " ");
 			std::cin.clear();
-			std::cin.ignore(std::wcin.gcount());
+			std::cin.ignore(std::cin.gcount());
 
 			std::string input;
 			std::getline(std::cin, input);
-			std::wcout << std::endl;
+			std::cout << std::endl;
 
 			if (iconstop)
 			{
 				if (input.empty())
-					response = IDCANCEL;
-				else response = input.at(0);
+					response = IDCANCEL; // Enter key
+				else response = input.at(0); // First character
 			}
 			else response = IDOK;
 		}
@@ -106,8 +106,8 @@ namespace wsl
 
 		switch (response)
 		{
-		case 'O':
-		case 'o':
+		case 'C':
+		case 'c':
 		case IDOK:
 			return;
 		case IDCANCEL:

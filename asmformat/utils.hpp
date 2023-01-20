@@ -1,8 +1,11 @@
 
 /*
- *	Project: "ASM Formatter" https://github.com/metablaster/ASM-Formatter
- *	Copyright(C) 2023 metablaster (zebal@protonmail.ch)
- *	Licensed under the MIT license
+ * Project: "ASM Formatter" https://github.com/metablaster/ASM-Formatter
+ * Copyright(C) 2023 metablaster (zebal@protonmail.ch)
+ * Licensed under the MIT license
+ * 
+ * NOTE: Portions of code in this file are not MIT but licensed under their own terms,
+ * for more information see individual comments per function
  *
 */
 
@@ -64,7 +67,16 @@ namespace wsl
 	/** Helper function to determine if client code is console or windows program */
 	[[nodiscard]] bool IsConsole() noexcept;
 
-	/** Used for template expansion by has_method template */
+	/**
+	 * Used for template expansion by has_method template
+	 * 
+	 * AUTHOR:
+	 * https://stackoverflow.com/a/16824239/12091999
+	 * LICENSE:
+	 * https://creativecommons.org/licenses/by-sa/3.0
+	 * CHANGES:
+	 * rename of variables and types
+	*/
 	template<typename, typename T>
 	struct has_method
 	{
@@ -75,6 +87,13 @@ namespace wsl
 	/**
 	 * Type trait to check if a class has 'code' method with given signature
 	 * used to check if exception class has code method
+	 * 
+	 * AUTHOR:
+	 * https://stackoverflow.com/a/16824239/12091999
+	 * LICENSE:
+	 * https://creativecommons.org/licenses/by-sa/3.0
+	 * CHANGES:
+	 * rename of variables and types
 	*/
 	template<typename ClassType, typename FuncType, typename... FuncArgs>
 	struct has_method<ClassType, FuncType(FuncArgs...)>
@@ -92,4 +111,13 @@ namespace wsl
 
 		static constexpr bool value = type::value;
 	};
+
+	/**
+	 * @brief String replacement function
+	 * 
+	 * @param source	String which process
+	 * @param from		Replace what?
+	 * @param to		Replacement
+	*/
+	void ReplaceAll(std::string& source, const std::string& from, const std::string& to);
 }

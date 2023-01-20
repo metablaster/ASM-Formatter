@@ -1,8 +1,8 @@
 
 /*
- *	Project: "ASM Formatter" https://github.com/metablaster/ASM-Formatter
- *	Copyright(C) 2023 metablaster (zebal@protonmail.ch)
- *	Licensed under the MIT license
+ * Project: "ASM Formatter" https://github.com/metablaster/ASM-Formatter
+ * Copyright(C) 2023 metablaster (zebal@protonmail.ch)
+ * Licensed under the MIT license
  *
 */
 
@@ -55,6 +55,7 @@
 
 // Boilerplate macro
 #define ERROR_INFO FILE_NAME, FUNC_NAME, __LINE__
+#define ERROR_INFO_HR FILE_NAME, FUNC_NAME, __LINE__, S_OK
 
 #if defined SHOW_ERRORS || defined _DEBUG
 

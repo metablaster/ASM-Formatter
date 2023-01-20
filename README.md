@@ -20,6 +20,15 @@ The following file encodings are supported at the moment:
 - UTF-16
 - UTF-16LE
 
+## License
+
+[![MIT license][badge license]](/LICENSE "View license")
+
+This project `ASM Formatter` is licensed under the `MIT` license.
+
+A small portion of code is not `MIT` licensed or may have their own authors,\
+license and Copyright notices are maintained **"per file"**.
+
 ## How to use
 
 Open VS solution, select `Release` configuration and compile this project, then copy `asmformat.exe`
@@ -106,3 +115,4 @@ The following sample animation demonstrates current rudimentary capabilities:
 ![Demonstration](/assets/presentation.gif)
 
 [masm]: https://learn.microsoft.com/en-us/cpp/assembler/masm/microsoft-macro-assembler-reference
+[badge license]: https://img.shields.io/static/v1?label=License&message=MIT&color=success&style=plastic

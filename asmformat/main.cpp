@@ -1,8 +1,8 @@
 
 /*
- *	Project: "ASM Formatter" https://github.com/metablaster/ASM-Formatter
- *	Copyright(C) 2023 metablaster (zebal@protonmail.ch)
- *	Licensed under the MIT license
+ * Project: "ASM Formatter" https://github.com/metablaster/ASM-Formatter
+ * Copyright(C) 2023 metablaster (zebal@protonmail.ch)
+ * Licensed under the MIT license
  *
 */
 
@@ -32,6 +32,10 @@ int main(int argc, char* argv[])
 	{
 		return ExitCode(ErrorCode::FunctionFailed);
 	}
+
+	#ifdef _DEBUG
+	const auto old_CP = GetConsoleCodePage();
+	#endif
 
 	fs::path executable_path = argv[0];
 
@@ -151,6 +155,17 @@ int main(int argc, char* argv[])
 		}
 	}
 
+	#ifdef _DEBUG
+	// MSDN: It is recommended for all new and updated command-line applications to avoid code pages and use Unicode.
+	// UTF-16 formatted text can be sent to the W family of console APIs.
+	// UTF-8 formatted text can be sent to the A family of console APIs after ensuring the code page is first set to 65001 (CP_UTF8)
+	// with the SetConsoleCP and SetConsoleOutputCP functions.
+	if (!SetConsoleCodePage(old_CP.first, CP_UTF8))
+	{
+		return ExitCode(ErrorCode::FunctionFailed);
+	}
+	#endif // _DEBUG
+
 	for (const auto& file_path : files)
 	{
 		std::cout << "Formatting file " << file_path.filename() << std::endl;
@@ -168,6 +183,13 @@ int main(int argc, char* argv[])
 			WriteFileW(file_path, filedata, encoding);
 		}
 	}
+
+	#ifdef _DEBUG
+	if (!SetConsoleCodePage(old_CP.first, old_CP.second))
+	{
+		return ExitCode(ErrorCode::FunctionFailed);
+	}
+	#endif // _DEBUG
 
 	return 0;
 }
