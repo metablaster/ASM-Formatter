@@ -25,16 +25,18 @@ The following file encodings are supported at the moment:
 Open VS solution, select `Release` configuration and compile this project, then copy `asmformat.exe`
 from `Build` directory somewhere where it will be accessible, ex. `PATH`.
 
+Alternatively you can download already built executables from `Releases` section.
+
 Default encoding, if not specified is `utf8`\
-Default tabwidth, if not specified is 4\
+Default tab width, if not specified is 4\
 By default tabs are used if `--spaces` is not specified
 
 For help and program command line syntax run `asmformat.exe --help`
 
 You have to be careful to specify correct encoding which depends on encoding of your asm sources,\
 specifying incorrect encoding may turn your sources into a pile garbage symbols.\
-Also tabwidth option must be correct, which depends on your editor configuration,
-specifiying incorrect tabwidth will produce unexpected results.
+Also tab width option must be correct, which depends on your editor configuration,
+specifying incorrect tab width will produce unexpected results.
 
 Depending on your editor you should configure it so that `asmformat` is executed on demand for
 currently opened file.

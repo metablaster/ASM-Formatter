@@ -32,7 +32,7 @@
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <OpenMPSupport>false</OpenMPSupport>
       <CompileAs>CompileAsCpp</CompileAs>
-      <PreprocessorDefinitions>WIN32_LEAN_AND_MEAN;NOMINMAX;STRICT;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32_LEAN_AND_MEAN;NOMINMAX;STRICT;_CONSOLE;SHOW_ERRORS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <PrecompiledHeaderFile>pch.hpp</PrecompiledHeaderFile>
       <UseFullPaths>false</UseFullPaths>
