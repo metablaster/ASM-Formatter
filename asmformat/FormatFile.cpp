@@ -9,14 +9,20 @@
 /**
  * @file asmformat\FormatFile.cpp
  *
- * File formatting function definitions
+ * ASM source file formatting function definitions
+ * TODO: Maybe using macros to conditionally use wide and ansi strings to reduce code bloat?
  *
 */
 
 #include "pch.hpp"
 #include "FormatFile.hpp"
 #include "StringCast.hpp"
+#include "error.hpp"
+#include "ErrorCode.hpp"
 
+
+// Minimum capacity for strings
+constexpr std::size_t MIN_CAPACITY = 1000;
 
 // Was previous line blank?
 static bool previous_blank = false;
@@ -24,7 +30,11 @@ static bool previous_blank = false;
 // Insert new blank line?
 static bool insert_blankline = false;
 
-// Check if line should be indented
+/**
+ * @brief Check if line should be indented
+ * @param line	line which to check
+ * @return	true if the line should be indented
+*/
 inline bool TestIndentLine(const std::wstring& line)
 {
 	const bool proc = std::regex_search(line, std::wregex(L"\\w+\\s+(proc|endp)", std::regex_constants::icase));
@@ -37,6 +47,11 @@ inline bool TestIndentLine(const std::string& line)
 	return !proc;
 }
 
+/**
+ * @brief Get next line in file without affecting stream position
+ * @param filedata	string stream holding file data
+ * @param nextline	string which receives next line
+*/
 inline void PeekNextLine(std::wstringstream& filedata, std::wstring& nextline)
 {
 	const std::streampos pos = filedata.tellg();
@@ -51,10 +66,58 @@ inline void PeekNextLine(std::stringstream& filedata, std::string& nextline)
 	filedata.seekg(pos);
 }
 
+/**
+ * Get next code line (skipping comments) in file without affecting stream position.
+ * If a blank line is reached then the function breaks and does not reach next code line
+ * 
+ * @param filedata	string stream holding file data
+ * @param codeline	string which receives next code line
+ * @return	true if blank line was reached before code line, false otherwise
+*/
+inline bool PeekNextCodeLine(std::wstringstream& filedata, std::wstring& codeline)
+{
+	bool isblank = false;
+	const std::streampos pos = filedata.tellg();
+
+	while (std::getline(filedata, codeline).good())
+	{
+		if (!codeline.starts_with(L";"))
+		{
+			if (codeline.empty())
+				isblank = true;
+
+			break;
+		}
+	}
+
+	filedata.seekg(pos);
+	return isblank;
+}
+
+inline bool PeekNextCodeLine(std::stringstream& filedata, std::string& codeline)
+{
+	bool isblank = false;
+	const std::streampos pos = filedata.tellg();
+
+	while (std::getline(filedata, codeline).good())
+	{
+		if (!codeline.starts_with(";"))
+		{
+			if (codeline.empty())
+				isblank = true;
+
+			break;
+		}
+	}
+
+	filedata.seekg(pos);
+	return isblank;
+}
+
 void FormatFileW(std::wstringstream& filedata, unsigned tab_width, bool spaces)
 {
 	#ifdef _DEBUG
-	std::wstring maxlenline = L"";
+	std::wstring maxlenline;
 	#endif // DEBUG
 
 	std::wregex regex;
@@ -62,10 +125,16 @@ void FormatFileW(std::wstringstream& filedata, unsigned tab_width, bool spaces)
 	std::wstring result;
 	std::wstring tab = spaces ? std::wstring(tab_width, L' ') : L"\t";
 
+	line.reserve(MIN_CAPACITY);
+	result.reserve(filedata.str().capacity() + MIN_CAPACITY);
+
 	// Count of characters of the longest code line which contains inline comment
 	// inline comments will be shifted according to longest code line
 	std::size_t maxcodelen = 0;
 	
+	// Formatting a soure file consists of 2 while loops, each looping trough lines in file,
+	// First loop trims leading and trailing spaces and tabs and calculates the widest code line containing an inline comment
+	// Second loop (later) uses this information (compacted lines and length) to perform accurate formatting
 	while (std::getline(filedata, line).good())
 	{
 		if (!line.empty())
@@ -105,9 +174,19 @@ void FormatFileW(std::wstringstream& filedata, unsigned tab_width, bool spaces)
 		result += line.append(L"\n");
 	}
 
-	filedata.str(result);
+	if (filedata.bad() || (!filedata.eof() && filedata.fail()))
+	{
+		ShowError(wsl::ErrorCode::ParseFailure, ("Processing source file data failed after line: " + wsl::StringCast(line)).c_str());
+	}
+
+	// set good bit (remove eofbit)
+	assert(filedata.eof());
 	filedata.clear();
+	filedata.str(result);
+
+	// clear contents but not memory
 	result.clear();
+	assert(result.capacity() > MIN_CAPACITY);
 
 	// Count of characters missing to make a full tab of the max length code line
 	const std::size_t maxmissing = tab_width - maxcodelen % tab_width;
@@ -120,15 +199,16 @@ void FormatFileW(std::wstringstream& filedata, unsigned tab_width, bool spaces)
 		}
 		else
 		{
+			// How comments are indented depends on what after those comments
 			if (line.starts_with(L";"))
 			{
 				std::wstring nextline;
 
-				// Peek at next line
-				PeekNextLine(filedata, nextline);
+				// Peek at next code line unless blank line is reached
+				const bool isblank = PeekNextCodeLine(filedata, nextline);
 
 				// Will next line be indented?
-				const bool next_indent = TestIndentLine(nextline);
+				const bool next_indent = !isblank && TestIndentLine(nextline);
 
 				// Make only one space between semicolon and comment
 				regex = L";\\s*";
@@ -243,8 +323,14 @@ void FormatFileW(std::wstringstream& filedata, unsigned tab_width, bool spaces)
 	regex = L"\n+$";
 	result = std::regex_replace(result, regex, L"\n");
 
-	filedata.str(result);
+	if (filedata.bad() || (!filedata.eof() && filedata.fail()))
+	{
+		ShowError(wsl::ErrorCode::ParseFailure, ("Processing source file data failed after line: " + wsl::StringCast(line)).c_str());
+	}
+
+	assert(filedata.eof());
 	filedata.clear();
+	filedata.str(result);
 
 	#ifdef _DEBUG
 	//std::cout << wsl::StringCast(filedata.str()) << std::endl;
@@ -255,18 +341,24 @@ void FormatFileW(std::wstringstream& filedata, unsigned tab_width, bool spaces)
 void FormatFileA(std::stringstream& filedata, unsigned tab_width, bool spaces)
 {
 	#ifdef _DEBUG
-	std::string maxlenline = "";
+	std::string maxlenline;
 	#endif // DEBUG
 
 	std::regex regex;
 	std::string line;
 	std::string result;
-	std::string tab = spaces ? std::string(tab_width, L' ') : "\t";
+	std::string tab = spaces ? std::string(tab_width, ' ') : "\t";
+
+	line.reserve(MIN_CAPACITY);
+	result.reserve(filedata.str().capacity() + MIN_CAPACITY);
 
 	// Count of characters of the longest code line which contains inline comment
 	// inline comments will be shifted according to longest code line
 	std::size_t maxcodelen = 0;
 
+	// Formatting a soure file consists of 2 while loops, each looping trough lines in file,
+	// First loop trims leading and trailing spaces and tabs and calculates the widest code line containing an inline comment
+	// Second loop (later) uses this information (compacted lines and length) to perform accurate formatting
 	while (std::getline(filedata, line).good())
 	{
 		if (!line.empty())
@@ -306,9 +398,19 @@ void FormatFileA(std::stringstream& filedata, unsigned tab_width, bool spaces)
 		result += line.append("\n");
 	}
 
-	filedata.str(result);
+	if (filedata.bad() || (!filedata.eof() && filedata.fail()))
+	{
+		ShowError(wsl::ErrorCode::ParseFailure, ("Processing source file data failed after line: " + line).c_str());
+	}
+
+	// set good bit (remove eofbit)
+	assert(filedata.eof());
 	filedata.clear();
+	filedata.str(result);
+
+	// clear contents but not memory
 	result.clear();
+	assert(result.capacity() > MIN_CAPACITY);
 
 	// Count of characters missing to make a full tab of the max length code line
 	const std::size_t maxmissing = 4 - maxcodelen % 4;
@@ -321,15 +423,16 @@ void FormatFileA(std::stringstream& filedata, unsigned tab_width, bool spaces)
 		}
 		else
 		{
+			// How comments are indented depends on what after those comments
 			if (line.starts_with(";"))
 			{
 				std::string nextline;
 
-				// Peek at next line
-				PeekNextLine(filedata, nextline);
+				// Peek at next code line unless blank line is reached
+				const bool isblank = PeekNextCodeLine(filedata, nextline);
 
 				// Will next line be indented?
-				const bool next_indent = TestIndentLine(nextline);
+				const bool next_indent = !isblank && TestIndentLine(nextline);
 
 				// Make only one space between semicolon and comment
 				regex = ";\\s*";
@@ -338,8 +441,8 @@ void FormatFileA(std::stringstream& filedata, unsigned tab_width, bool spaces)
 			}
 			else
 			{
-				const bool is_proc = std::regex_search(line, std::regex(tab + "\\w+\\s+proc", std::regex_constants::icase));
-				const bool is_endproc = std::regex_search(line, std::regex(tab + "\\w+\\s+endp", std::regex_constants::icase));
+				const bool is_proc = std::regex_search(line, std::regex("\\w+\\s+proc", std::regex_constants::icase));
+				const bool is_endproc = std::regex_search(line, std::regex("\\w+\\s+endp", std::regex_constants::icase));
 
 				// Is code line indented with tab?
 				// Do not indent procedure labels
@@ -444,11 +547,17 @@ void FormatFileA(std::stringstream& filedata, unsigned tab_width, bool spaces)
 	regex = "\n+$";
 	result = std::regex_replace(result, regex, "\n");
 
-	filedata.str(result);
+	if (filedata.bad() || (!filedata.eof() && filedata.fail()))
+	{
+		ShowError(wsl::ErrorCode::ParseFailure, ("Processing source file data failed after line: " + line).c_str());
+	}
+	
+	assert(filedata.eof());
 	filedata.clear();
+	filedata.str(result);
 
 	#ifdef _DEBUG
 	//std::cout << filedata.str() << std::endl;
-	std::cout << "longest code line is: " << maxcodelen << std::endl;
+	std::cout << "longest code line " << "(" << maxcodelen << ")" << " is: " << maxlenline << std::endl;
 	#endif
 }

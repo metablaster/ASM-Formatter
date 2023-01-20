@@ -9,7 +9,7 @@
 /**
  * @file asmformat\exception.cpp
  *
- * Definition of Exception class
+ * Definition of custom exception class
  *
 */
 

@@ -10,7 +10,9 @@
  * @file asmformat\main.cpp
  *
  * Defines the entry point for application
- * Debug command line: $(SolutionDir)assets\utf8.asm --encoding utf8 --tabwidth 4 $(SolutionDir)assets\utf8-2.asm
+ * Debug command arguments: $(SolutionDir)assets\utf8-BOM.asm
+ * Debug working directory: $(SolutionDir)Build\$(Platform)\$(Configuration)
+ * Debugger type: Native Only
  *
 */
 

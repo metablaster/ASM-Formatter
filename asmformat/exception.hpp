@@ -7,9 +7,9 @@
 */
 
 /**
- * @file asmformat\Exception.hpp
+ * @file asmformat\exception.hpp
  *
- * Declaration of exception class
+ * Declaration of custom exception class
  *
 */
 

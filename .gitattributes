@@ -35,6 +35,7 @@ ANSI.txt		binary
 ASCII.txt		binary
 utf16be.asm		binary
 utf16le.asm		binary
+utf8-BOM.asm	binary
 utf8.asm		binary
 # C++ code files
 *.cpp		text eol=crlf whitespace=trailing-space,space-before-tab,indent-with-non-tab,tabwidth=4

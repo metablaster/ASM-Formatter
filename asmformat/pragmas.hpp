@@ -9,7 +9,7 @@
 /**
  * @file asmformat\pragmas.hpp
  *
- * Pragma defines used across all projects to disable specific compiler and static analysis warnings
+ * Pragma defines are used to disable specific compiler and static analysis warnings
  *
  * Short description of header sections:
  *

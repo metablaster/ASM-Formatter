@@ -42,6 +42,7 @@
 #include <type_traits>	// std::false_type (error.hpp, utils.hpp)
 #include <cstdint>		// std::uint16_t (ErrorCode.hpp)
 #include <vector>		// std::vector (main.cpp)
+#include <cassert>		// assert (FormatFile.cpp)
 
 // C Standard header files
 #include <stdio.h>		// fopen_s (SourceFile.cpp)

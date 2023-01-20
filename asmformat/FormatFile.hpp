@@ -9,7 +9,7 @@
 /**
  * @file asmformat\FormatFile.hpp
  *
- * File formatting function declarations
+ * ASM source file formatting function declarations
  *
 */
 
@@ -18,15 +18,21 @@
 
 
 /**
-* Format asm source file encoded as UTF-8, UTF-16 or UTF-16LE
-*
-* @param filedata	file contents loaded into memory
+ * Format asm source file encoded as UTF-8, UTF-16 or UTF-16LE
+ *
+ * @param filedata	file contents loaded into memory
+ * @Param tab_width	Count of spaces ocupying a tab character
+ * @param spaces	Use spaces instead of tabs?
+ * 
 */
 void FormatFileW(std::wstringstream& filedata, unsigned tab_width, bool spaces);
 
 /**
-* Format asm source file encoded as ANSI
-*
-* @param filedata	file contents loaded into memory
+ * Format asm source file encoded as ANSI
+ *
+ * @param filedata	file contents loaded into memory
+ * @Param tab_width	Count of spaces ocupying a tab character
+ * @param spaces	Use spaces instead of tabs?
+ *
 */
 void FormatFileA(std::stringstream& filedata, unsigned tab_width, bool spaces);

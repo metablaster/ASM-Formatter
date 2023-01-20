@@ -21,7 +21,7 @@
 namespace wsl
 {
 	/**
-	* Generic error codes enum
+	 * Generic error codes enum
 	*/
 	enum class ErrorCode : std::uint16_t
 	{

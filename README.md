@@ -1,7 +1,7 @@
 
 # ASM Formatter
 
-This is an **experimental** formatter for assembly source files which is far from being finished.\
+This is an **experimental** formatter for assembly source files.\
 **NOTE:** please make a backup of your assembly sources before using it!
 
 It's currently designed for [MASM][masm] assembler syntax and at the moment supports the following:
@@ -23,16 +23,13 @@ The following file encodings are supported at the moment:
 ## How to use
 
 Open VS solution, select `Release` configuration and compile this project, then copy `asmformat.exe`
-from `Build` directory somewhere where it will be accessible, ex. `PATH`.\
-
-Program command line syntax is:\
-`asmformat.exe path\file1.asm path\file2.asm ... [--encoding ansi|utf8|utf16|utf16le] [--tabwidth N] [--spaces]`
+from `Build` directory somewhere where it will be accessible, ex. `PATH`.
 
 Default encoding, if not specified is `utf8`\
 Default tabwidth, if not specified is 4\
 By default tabs are used if `--spaces` is not specified
 
-For help run `asmformat.exe --help`
+For help and program command line syntax run `asmformat.exe --help`
 
 You have to be careful to specify correct encoding which depends on encoding of your asm sources,\
 specifying incorrect encoding may turn your sources into a pile garbage symbols.\
@@ -100,7 +97,7 @@ not dictate how assembly formatter will work.
 If you wish to do something unorthodox or if you believe some new feature might be useful then
 please open a new issue to discuss it first.
 
-# Presentation
+# Demonstration
 
 The following sample animation demonstrates current rudimentary capabilities:
 

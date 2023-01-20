@@ -34,7 +34,7 @@ namespace wsl
 	*/
 	[[nodiscard]] std::string StringCast(const std::wstring& param, UINT code_page = CP_UTF8);
 
-	// TODO: waiting for C++ 20
+	// TODO: waiting for MSVC support
 	#if 0
 	/**
 	 * Convert u8string or char32_t to wstring

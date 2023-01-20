@@ -25,9 +25,7 @@
 
 namespace wsl
 {
-	//
-	// Helper methods used internally by ShowError functions
-	//
+	// Integrate our custom exception class with std
 	template<typename>
 	struct is_cutom_exception :
 		public std::false_type
@@ -44,10 +42,10 @@ namespace wsl
 	constexpr short msg_buff_size = 512;
 
 	/**
-		* Returns pointer to formated wchar_t array error code
-		*
-		* @param error_code Error code which to format
-		* @param dwChars Number of TCHARs returned, excluding the terminating null character, 0 if failed.
+	 * Converts an error code to human readable string
+	 *
+	 * @param error_code Error code which to format
+	 * @param dwChars Number of TCHARs returned, excluding the terminating null character, 0 if failed.
 	*/
 	[[nodiscard]] const std::shared_ptr<std::array<char, msg_buff_size>>
 		FormatErrorMessage(const DWORD& error_code, DWORD& dwChars);
@@ -70,20 +68,20 @@ namespace wsl
 		const long& flags);
 
 	/**
-	* Format error code into a string and show in message box or Console
-	* COM and System errors
-	*
-	* NOTE: use ERROR_INFO macro to fill first 3 parameters, or ERR_INFO_HR
-	* to fill first 4 parameters to default values
-	*
-	* @param file_name		source code file name, use FILE_NAME macro for this
-	* @param func_namce		name of the function where error occurred
-	* @param line			line number in source file where error happened
-	* @param hr				HRESULT value which will be formated to string
-	* @param info			custom string to show in error message
-	* @param flags			sound of error message and in case of Window app,
-	*						message box appearance
-	* @return				returns raw error code, the code depends on type of error
+	 * Format error code into a string and show in message box or Console.
+	 * COM and Win32 errors
+	 *
+	 * NOTE: use ERROR_INFO macro to fill first 3 parameters, or ERR_INFO_HR
+	 * to fill first 4 parameters to default values
+	 *
+	 * @param file_name		source code file name, use FILE_NAME macro for this
+	 * @param func_namce	name of the function where error occurred
+	 * @param line			line number in source file where error happened
+	 * @param hr			HRESULT value which will be formated to string
+	 * @param info			custom string to show in error message
+	 * @param flags			sound of error message and in case of Window app,
+	 *						message box appearance
+	 * @return				returns raw error code, the code depends on type of error
 	*/
 	void ShowErrorA(
 		PCSTR file_name,
@@ -94,8 +92,8 @@ namespace wsl
 		long flags = MB_ICONERROR) noexcept;
 
 	/**
-	* show CRT error in human readable text + additional information
-	* arguments are the same as for ShowError, use ERROR_INFO to fill in arguments
+	 * Show CRT error in human readable text + additional information.
+	 * Arguments are the same as for ShowError, use ERROR_INFO to fill in arguments
 	*/
 	void ShowCrtErrorA(
 		class Exception exception,
@@ -105,16 +103,16 @@ namespace wsl
 		long flags = MB_ICONERROR) noexcept;
 
 	/**
-	* Show error message from exception objects in MessageBox or Console
-	* accepts std exceptions and custom Exception class
-	*
-	* @param exception		exception object
-	* @param file_name		source code file name, use FILE_NAME macro for this
-	* @param func_namce		name of the function where error occurred
-	* @param line			source file line number, use __LINE__ macro for this
-	* @param flags			sound of error message and in case of Window app,
-	*						message box appearance
-	* @return				returns raw error code, the code depends on type of error
+	 * Show error message from exception objects in MessageBox or Console.
+	 * Accepts std exceptions and custom Exception class
+	 *
+	 * @param exception		exception object
+	 * @param file_name		source code file name, use FILE_NAME macro for this
+	 * @param func_namce	name of the function where error occurred
+	 * @param line			source file line number, use __LINE__ macro for this
+	 * @param flags			sound of error message and in case of Window app,
+	 *						message box appearance
+	 * @return				returns raw error code, the code depends on type of error
 	*/
 	template <typename ExceptionClass,
 		typename std::enable_if_t<std::is_base_of<std::exception, ExceptionClass>::value, bool> = 0>
@@ -199,7 +197,7 @@ namespace wsl
 	catch (...)
 	{
 		// TODO: For exception free ShowError custom string class is needed that works on stack with
-		// only purpose to be used customized for ShowError function.
+		// only purpose to be used for customized ShowError function.
 		MessageBoxA(nullptr, "Likely string constructor exception", "Exception in ShowError", MB_ICONERROR);
 	}
 }
