@@ -48,8 +48,8 @@ on how assembly source files should be formatted.
 
 For this reason only the following contributions are acceptable:
 
-- Your implementation must be very basic and minimal because personal coding style preferences must
-not dictate how the formatter will work.
+- Your formatting implementation must be very basic and minimal because personal coding style
+preferences must not dictate how the formatter will work.
 
 - Implementation for other assemblers which should cover everything that is already implemented by
 this project.
@@ -58,10 +58,13 @@ this project.
 
 - Support for more file encodings
 
-- Bugfixes, optimizations and improvements and tests of existing code base
+- Bugfixes, optimizations, improvements and tests of existing code base
 
 If you wish to do something unorthodox or if you believe some new feature might be useful then
 please open a new issue to discuss it first.
+
+Formatting implementation for other assemblers should be a new function rather than mixed with
+existing format functions.
 
 ## Development environment
 

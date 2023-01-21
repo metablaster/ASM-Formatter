@@ -32,9 +32,9 @@ static bool previous_blank = false;
 static bool insert_blankline = false;
 
 /**
- * @brief Check if line should be indented
+ * @brief		Check if line should be indented
  * @param line	line which to check
- * @return	true if the line should be indented
+ * @return		true if the line should be indented
 */
 inline bool TestIndentLine(const std::wstring& line)
 {
@@ -49,7 +49,7 @@ inline bool TestIndentLine(const std::string& line)
 }
 
 /**
- * @brief Get next line in file without affecting stream position
+ * @brief			Get next line in file without affecting stream position
  * @param filedata	string stream holding file data
  * @param nextline	string which receives next line
 */
@@ -57,6 +57,8 @@ inline void PeekNextLine(std::wstringstream& filedata, std::wstring& nextline)
 {
 	const std::streampos pos = filedata.tellg();
 	std::getline(filedata, nextline);
+
+	filedata.clear();
 	filedata.seekg(pos);
 }
 
@@ -64,17 +66,20 @@ inline void PeekNextLine(std::stringstream& filedata, std::string& nextline)
 {
 	const std::streampos pos = filedata.tellg();
 	std::getline(filedata, nextline);
+
+	filedata.clear();
 	filedata.seekg(pos);
 }
 
 /**
- * @brief Get line break used in file
+ * @brief			Get line break used in file
  * @param filedata	File contents
- * @return LineBreak enum
+ * @return			LineBreak enum
 */
 inline LineBreak GetLineBreak(std::wstringstream& filedata)
 {
 	std::wstring nextline;
+	// TODO: What if next line is EOF?
 	PeekNextLine(filedata, nextline);
 
 	if (nextline.empty() || (*(nextline.cend() - 1) != L'\r'))
@@ -100,9 +105,9 @@ inline LineBreak GetLineBreak(std::stringstream& filedata)
  * 
  * @param filedata	string stream holding file data
  * @param codeline	string which receives next code line
- * @return	true if blank line was reached before code line, false otherwise
+ * @return			true if blank line was reached before code line, false otherwise
 */
-inline bool PeekNextCodeLine(std::wstringstream& filedata, std::wstring& codeline)
+inline bool PeekNextCodeLine(std::wstringstream& filedata, std::wstring& codeline, bool crlf)
 {
 	bool isblank = false;
 	const std::streampos pos = filedata.tellg();
@@ -111,6 +116,12 @@ inline bool PeekNextCodeLine(std::wstringstream& filedata, std::wstring& codelin
 	{
 		if (!codeline.starts_with(L";"))
 		{
+			if (!codeline.empty() && crlf)
+			{
+				// Drop \r
+				codeline.erase(codeline.cend() - 1);
+			}
+
 			if (codeline.empty())
 				isblank = true;
 
@@ -118,11 +129,13 @@ inline bool PeekNextCodeLine(std::wstringstream& filedata, std::wstring& codelin
 		}
 	}
 
+	filedata.clear();
 	filedata.seekg(pos);
+
 	return isblank;
 }
 
-inline bool PeekNextCodeLine(std::stringstream& filedata, std::string& codeline)
+inline bool PeekNextCodeLine(std::stringstream& filedata, std::string& codeline, bool crlf)
 {
 	bool isblank = false;
 	const std::streampos pos = filedata.tellg();
@@ -131,6 +144,12 @@ inline bool PeekNextCodeLine(std::stringstream& filedata, std::string& codeline)
 	{
 		if (!codeline.starts_with(";"))
 		{
+			if (!codeline.empty() && crlf)
+			{
+				// Drop \r
+				codeline.erase(codeline.cend() - 1);
+			}
+
 			if (codeline.empty())
 				isblank = true;
 
@@ -138,11 +157,68 @@ inline bool PeekNextCodeLine(std::stringstream& filedata, std::string& codeline)
 		}
 	}
 
+	filedata.clear();
 	filedata.seekg(pos);
+
 	return isblank;
 }
 
-void FormatFileW(std::wstringstream& filedata, unsigned tab_width, bool spaces, LineBreak line_break)
+/**
+ * @brief			Get count of blank lines that follow
+ * @param filedata	string stream holding file data
+ * @return			Count of blank lines that follow
+*/
+inline std::size_t GetBlankCount(std::wstringstream& filedata, bool crlf)
+{
+	std::size_t count = 0;
+	std::wstring line;
+	const std::streampos pos = filedata.tellg();
+
+	while (std::getline(filedata, line).good())
+	{
+		if (!line.empty() && crlf)
+		{
+			// Drop \r
+			line.erase(line.cend() - 1);
+		}
+
+		if (line.empty())
+			++count;
+		else break;
+	}
+
+	filedata.clear();
+	filedata.seekg(pos);
+
+	return count;
+}
+
+inline std::size_t GetBlankCount(std::stringstream& filedata, bool crlf)
+{
+	std::size_t count = 0;
+	std::string line;
+	const std::streampos pos = filedata.tellg();
+
+	while (std::getline(filedata, line).good())
+	{
+		if (!line.empty() && crlf)
+		{
+			// Drop \r
+			line.erase(line.cend() - 1);
+		}
+
+		if (line.empty())
+			++count;
+		else break;
+	}
+
+	filedata.clear();
+	filedata.seekg(pos);
+
+	return count;
+}
+
+void FormatFileW(std::wstringstream& filedata, unsigned tab_width, bool spaces, bool compact, LineBreak line_break)
 {
 	#ifdef _DEBUG
 	std::wstring maxlenline;
@@ -235,8 +311,17 @@ void FormatFileW(std::wstringstream& filedata, unsigned tab_width, bool spaces, 
 	// Count of characters missing to make a full tab of the max length code line
 	const std::size_t maxmissing = tab_width - maxcodelen % tab_width;
 
+	// Count of lines to skip
+	std::size_t skiplines = 0;
+
 	while (std::getline(filedata, line).good())
 	{
+		if (skiplines > 0)
+		{
+			--skiplines;
+			continue;
+		}
+
 		if (!line.empty() && crlf)
 		{
 			// Drop \r
@@ -255,7 +340,7 @@ void FormatFileW(std::wstringstream& filedata, unsigned tab_width, bool spaces, 
 				std::wstring nextline;
 
 				// Peek at next code line unless blank line is reached
-				const bool isblank = PeekNextCodeLine(filedata, nextline);
+				const bool isblank = PeekNextCodeLine(filedata, nextline, crlf);
 
 				// Will next line be indented?
 				const bool next_indent = !isblank && TestIndentLine(nextline);
@@ -281,9 +366,13 @@ void FormatFileW(std::wstringstream& filedata, unsigned tab_width, bool spaces, 
 				}
 
 				// if previous line is not blank and this is procedure insert blank line so that procedure blocks are sectioned
-				if (is_proc && !previous_blank)
+				if (is_proc)
 				{
-					result += linebreak;
+					if (!previous_blank)
+						result += linebreak;
+
+					// Remove blank lines that follow proc label
+					skiplines = GetBlankCount(filedata, crlf);
 				}
 				else if (is_endproc)
 				{
@@ -364,15 +453,26 @@ void FormatFileW(std::wstringstream& filedata, unsigned tab_width, bool spaces, 
 	{
 		result.insert(0, linebreak);
 	}
+
+	regex = L"^(" + linebreak + L"){2,}";
+	if (compact)
+	{
+		// Remove all surplus blank lines
+		// TODO: This should handle blank lines at the end of file but it doesn't
+		result = std::regex_replace(result, regex, linebreak);
+	}
 	else
 	{
 		// Remove surplus blank lines at the top of a file
-		regex = L"^(" + linebreak + L")+";
-		result = std::regex_replace(result, regex, linebreak);
+		result = std::regex_replace(result, regex, linebreak, std::regex_constants::match_continuous);
 	}
 
+	// Remove all blank lines before endproc
+	regex = L"^(" + linebreak + L")+(?=\\w+\\s+endp)";
+	result = std::regex_replace(result, regex, L"");
+
 	// Remove surplus blank lines at the end of a file
-	regex = L"(" + linebreak + L")+$";
+	regex = L"(" + linebreak + L"){2,}$";
 	result = std::regex_replace(result, regex, linebreak);
 
 	if (!preserve)
@@ -386,7 +486,7 @@ void FormatFileW(std::wstringstream& filedata, unsigned tab_width, bool spaces, 
 			wsl::ReplaceAll(result, linebreak, L"\r\n");
 			break;
 		case LineBreak::CR:
-			ShowError(wsl::ErrorCode::NoImplementation, "CR line break not implemeted");
+			ShowError(wsl::ErrorCode::NotImplemented, "CR line break not implemeted");
 			break;
 		case LineBreak::Preserve:
 		default:
@@ -412,7 +512,7 @@ void FormatFileW(std::wstringstream& filedata, unsigned tab_width, bool spaces, 
 	#endif
 }
 
-void FormatFileA(std::stringstream& filedata, unsigned tab_width, bool spaces, LineBreak line_break)
+void FormatFileA(std::stringstream& filedata, unsigned tab_width, bool spaces, bool compact, LineBreak line_break)
 {
 	#ifdef _DEBUG
 	std::string maxlenline;
@@ -505,8 +605,17 @@ void FormatFileA(std::stringstream& filedata, unsigned tab_width, bool spaces, L
 	// Count of characters missing to make a full tab of the max length code line
 	const std::size_t maxmissing = 4 - maxcodelen % 4;
 
+	// Count of lines to skip
+	std::size_t skiplines = 0;
+
 	while (std::getline(filedata, line).good())
 	{
+		if (skiplines > 0)
+		{
+			--skiplines;
+			continue;
+		}
+
 		if (!line.empty() && crlf)
 		{
 			// Drop \r
@@ -525,7 +634,7 @@ void FormatFileA(std::stringstream& filedata, unsigned tab_width, bool spaces, L
 				std::string nextline;
 
 				// Peek at next code line unless blank line is reached
-				const bool isblank = PeekNextCodeLine(filedata, nextline);
+				const bool isblank = PeekNextCodeLine(filedata, nextline, crlf);
 
 				// Will next line be indented?
 				const bool next_indent = !isblank && TestIndentLine(nextline);
@@ -551,9 +660,13 @@ void FormatFileA(std::stringstream& filedata, unsigned tab_width, bool spaces, L
 				}
 
 				// if previous line is not blank and this is procedure insert blank line so that procedure blocks are sectioned
-				if (is_proc && !previous_blank)
+				if (is_proc)
 				{
-					result += linebreak;
+					if (!previous_blank)
+						result += linebreak;
+
+					// Remove blank lines that follow proc label
+					skiplines = GetBlankCount(filedata, crlf);
 				}
 				else if (is_endproc)
 				{
@@ -634,15 +747,25 @@ void FormatFileA(std::stringstream& filedata, unsigned tab_width, bool spaces, L
 	{
 		result.insert(0, linebreak);
 	}
+
+	regex = "^(" + linebreak + "){2,}";
+	if (compact)
+	{
+		// Remove all surplus blank lines
+		result = std::regex_replace(result, regex, linebreak);
+	}
 	else
 	{
 		// Remove surplus blank lines at the top of a file
-		regex = "^(" + linebreak + ")+";
-		result = std::regex_replace(result, regex, linebreak);
+		result = std::regex_replace(result, regex, linebreak, std::regex_constants::match_continuous);
 	}
 
+	// Remove all blank lines before endproc
+	regex = "^(" + linebreak + ")+(?=\\w+\\s+endp)";
+	result = std::regex_replace(result, regex, "");
+
 	// Remove surplus blank lines at the end of a file
-	regex = "(" + linebreak + ")+$";
+	regex = "(" + linebreak + "){2,}$";
 	result = std::regex_replace(result, regex, linebreak);
 
 	if (!preserve)
@@ -656,7 +779,7 @@ void FormatFileA(std::stringstream& filedata, unsigned tab_width, bool spaces, L
 			wsl::ReplaceAll(result, linebreak, "\r\n");
 			break;
 		case LineBreak::CR:
-			ShowError(wsl::ErrorCode::NoImplementation, "CR line break not implemeted");
+			ShowError(wsl::ErrorCode::NotImplemented, "CR line break not implemeted");
 			break;
 		case LineBreak::Preserve:
 		default:

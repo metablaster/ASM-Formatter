@@ -31,19 +31,23 @@ enum class LineBreak
 /**
  * Format asm source file encoded as UTF-8, UTF-16 or UTF-16LE
  *
- * @param filedata	file contents loaded into memory
- * @Param tab_width	Count of spaces ocupying a tab character
- * @param spaces	Use spaces instead of tabs?
+ * @param filedata		file contents loaded into memory
+ * @Param tab_width		Count of spaces ocupying a tab character
+ * @param spaces		Use spaces instead of tabs?
+ * @param compact		Replace all surplus blank lines with single blank line
+ * @param line_break	Specify line breaks kind
  * 
 */
-void FormatFileW(std::wstringstream& filedata, unsigned tab_width, bool spaces, LineBreak line_break = LineBreak::Preserve);
+void FormatFileW(std::wstringstream& filedata, unsigned tab_width, bool spaces, bool compact, LineBreak line_break = LineBreak::Preserve);
 
 /**
  * Format asm source file encoded as ANSI
  *
- * @param filedata	file contents loaded into memory
- * @Param tab_width	Count of spaces ocupying a tab character
- * @param spaces	Use spaces instead of tabs?
+ * @param filedata		file contents loaded into memory
+ * @Param tab_width		Count of spaces ocupying a tab character
+ * @param spaces		Use spaces instead of tabs?
+ * @param compact		Replace all surplus blank lines with single blank line
+ * @param line_break	Specify line breaks kind
  *
 */
-void FormatFileA(std::stringstream& filedata, unsigned tab_width, bool spaces, LineBreak line_break = LineBreak::Preserve);
+void FormatFileA(std::stringstream& filedata, unsigned tab_width, bool spaces, bool compact, LineBreak line_break = LineBreak::Preserve);

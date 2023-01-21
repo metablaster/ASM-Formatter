@@ -30,7 +30,7 @@ namespace wsl
 		// Code error
 		BadArgument = 100,	// bad argument passed to function
 		InvalidPointer,		// Pointer is invalid
-		NoImplementation,	// No implementation
+		NotImplemented,		// Not implemented
 		OutOfRange,			// Out of range
 		AlocationFailed,	// Failed to allocate memory
 		MemoryReadFailed,	// Failed to read memory
@@ -57,11 +57,11 @@ namespace wsl
 		NotFound,			// Item not found
 
 		// User errors
-		UnknownOption,		// Unrecognized option passed to program
+		UnknownOption = 500,// Unrecognized option passed to program
 		InvalidParameter,	// Invalid program option parameter specified
-		InvalidCommand,		// Invalid command line
+		InvalidCommand,		// Invalid command passed to program
 
-		UnspecifiedError = 1000	// the type of error is undefined
+		UnspecifiedError = 1000	// The type of error is undefined
 	};
 
 	/** Exit status code from error enum */

@@ -160,7 +160,7 @@ namespace wsl
 			{
 			case ErrorCode::BadArgument:
 			case ErrorCode::InvalidPointer:
-			case ErrorCode::NoImplementation:
+			case ErrorCode::NotImplemented:
 			case ErrorCode::OutOfRange:
 			case ErrorCode::AlocationFailed:
 			case ErrorCode::MemoryReadFailed:

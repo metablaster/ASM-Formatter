@@ -72,7 +72,7 @@ namespace wsl
 			const bool iconstop = flags & MB_ICONSTOP;
 			std::string message = "Your response?: OK [Any key]";
 			if (iconstop)
-				message = "Your response?: Continue [C], Cancel [Any key]";
+				message = "Your response?: Continue [C], Exit [Any key]";
 
 			std::cout << (message += " ");
 			std::cin.clear();

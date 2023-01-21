@@ -39,7 +39,7 @@ int main(int argc, char* argv[])
 	#endif
 
 	fs::path executable_path = argv[0];
-	constexpr const char* syntax = " path\\file1.asm path\\file2.asm ... [--encoding ansi|utf8|utf16le] [--tabwidth N] [--spaces] [--linebreaks crlf|lf]";
+	constexpr const char* syntax = " path\\file1.asm path\\file2.asm ... [--encoding ansi|utf8|utf16le] [--tabwidth N] [--spaces] [--linebreaks crlf|lf] [--compact]";
 
 	if (argc < 2)
 	{
@@ -58,12 +58,15 @@ int main(int argc, char* argv[])
 		std::cout << " --tabwidth\tspecifies tab width used in source files (defalt: 4)" << std::endl;
 		std::cout << " --spaces\tuse spaces instead of tabs (by defalt tabs are used)" << std::endl;
 		std::cout << " --linebreaks\tperform line breaks conversion (by defalt line breaks are preserved)" << std::endl;
+		std::cout << " --compact\treplaces all surplus blank lines with single blank line" << std::endl;
 
 		return 0;
 	}
 
 	// Default values
 	bool spaces = false;
+	// TODO: There could multiple verbosities of compact
+	bool compact = false;
 	unsigned tabwidth = 4;
 	Encoding encoding = Encoding::UTF8;
 	LineBreak linebreaks = LineBreak::Preserve;
@@ -79,6 +82,11 @@ int main(int argc, char* argv[])
 			if (param == "--spaces")
 			{
 				spaces = true;
+				continue;
+			}
+			else if (param == "--compact")
+			{
+				compact = true;
 				continue;
 			}
 
@@ -130,8 +138,8 @@ int main(int argc, char* argv[])
 				}
 				else if (arg == "cr")
 				{
-					ShowError(ErrorCode::NoImplementation, "CR linebreak is not implemented");
-					return ExitCode(ErrorCode::NoImplementation);
+					ShowError(ErrorCode::NotImplemented, "CR linebreak is not implemented");
+					return ExitCode(ErrorCode::NotImplemented);
 				}
 				else
 				{
@@ -148,6 +156,11 @@ int main(int argc, char* argv[])
 		else
 		{
 			fs::path file_path = param;
+			if (fs::is_directory(file_path))
+			{
+				ShowError(Exception(ErrorCode::InvalidCommand, param + " is directory and was ignored"), ERROR_INFO, MB_ICONINFORMATION);
+				continue;
+			}
 
 			if (fs::exists(file_path))
 			{
@@ -164,8 +177,8 @@ int main(int argc, char* argv[])
 				}
 				else
 				{
-					ShowError(ErrorCode::InvalidParameter, "File '" + file_path.filename().string() + "' was not found");
-					return ExitCode(ErrorCode::InvalidParameter);
+					ShowError(ErrorCode::InvalidCommand, "File '" + file_path.filename().string() + "' was not found");
+					return ExitCode(ErrorCode::InvalidCommand);
 				}
 			}
 		}
@@ -198,7 +211,7 @@ int main(int argc, char* argv[])
 		{
 			std::stringstream filedata(LoadFileA(file_path.string()));
 
-			FormatFileA(filedata, tabwidth, spaces, linebreaks);
+			FormatFileA(filedata, tabwidth, spaces, compact, linebreaks);
 			WriteFileBytes(file_path, filedata.str(), false);
 			break;
 		}
@@ -207,7 +220,7 @@ int main(int argc, char* argv[])
 			std::string filebytes = LoadFileBytes(file_path);
 			std::wstringstream filedata(StringCast(filebytes));
 
-			FormatFileW(filedata, tabwidth, spaces, linebreaks);
+			FormatFileW(filedata, tabwidth, spaces, compact, linebreaks);
 
 			filebytes = StringCast(filedata.str());
 			WriteFileBytes(file_path, filebytes, false);
@@ -216,7 +229,7 @@ int main(int argc, char* argv[])
 		case Encoding::UTF16LE:
 		{
 			std::wstringstream filedata(LoadFileW(file_path, encoding));
-			FormatFileW(filedata, tabwidth, spaces, linebreaks);
+			FormatFileW(filedata, tabwidth, spaces, compact, linebreaks);
 
 			#if TRUE
 			// TODO: Converts from LF to CRLF

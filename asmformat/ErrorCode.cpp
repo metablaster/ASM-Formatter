@@ -33,7 +33,7 @@
  * 
  * should be inherited and only a single instance of that class is used to describe error category,
  * see comment in declaration of error_category below for more info.
- *							
+ *
  * 4. std::error_condition	It's used for performing queries on error_codes, for the purpose of grouping or classification or translation.
  * 
  * Stores an abstract error code and category.
@@ -143,7 +143,7 @@ namespace wsl
 			return make_error_condition(ErrorCondition::no_error);
 		case ErrorCode::BadArgument:
 		case ErrorCode::InvalidPointer:
-		case ErrorCode::NoImplementation:
+		case ErrorCode::NotImplemented:
 		case ErrorCode::OutOfRange:
 		case ErrorCode::AlocationFailed:
 		case ErrorCode::MemoryReadFailed:
@@ -197,12 +197,13 @@ namespace wsl
 		{
 		case ErrorCode::Success:
 			return "All operations completed successfully";
+			// Code error
 		case ErrorCode::BadArgument:
 			return "Bad Argument";
 		case ErrorCode::InvalidPointer:
 			return "Invalid pointer";
-		case ErrorCode::NoImplementation:
-			return "No implementation";
+		case ErrorCode::NotImplemented:
+			return "Not implemented";
 		case ErrorCode::OutOfRange:
 			return "Out of range";
 		case ErrorCode::AlocationFailed:
@@ -251,12 +252,14 @@ namespace wsl
 			return "Bad cast";
 		case ErrorCode::NotFound:
 			return "Item not found";
+			// User error
 		case ErrorCode::UnknownOption:
 			return "Unknown option";
 		case ErrorCode::InvalidParameter:
 			return "Invalid option parameter";
 		case ErrorCode::InvalidCommand:
 			return "Invalid command";
+			// Unspecified
 		case ErrorCode::UnspecifiedError:
 			return "Unspecified error";
 		default:
