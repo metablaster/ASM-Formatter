@@ -61,4 +61,32 @@ namespace wsl
 
 		source.swap(new_string);
 	}
+
+    void ReplaceAll(std::wstring& source, const std::wstring& from, const std::wstring& to)
+    {
+		// AUTHOR:
+		// https://stackoverflow.com/a/29752943/12091999
+		// LICENSE:
+		// https://creativecommons.org/licenses/by-sa/3.0
+		// CHANGES:
+		// variables casing and wide string implementation
+
+		std::wstring new_string;
+		new_string.reserve(source.length());
+
+		std::wstring::size_type last_pos = 0;
+		std::wstring::size_type find_pos;
+
+		while (std::string::npos != (find_pos = source.find(from, last_pos)))
+		{
+			new_string.append(source, last_pos, find_pos - last_pos);
+			new_string += to;
+			last_pos = find_pos + from.length();
+		}
+
+		// Care for the rest after last occurrence
+		new_string += source.substr(last_pos);
+
+		source.swap(new_string);
+    }
 }

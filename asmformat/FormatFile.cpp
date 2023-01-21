@@ -22,6 +22,16 @@
 #include "utils.hpp"
 
 
+/**
+ * Line break used in file
+*/
+enum class LineBreak
+{
+	LF,
+	CRLF,
+	CR
+};
+
 // Minimum capacity for strings
 constexpr std::size_t MIN_CAPACITY = 1000;
 
@@ -65,6 +75,33 @@ inline void PeekNextLine(std::stringstream& filedata, std::string& nextline)
 	const std::streampos pos = filedata.tellg();
 	std::getline(filedata, nextline);
 	filedata.seekg(pos);
+}
+
+/**
+ * @brief Get line break used in file
+ * @param filedata	File contents
+ * @return LineBreak enum
+*/
+inline LineBreak GetLineBreak(std::wstringstream& filedata)
+{
+	std::wstring nextline;
+	PeekNextLine(filedata, nextline);
+
+	if (nextline.empty() || (*(nextline.cend() - 1) != L'\r'))
+		return LineBreak::LF;
+
+	return LineBreak::CRLF;
+}
+
+inline LineBreak GetLineBreak(std::stringstream& filedata)
+{
+	std::string nextline;
+	PeekNextLine(filedata, nextline);
+
+	if (nextline.empty() || (*(nextline.cend() - 1) != '\r'))
+		return LineBreak::LF;
+
+	return LineBreak::CRLF;
 }
 
 /**
@@ -132,12 +169,21 @@ void FormatFileW(std::wstringstream& filedata, unsigned tab_width, bool spaces)
 	// Count of characters of the longest code line which contains inline comment
 	// inline comments will be shifted according to longest code line
 	std::size_t maxcodelen = 0;
+
+	const bool crlf = GetLineBreak(filedata) == LineBreak::CRLF;
+	const std::wstring linebreak = crlf ? L"\r\n" : L"\n";
 	
 	// Formatting a soure file consists of 2 while loops, each looping trough lines in file,
 	// First loop trims leading and trailing spaces and tabs and calculates the widest code line containing an inline comment
 	// Second loop (later) uses this information (compacted lines and length) to perform accurate formatting
 	while (std::getline(filedata, line).good())
 	{
+		if (!line.empty() && crlf)
+		{
+			// Drop \r
+			line.erase(line.cend() -1);
+		}
+
 		if (!line.empty())
 		{
 			// Shift line to beginning by trimming leading spaces and tabs
@@ -171,8 +217,8 @@ void FormatFileW(std::wstringstream& filedata, unsigned tab_width, bool spaces)
 			}
 		}
 
-		// TODO: Is \r preserved with getline?
-		result += line.append(L"\n");
+		// getline dropped \n and \r dropped manually
+		result += line.append(linebreak);
 	}
 
 	if (filedata.bad() || (!filedata.eof() && filedata.fail()))
@@ -194,6 +240,12 @@ void FormatFileW(std::wstringstream& filedata, unsigned tab_width, bool spaces)
 
 	while (std::getline(filedata, line).good())
 	{
+		if (!line.empty() && crlf)
+		{
+			// Drop \r
+			line.erase(line.cend() - 1);
+		}
+
 		if (line.empty())
 		{
 			previous_blank = true;
@@ -234,7 +286,7 @@ void FormatFileW(std::wstringstream& filedata, unsigned tab_width, bool spaces)
 				// if previous line is not blank and this is procedure insert blank line so that procedure blocks are sectioned
 				if (is_proc && !previous_blank)
 				{
-					result += L"\n";
+					result += linebreak;
 				}
 				else if (is_endproc)
 				{
@@ -300,30 +352,32 @@ void FormatFileW(std::wstringstream& filedata, unsigned tab_width, bool spaces)
 			previous_blank = false;
 		}
 
-		result += line.append(L"\n");
+		// \n dropped by getline \r dropped manually
+		result += line.append(linebreak);
+
 		if (insert_blankline)
 		{
-			result += L"\n";
+			result += linebreak;
 			insert_blankline = false;
 		}
 	}
 
 	// Make sure first line is blank
-	if (result.front() != L'\n')
+	if (!result.starts_with(linebreak))
 	{
-		result.insert(0, L"\n");
+		result.insert(0, linebreak);
 	}
 	else
 	{
 		// Remove surplus blank lines at the top of a file
-		regex = L"^\n+";
-		result = std::regex_replace(result, regex, L"\n");
+		regex = L"^(" + linebreak + L")+";
+		result = std::regex_replace(result, regex, linebreak);
 	}
 
 	// Remove surplus blank lines at the end of a file
-	regex = L"\n+$";
-	result = std::regex_replace(result, regex, L"\n");
-
+	regex = L"(" + linebreak + L")+$";
+	result = std::regex_replace(result, regex, linebreak);
+	
 	if (filedata.bad() || (!filedata.eof() && filedata.fail()))
 	{
 		ShowError(wsl::ErrorCode::ParseFailure, ("Processing source file data failed after line: " + wsl::StringCast(line)).c_str());
@@ -360,11 +414,20 @@ void FormatFileA(std::stringstream& filedata, unsigned tab_width, bool spaces)
 	// inline comments will be shifted according to longest code line
 	std::size_t maxcodelen = 0;
 
+	const bool crlf = GetLineBreak(filedata) == LineBreak::CRLF;
+	const std::string linebreak = crlf ? "\r\n" : "\n";
+
 	// Formatting a soure file consists of 2 while loops, each looping trough lines in file,
 	// First loop trims leading and trailing spaces and tabs and calculates the widest code line containing an inline comment
 	// Second loop (later) uses this information (compacted lines and length) to perform accurate formatting
 	while (std::getline(filedata, line).good())
 	{
+		if (!line.empty() && crlf)
+		{
+			// Drop \r
+			line.erase(line.cend() - 1);
+		}
+
 		if (!line.empty())
 		{
 			// Shift line to beginning by trimming leading spaces and tabs
@@ -398,8 +461,8 @@ void FormatFileA(std::stringstream& filedata, unsigned tab_width, bool spaces)
 			}
 		}
 
-		// TODO: Is \r preserved with getline?
-		result += line.append("\n");
+		// getline dropped \n and \r dropped manually
+		result += line.append(linebreak);
 	}
 
 	if (filedata.bad() || (!filedata.eof() && filedata.fail()))
@@ -421,6 +484,12 @@ void FormatFileA(std::stringstream& filedata, unsigned tab_width, bool spaces)
 
 	while (std::getline(filedata, line).good())
 	{
+		if (!line.empty() && crlf)
+		{
+			// Drop \r
+			line.erase(line.cend() - 1);
+		}
+
 		if (line.empty())
 		{
 			previous_blank = true;
@@ -461,7 +530,7 @@ void FormatFileA(std::stringstream& filedata, unsigned tab_width, bool spaces)
 				// if previous line is not blank and this is procedure insert blank line so that procedure blocks are sectioned
 				if (is_proc && !previous_blank)
 				{
-					result += "\n";
+					result += linebreak;
 				}
 				else if (is_endproc)
 				{
@@ -527,29 +596,31 @@ void FormatFileA(std::stringstream& filedata, unsigned tab_width, bool spaces)
 			previous_blank = false;
 		}
 
-		result += line.append("\n");
+		// \n dropped by getline \r dropped manually
+		result += line.append(linebreak);
+
 		if (insert_blankline)
 		{
-			result += "\n";
+			result += linebreak;
 			insert_blankline = false;
 		}
 	}
 
 	// Make sure first line is blank
-	if (result.front() != '\n')
+	if (!result.starts_with(linebreak))
 	{
-		result.insert(0, "\n");
+		result.insert(0, linebreak);
 	}
 	else
 	{
 		// Remove surplus blank lines at the top of a file
-		regex = "^\n+";
-		result = std::regex_replace(result, regex, "\n");
+		regex = "^(" + linebreak + ")+";
+		result = std::regex_replace(result, regex, linebreak);
 	}
 
 	// Remove surplus blank lines at the end of a file
-	regex = "\n+$";
-	result = std::regex_replace(result, regex, "\n");
+	regex = "(" + linebreak + ")+$";
+	result = std::regex_replace(result, regex, linebreak);
 
 	if (filedata.bad() || (!filedata.eof() && filedata.fail()))
 	{

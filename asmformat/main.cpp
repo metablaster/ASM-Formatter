@@ -173,8 +173,9 @@ int main(int argc, char* argv[])
 		case Encoding::ANSI:
 		{
 			std::stringstream filedata(LoadFileA(file_path.string()));
+
 			FormatFileA(filedata, tab_width, spaces);
-			WriteFileA(file_path, filedata.str());
+			WriteFileBytes(file_path, filedata.str());
 			break;
 		}
 		case Encoding::UTF8:
@@ -192,7 +193,9 @@ int main(int argc, char* argv[])
 		{
 			std::wstringstream filedata(LoadFileW(file_path, encoding));
 			FormatFileW(filedata, tab_width, spaces);
-			WriteFileW(file_path, filedata.str(), encoding);
+
+			std::string coverted = StringCast(filedata.str());
+			WriteFileBytes(file_path, coverted);
 			break;
 		}
 		default:

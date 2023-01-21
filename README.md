@@ -89,25 +89,7 @@ Any command line argument which doesn't start with `"--"` is interpreted as path
 
 # Contributing
 
-Contributing is welcome problem however is that there are no well established community guidelines
-on how assembly source files should be formatted.
-
-For this reason only the following contributions are acceptable:
-
-- Your implementation must be very basic and minimal because personal coding style preferences must
-not dictate how the formatter will work.
-
-- Support for more file encodings
-
-- Bugfixes, optimization and improvements of existing functionalities
-
-- Implementation for other assemblers which should support everything that is already supported by
-this project.
-
-- Implementation for other operating systems
-
-If you wish to do something unorthodox or if you believe some new feature might be useful then
-please open a new issue to discuss it first.
+Please see [CONTRIBUTING.md](/CONTRIBUTING.md)
 
 # Demonstration
 

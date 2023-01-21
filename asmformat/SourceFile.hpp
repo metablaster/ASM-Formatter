@@ -104,6 +104,7 @@ enum class BOM
 /**
  * Write formatted source file contents back to file encoded as UTF-8, UTF-16 or UTF-16LE.
  * This function puts BOM into file if it doesn't exist for the specified encoding.
+ * This function converts LF to CRLF
  *
  * @param filepath	Full path and file name of a source file
  * @param filedata	Wide string contents which to write to file
@@ -121,6 +122,7 @@ void WriteFileBytes(const std::filesystem::path& filepath, const std::string& fi
 
 /**
  * Write formatted source file contents back to file encoded as ANSI
+ * This function converts LF to CRLF
  *
  * @param filepath	Full path and file name of a source file
  * @param filedata	ANSI string contents which to write to file
