@@ -25,7 +25,9 @@
 
 namespace wsl
 {
+	//
 	// Integrate our custom exception class with std
+	//
 	template<typename>
 	struct is_cutom_exception :
 		public std::false_type
@@ -42,10 +44,9 @@ namespace wsl
 	constexpr short msg_buff_size = 512;
 
 	/**
-	 * Converts an error code to human readable string
-	 *
-	 * @param error_code Error code which to format
-	 * @param dwChars Number of TCHARs returned, excluding the terminating null character, 0 if failed.
+	 * @brief				Converts an error code to human readable string
+	 * @param error_code	Error code which to format
+	 * @param dwChars		Number of TCHARs returned, excluding the terminating null character, 0 if failed.
 	*/
 	[[nodiscard]] const std::shared_ptr<std::array<char, msg_buff_size>>
 		FormatErrorMessage(const DWORD& error_code, DWORD& dwChars);

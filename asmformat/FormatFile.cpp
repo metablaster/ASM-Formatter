@@ -22,38 +22,40 @@
 #include "utils.hpp"
 
 
-// Minimum capacity for strings
-constexpr std::size_t MIN_CAPACITY = 1000;
-
-// Was previous line blank?
-static bool previous_blank = false;
-
-// Insert new blank line?
-static bool insert_blankline = false;
-
 /**
- * @brief		Check if line should be indented
- * @param line	line which to check
- * @return		true if the line should be indented
+ * @brief				Check if line should be indented
+ * @tparam RegexType	std::regex
+ * @tparam StringType	std::string
+ * @param line			line which to check
+ * @return				true if the line should be indented
 */
-inline bool TestIndentLine(const std::wstring& line)
+template<typename RegexType, typename StringType>
+[[nodiscard]] inline bool TestIndentLine(const StringType& line)
 {
-	const bool proc = std::regex_search(line, std::wregex(L"\\w+\\s+(proc|endp)", std::regex_constants::icase));
+	RegexType regex;
+
+	if constexpr (std::is_base_of_v<std::basic_string<wchar_t>, StringType>)
+	{
+		regex = L"\\w+\\s+(proc|endp)", std::regex_constants::icase;
+	}
+	else
+	{
+		regex = "\\w+\\s+(proc|endp)", std::regex_constants::icase;
+	}
+
+	const bool proc = std::regex_search(line, regex);
 	return !proc;
 }
 
-inline bool TestIndentLine(const std::string& line)
-{
-	const bool proc = std::regex_search(line, std::regex("\\w+\\s+(proc|endp)", std::regex_constants::icase));
-	return !proc;
-}
-
 /**
- * @brief			Get next line in file without affecting stream position
- * @param filedata	string stream holding file data
- * @param nextline	string which receives next line
+ * @brief				Get next line in file without affecting stream position
+ * @tparam StreamType	std::stringstream
+ * @tparam StringType	std::string
+ * @param filedata		string stream holding file data
+ * @param nextline		string which receives next line
 */
-inline void PeekNextLine(std::wstringstream& filedata, std::wstring& nextline)
+template<typename StreamType, typename StringType>
+inline void PeekNextLine(StreamType& filedata, StringType& nextline)
 {
 	const std::streampos pos = filedata.tellg();
 	std::getline(filedata, nextline);
@@ -62,23 +64,17 @@ inline void PeekNextLine(std::wstringstream& filedata, std::wstring& nextline)
 	filedata.seekg(pos);
 }
 
-inline void PeekNextLine(std::stringstream& filedata, std::string& nextline)
-{
-	const std::streampos pos = filedata.tellg();
-	std::getline(filedata, nextline);
-
-	filedata.clear();
-	filedata.seekg(pos);
-}
-
 /**
- * @brief			Get line break used in file
- * @param filedata	File contents
- * @return			LineBreak enum
+ * @brief				Get line break used in file
+ * @tparam StringType	std::string
+ * @tparam StreamType	std::stringstream
+ * @param filedata		File contents
+ * @return				LineBreak enum
 */
-inline LineBreak GetLineBreak(std::wstringstream& filedata)
+template<typename StringType, typename StreamType>
+[[nodiscard]] inline LineBreak GetLineBreak(StreamType& filedata)
 {
-	std::wstring nextline;
+	StringType nextline;
 	// TODO: What if next line is EOF?
 	PeekNextLine(filedata, nextline);
 
@@ -88,61 +84,36 @@ inline LineBreak GetLineBreak(std::wstringstream& filedata)
 	return LineBreak::CRLF;
 }
 
-inline LineBreak GetLineBreak(std::stringstream& filedata)
-{
-	std::string nextline;
-	PeekNextLine(filedata, nextline);
-
-	if (nextline.empty() || (*(nextline.cend() - 1) != '\r'))
-		return LineBreak::LF;
-
-	return LineBreak::CRLF;
-}
-
 /**
  * Get next code line (skipping comments) in file without affecting stream position.
  * If a blank line is reached then the function breaks and does not reach next code line
  * 
- * @param filedata	string stream holding file data
- * @param codeline	string which receives next code line
- * @return			true if blank line was reached before code line, false otherwise
+ * @tparam StreamType	std::stringstream
+ * @tparam StringType	std::string
+ * @param filedata		string stream holding file data
+ * @param codeline		string which receives next code line
+ * @param crlf			Is line break CRLF?
+ * @return				true if blank line was reached before code line, false otherwise
 */
-inline bool PeekNextCodeLine(std::wstringstream& filedata, std::wstring& codeline, bool crlf)
+template<typename StreamType, typename StringType>
+[[nodiscard]] inline bool PeekNextCodeLine(StreamType& filedata, StringType& codeline, bool crlf)
 {
 	bool isblank = false;
+	StringType semicolon;
 	const std::streampos pos = filedata.tellg();
 
-	while (std::getline(filedata, codeline).good())
+	if constexpr (std::is_base_of_v<std::basic_string<wchar_t>, StringType>)
 	{
-		if (!codeline.starts_with(L";"))
-		{
-			if (!codeline.empty() && crlf)
-			{
-				// Drop \r
-				codeline.erase(codeline.cend() - 1);
-			}
-
-			if (codeline.empty())
-				isblank = true;
-
-			break;
-		}
+		semicolon = L";";
+	}
+	else
+	{
+		semicolon = ";";
 	}
 
-	filedata.clear();
-	filedata.seekg(pos);
-
-	return isblank;
-}
-
-inline bool PeekNextCodeLine(std::stringstream& filedata, std::string& codeline, bool crlf)
-{
-	bool isblank = false;
-	const std::streampos pos = filedata.tellg();
-
 	while (std::getline(filedata, codeline).good())
 	{
-		if (!codeline.starts_with(";"))
+		if (!codeline.starts_with(semicolon))
 		{
 			if (!codeline.empty() && crlf)
 			{
@@ -164,14 +135,18 @@ inline bool PeekNextCodeLine(std::stringstream& filedata, std::string& codeline,
 }
 
 /**
- * @brief			Get count of blank lines that follow
- * @param filedata	string stream holding file data
- * @return			Count of blank lines that follow
+ * @brief				Get count of blank lines that follow
+ * @tparam StringType	std::string
+ * @tparam StreamType	std::stringstream
+ * @param filedata		string stream holding file data
+ * @param crlf			Is line break CRLF?
+ * @return				Count of blank lines that follow
 */
-inline std::size_t GetBlankCount(std::wstringstream& filedata, bool crlf)
+template<typename StringType, typename StreamType>
+[[nodiscard]] inline std::size_t GetBlankCount(StreamType& filedata, bool crlf)
 {
+	StringType line;
 	std::size_t count = 0;
-	std::wstring line;
 	const std::streampos pos = filedata.tellg();
 
 	while (std::getline(filedata, line).good())
@@ -193,30 +168,14 @@ inline std::size_t GetBlankCount(std::wstringstream& filedata, bool crlf)
 	return count;
 }
 
-inline std::size_t GetBlankCount(std::stringstream& filedata, bool crlf)
-{
-	std::size_t count = 0;
-	std::string line;
-	const std::streampos pos = filedata.tellg();
+// Minimum capacity for strings
+constexpr std::size_t MIN_CAPACITY = 1000;
 
-	while (std::getline(filedata, line).good())
-	{
-		if (!line.empty() && crlf)
-		{
-			// Drop \r
-			line.erase(line.cend() - 1);
-		}
+// Was previous line blank?
+static bool previous_blank = false;
 
-		if (line.empty())
-			++count;
-		else break;
-	}
-
-	filedata.clear();
-	filedata.seekg(pos);
-
-	return count;
-}
+// Insert new blank line?
+static bool insert_blankline = false;
 
 void FormatFileW(std::wstringstream& filedata, unsigned tab_width, bool spaces, bool compact, LineBreak line_break)
 {
@@ -236,7 +195,7 @@ void FormatFileW(std::wstringstream& filedata, unsigned tab_width, bool spaces, 
 	// inline comments will be shifted according to longest code line
 	std::size_t maxcodelen = 0;
 
-	const bool crlf = GetLineBreak(filedata) == LineBreak::CRLF;
+	const bool crlf = GetLineBreak<std::wstring>(filedata) == LineBreak::CRLF;
 	const std::wstring linebreak = crlf ? L"\r\n" : L"\n";
 
 	// crlf != (line_break != LineBreak::CRLF)
@@ -343,7 +302,7 @@ void FormatFileW(std::wstringstream& filedata, unsigned tab_width, bool spaces, 
 				const bool isblank = PeekNextCodeLine(filedata, nextline, crlf);
 
 				// Will next line be indented?
-				const bool next_indent = !isblank && TestIndentLine(nextline);
+				const bool next_indent = !isblank && TestIndentLine<std::wregex>(nextline);
 
 				// Make only one space between semicolon and comment
 				regex = L";\\s*";
@@ -372,7 +331,7 @@ void FormatFileW(std::wstringstream& filedata, unsigned tab_width, bool spaces, 
 						result += linebreak;
 
 					// Remove blank lines that follow proc label
-					skiplines = GetBlankCount(filedata, crlf);
+					skiplines = GetBlankCount<std::wstring>(filedata, crlf);
 				}
 				else if (is_endproc)
 				{
@@ -530,7 +489,7 @@ void FormatFileA(std::stringstream& filedata, unsigned tab_width, bool spaces, b
 	// inline comments will be shifted according to longest code line
 	std::size_t maxcodelen = 0;
 
-	const bool crlf = GetLineBreak(filedata) == LineBreak::CRLF;
+	const bool crlf = GetLineBreak<std::string>(filedata) == LineBreak::CRLF;
 	const std::string linebreak = crlf ? "\r\n" : "\n";
 
 	// crlf != (line_break != LineBreak::CRLF)
@@ -637,7 +596,7 @@ void FormatFileA(std::stringstream& filedata, unsigned tab_width, bool spaces, b
 				const bool isblank = PeekNextCodeLine(filedata, nextline, crlf);
 
 				// Will next line be indented?
-				const bool next_indent = !isblank && TestIndentLine(nextline);
+				const bool next_indent = !isblank && TestIndentLine<std::regex>(nextline);
 
 				// Make only one space between semicolon and comment
 				regex = ";\\s*";
@@ -666,7 +625,7 @@ void FormatFileA(std::stringstream& filedata, unsigned tab_width, bool spaces, b
 						result += linebreak;
 
 					// Remove blank lines that follow proc label
-					skiplines = GetBlankCount(filedata, crlf);
+					skiplines = GetBlankCount<std::string>(filedata, crlf);
 				}
 				else if (is_endproc)
 				{

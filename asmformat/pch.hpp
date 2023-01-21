@@ -3,6 +3,7 @@
  * Project: "ASM Formatter" https://github.com/metablaster/ASM-Formatter
  * Copyright(C) 2023 metablaster (zebal@protonmail.ch)
  * Licensed under the MIT license
+ * 
 */
 
 /**
@@ -13,6 +14,7 @@
  * This also affects IntelliSense performance, including code completion and many code browsing features.
  * However, files listed here are ALL re-compiled if any one of them is updated between builds.
  * Do not add files here that you will be updating frequently as this negates the performance advantage.
+ * 
 */
 
 #pragma once
@@ -39,7 +41,7 @@
 #include <system_error>	// std::is_error_code_enum (ErrorCode.hpp)
 #include <utility>		// std::declval, std::move (utils.hpp, exception.cpp, console.hpp)
 #include <stdexcept>	// std::runtime_error (exception.hpp)
-#include <type_traits>	// std::false_type (error.hpp, utils.hpp)
+#include <type_traits>	// std::false_type (error.hpp, utils.hpp, FormatFile.cpp)
 #include <cstdint>		// std::uint16_t (ErrorCode.hpp)
 #include <vector>		// std::vector (main.cpp)
 #include <cassert>		// assert (FormatFile.cpp)

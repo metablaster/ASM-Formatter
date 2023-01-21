@@ -82,10 +82,13 @@ namespace std
 
 namespace wsl
 {
-	//
-	// This function is called by error_code constructor for error code enum types,
-	// and should be overloaded for all custom error code enum types defined in order to
-	// provide a mechanism to generate the appropriate error_code objects from them.
-	//
+	/**
+	 * This function is called by error_code constructor for error code enum types,
+	 * and should be overloaded for all custom error code enum types defined in order to
+	 * provide a mechanism to generate the appropriate error_code objects from them.
+	 * 
+	 * @param code	Custom error code
+	 * @return		error_code object
+	*/
 	[[nodiscard]] std::error_code make_error_code(ErrorCode code) noexcept;
 }

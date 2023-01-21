@@ -44,9 +44,11 @@
 
 namespace wsl
 {
-	// Category types are used to identify the source of an error.
-	// They also define the relation between error_code and error_condition objects of its category,
-	// as well as the message set for error_code objects.
+	/**
+	 * Category types are used to identify the source of an error.
+	 * They also define the relation between error_code and error_condition objects of its category,
+	 * as well as the message set for error_code objects.
+	*/
 	class ErrorConditionCategory :
 		public std::error_category
 	{

@@ -20,12 +20,12 @@
 
 namespace wsl
 {
-	/*
-	* Custom exception class used to pass into ShowError function
-	* it's interface provides basic functions to retrieve more
-	* information about the error than what the standard exception class provides.
-	*/
 	#pragma warning (disable : 4275)	// base needs to have DLL interface
+	/*
+	 * Custom exception class used to pass into ShowError function
+	 * it's interface provides basic functions to retrieve more
+	 * information about the error than what the standard exception class provides.
+	*/
 	class Exception :
 		public std::runtime_error
 	{

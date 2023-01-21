@@ -50,8 +50,7 @@ enum class BOM
 };
 
 /**
- * @brief Get Byte Order Mark from file if there is one
- *
+ * @brief			Get Byte Order Mark from file if there is one
  * @param filepath	full path to file
  * @param bom		receives BOM enumeration
  * @return			BOM enumeration which also handles no BOM case
@@ -59,8 +58,7 @@ enum class BOM
 [[nodiscard]] BOM GetBOM(const std::filesystem::path& filepath, std::vector<unsigned char>& bom);
 
 /**
- * @brief Get Byte Order Mark from string buffer if there is one
- *
+ * @brief			Get Byte Order Mark from string buffer if there is one
  * @param filepath	full path to file
  * @param bom		receives BOM enumeration
  * @return			BOM enumeration which also handles no BOM case
@@ -76,7 +74,6 @@ std::vector<unsigned char> GetBOM(BOM bom);
 
 /**
  * @brief	Get size of a file in bytes
- * 
  * @param	filepath file path for which to get byte count
  * @return	Size of the file in bytes
 */
@@ -93,7 +90,7 @@ std::vector<unsigned char> GetBOM(BOM bom);
 [[nodiscard]] std::wstring LoadFileW(const std::filesystem::path& filepath, const Encoding& encoding);
 
 /**
- * Read source file into memory as byte stream
+ * @brief			Read source file into memory as byte stream
  *
  * @param filepath	Full path and file name of a source file
  * @param bytes		Specify how many bytes to read, if 0 all bytes are read
@@ -102,8 +99,7 @@ std::vector<unsigned char> GetBOM(BOM bom);
 [[nodiscard]] std::string LoadFileBytes(const std::filesystem::path& filepath, DWORD bytes = 0);
 
 /**
- * Read source file into memory encoded as ANSI
- *
+ * @brief			Read source file into memory encoded as ANSI
  * @param filepath	Full path and file name of a source file
  * @return			Source file contents as ANSI string
 */

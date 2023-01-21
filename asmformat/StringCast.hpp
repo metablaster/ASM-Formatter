@@ -10,7 +10,6 @@
  * @file asmformat\StringCast.hpp
  *
  * String conversion function declarations
- * https://learn.microsoft.com/en-us/windows/win32/intl/code-page-identifiers
  *
 */
 
@@ -22,43 +21,42 @@
 namespace wsl
 {
 	/**
-	 * Function to convert from string to wstring
-	 *
-	 * @param param	string to convert
+	 * @brief			Function to convert from string to wstring
+	 * @param param		string to convert
+	 * @param codepage	Code page identifier for the code page to check
+	 * https://learn.microsoft.com/en-us/windows/win32/intl/code-page-identifiers
 	*/
 	[[nodiscard]] std::wstring StringCast(const std::string& param, UINT code_page = CP_UTF8);
 
 	/**
-	 * Function to convert from wstring to string
-	 *
-	 * @param param	string to convert
+	 * @brief			Function to convert from wstring to string
+	 * @param param		string to convert
+	 * @param codepage	Code page identifier for the code page to check
+	 * https://learn.microsoft.com/en-us/windows/win32/intl/code-page-identifiers
 	*/
 	[[nodiscard]] std::string StringCast(const std::wstring& param, UINT code_page = CP_UTF8);
 
 	// TODO: waiting for MSVC support
 	#if 0
 	/**
-	 * Convert u8string or char32_t to wstring
-	 *
-	 * @param param u8string or char8_t string
-	 * @return String converted to wchar_t
+	 * @brief		Convert u8string or char32_t to wstring
+	 * @param param	u8string or char8_t string
+	 * @return		String converted to wchar_t
 	*/
 	[[nodiscard]] std::wstring StringCast(const std::u8string& param);
 	#endif
 
 	/**
-	 * Convert u16string or char16_t to wstring
-	 *
+	 * @brief		Convert u16string or char16_t to wstring
 	 * @param param u16string or char16_t string
-	 * @return String converted to wchar_t
+	 * @return		String converted to wchar_t
 	*/
 	[[nodiscard]] std::wstring StringCast(const std::u16string& param);
 
 	/**
-	 * Convert u32string or char32_t to wstring
-	 *
+	 * @brief		Convert u32string or char32_t to wstring
 	 * @param param u32string or char32_t string
-	 * @return String converted to wchar_t
+	 * @return		String converted to wchar_t
 	*/
 	[[nodiscard]] std::wstring StringCast(const std::u32string& param);
 }

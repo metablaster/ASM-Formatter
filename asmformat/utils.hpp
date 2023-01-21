@@ -113,8 +113,7 @@ namespace wsl
 	};
 
 	/**
-	 * @brief	ANSI string replacement function
-	 * 
+	 * @brief			ANSI string replacement function
 	 * @param source	String which process
 	 * @param from		Replace what?
 	 * @param to		Replacement
@@ -122,8 +121,7 @@ namespace wsl
 	void ReplaceAll(std::string& source, const std::string& from, const std::string& to);
 
 	/**
-	 * @brief	Wide string replacement function
-	 *
+	 * @brief			Wide string replacement function
 	 * @param source	String which process
 	 * @param from		Replace what?
 	 * @param to		Replacement
