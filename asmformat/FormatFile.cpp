@@ -22,16 +22,6 @@
 #include "utils.hpp"
 
 
-/**
- * Line break used in file
-*/
-enum class LineBreak
-{
-	LF,
-	CRLF,
-	CR
-};
-
 // Minimum capacity for strings
 constexpr std::size_t MIN_CAPACITY = 1000;
 
@@ -152,7 +142,7 @@ inline bool PeekNextCodeLine(std::stringstream& filedata, std::string& codeline)
 	return isblank;
 }
 
-void FormatFileW(std::wstringstream& filedata, unsigned tab_width, bool spaces)
+void FormatFileW(std::wstringstream& filedata, unsigned tab_width, bool spaces, LineBreak line_break)
 {
 	#ifdef _DEBUG
 	std::wstring maxlenline;
@@ -172,6 +162,13 @@ void FormatFileW(std::wstringstream& filedata, unsigned tab_width, bool spaces)
 
 	const bool crlf = GetLineBreak(filedata) == LineBreak::CRLF;
 	const std::wstring linebreak = crlf ? L"\r\n" : L"\n";
+
+	// crlf != (line_break != LineBreak::CRLF)
+	// true (crlf) != false (CRLF) = true
+	// true (crlf) != true (LF)    = false
+	// false (lf)  != true (LF)    = true
+	// false (lf)  != false (CRLF) = false
+	const bool preserve = (line_break == LineBreak::Preserve) || (crlf != (line_break != LineBreak::CRLF));
 	
 	// Formatting a soure file consists of 2 while loops, each looping trough lines in file,
 	// First loop trims leading and trailing spaces and tabs and calculates the widest code line containing an inline comment
@@ -377,6 +374,25 @@ void FormatFileW(std::wstringstream& filedata, unsigned tab_width, bool spaces)
 	// Remove surplus blank lines at the end of a file
 	regex = L"(" + linebreak + L")+$";
 	result = std::regex_replace(result, regex, linebreak);
+
+	if (!preserve)
+	{
+		switch (line_break)
+		{
+		case LineBreak::LF:
+			wsl::ReplaceAll(result, linebreak, L"\n");
+			break;
+		case LineBreak::CRLF:
+			wsl::ReplaceAll(result, linebreak, L"\r\n");
+			break;
+		case LineBreak::CR:
+			ShowError(wsl::ErrorCode::NoImplementation, "CR line break not implemeted");
+			break;
+		case LineBreak::Preserve:
+		default:
+			break;
+		}
+	}
 	
 	if (filedata.bad() || (!filedata.eof() && filedata.fail()))
 	{
@@ -396,7 +412,7 @@ void FormatFileW(std::wstringstream& filedata, unsigned tab_width, bool spaces)
 	#endif
 }
 
-void FormatFileA(std::stringstream& filedata, unsigned tab_width, bool spaces)
+void FormatFileA(std::stringstream& filedata, unsigned tab_width, bool spaces, LineBreak line_break)
 {
 	#ifdef _DEBUG
 	std::string maxlenline;
@@ -416,6 +432,13 @@ void FormatFileA(std::stringstream& filedata, unsigned tab_width, bool spaces)
 
 	const bool crlf = GetLineBreak(filedata) == LineBreak::CRLF;
 	const std::string linebreak = crlf ? "\r\n" : "\n";
+
+	// crlf != (line_break != LineBreak::CRLF)
+	// true (crlf) != false (CRLF) = true
+	// true (crlf) != true (LF)    = false
+	// false (lf)  != true (LF)    = true
+	// false (lf)  != false (CRLF) = false
+	const bool preserve = (line_break == LineBreak::Preserve) || (crlf != (line_break != LineBreak::CRLF));
 
 	// Formatting a soure file consists of 2 while loops, each looping trough lines in file,
 	// First loop trims leading and trailing spaces and tabs and calculates the widest code line containing an inline comment
@@ -621,6 +644,25 @@ void FormatFileA(std::stringstream& filedata, unsigned tab_width, bool spaces)
 	// Remove surplus blank lines at the end of a file
 	regex = "(" + linebreak + ")+$";
 	result = std::regex_replace(result, regex, linebreak);
+
+	if (!preserve)
+	{
+		switch (line_break)
+		{
+		case LineBreak::LF:
+			wsl::ReplaceAll(result, linebreak, "\n");
+			break;
+		case LineBreak::CRLF:
+			wsl::ReplaceAll(result, linebreak, "\r\n");
+			break;
+		case LineBreak::CR:
+			ShowError(wsl::ErrorCode::NoImplementation, "CR line break not implemeted");
+			break;
+		case LineBreak::Preserve:
+		default:
+			break;
+		}
+	}
 
 	if (filedata.bad() || (!filedata.eof() && filedata.fail()))
 	{

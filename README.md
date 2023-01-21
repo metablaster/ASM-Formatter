@@ -37,7 +37,10 @@ Alternatively you can download already built executables from `Releases` section
 
 Default encoding, if not specified is `utf8`\
 Default tab width, if not specified is 4\
-By default tabs are used if `--spaces` is not specified
+By default tabs are used if `--spaces` is not specified\
+By default line breaks are preserved but you can override with `--linebreaks` option,\
+`--linebreaks` option currently doesn't have any effect on UTF-16 encoded files,
+UTF-16 files are always formatted with `CRLF`
 
 For more help and program command line syntax run `asmformat.exe --help`
 

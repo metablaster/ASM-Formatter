@@ -15,6 +15,7 @@
 
 #pragma once
 #include <filesystem>
+#include <vector>
 
 
 /**
@@ -55,7 +56,7 @@ enum class BOM
  * @param bom		receives BOM enumeration
  * @return			BOM enumeration which also handles no BOM case
 */
-[[nodiscard]] std::string GetBOM(const std::filesystem::path& filepath, BOM& bom);
+[[nodiscard]] BOM GetBOM(const std::filesystem::path& filepath, std::vector<unsigned char>& bom);
 
 /**
  * @brief Get Byte Order Mark from string buffer if there is one
@@ -64,7 +65,14 @@ enum class BOM
  * @param bom		receives BOM enumeration
  * @return			BOM enumeration which also handles no BOM case
 */
-[[nodiscard]] std::string GetBOM(const std::string& buffer, BOM& bom);
+[[nodiscard]] BOM GetBOM(const std::string& buffer, std::vector<unsigned char>& bom);
+
+/**
+ * @brief		Create BOM string
+ * @param bom	Specify BOM which to create
+ * @return		A string which which will receive the BOM string
+*/
+std::vector<unsigned char> GetBOM(BOM bom);
 
 /**
  * @brief	Get size of a file in bytes
@@ -117,8 +125,9 @@ void WriteFileW(const std::filesystem::path& filepath, const std::wstring& filed
  *
  * @param filepath	Full path and file name of a source file
  * @param filedata	ANSI string contents which to write to file
+ * @param append	Set to true to append data to file, by default file contents are replaced
 */
-void WriteFileBytes(const std::filesystem::path& filepath, const std::string& filedata);
+void WriteFileBytes(const std::filesystem::path& filepath, const std::string& filedata, bool append);
 
 /**
  * Write formatted source file contents back to file encoded as ANSI

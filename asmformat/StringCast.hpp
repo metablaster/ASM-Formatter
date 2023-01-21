@@ -10,6 +10,7 @@
  * @file asmformat\StringCast.hpp
  *
  * String conversion function declarations
+ * https://learn.microsoft.com/en-us/windows/win32/intl/code-page-identifiers
  *
 */
 
@@ -21,16 +22,16 @@
 namespace wsl
 {
 	/**
-	* Function to convert from string to wstring
-	*
-	* @param param	string to convert
+	 * Function to convert from string to wstring
+	 *
+	 * @param param	string to convert
 	*/
 	[[nodiscard]] std::wstring StringCast(const std::string& param, UINT code_page = CP_UTF8);
 
 	/**
-	* Function to convert from wstring to string
-	*
-	* @param param	string to convert
+	 * Function to convert from wstring to string
+	 *
+	 * @param param	string to convert
 	*/
 	[[nodiscard]] std::string StringCast(const std::wstring& param, UINT code_page = CP_UTF8);
 

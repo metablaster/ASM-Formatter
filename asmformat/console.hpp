@@ -30,7 +30,7 @@ namespace wsl
 
 	/**
 	 * Helper function to set console handler
-	 * NOTE: To make it work, in VS uncheck: Exception Settings -> Win32 Exceptions -> Control-C
+	 * NOTE: To make it work during debugging, in VS uncheck: Exception Settings -> Win32 Exceptions -> Control-C
 	*/
 	bool RegisterConsoleHandler();
 

@@ -27,11 +27,11 @@ namespace wsl
 		switch (signal)
 		{
 		case CTRL_C_EVENT:
-			ExitProcess(0);
+			ExitProcess(0u);
 		case CTRL_BREAK_EVENT:
 			break;
 		case CTRL_CLOSE_EVENT:
-			ExitProcess(0);
+			ExitProcess(0u);
 		case CTRL_LOGOFF_EVENT:
 		case CTRL_SHUTDOWN_EVENT:
 			break;
@@ -46,7 +46,7 @@ namespace wsl
 	{
 		// MSDN: If the function fails, the return value is zero.
 		// To get extended error information, call GetLastError
-		if (SetConsoleCtrlHandler(HandlerRoutine, TRUE) == 0)
+		if (SetConsoleCtrlHandler(HandlerRoutine, TRUE) == FALSE)
 		{
 			ShowError(ERROR_INFO_HR, "Could not set console handler");
 			return false;
@@ -59,7 +59,7 @@ namespace wsl
 	{
 		// MSDN: Determines if a specified code page is valid
 		// Returns a nonzero value if the code page is valid, or 0 if the code page is invalid
-		bool failed = (IsValidCodePage(input) == 0) || (IsValidCodePage(output) == 0);
+		bool failed = (IsValidCodePage(input) == FALSE) || (IsValidCodePage(output) == FALSE);
 
 		if (failed)
 		{
@@ -69,7 +69,7 @@ namespace wsl
 
 		// MSDN: Sets the output code page used by the console associated with the calling process
 		// If the function succeeds, the return value is nonzero
-		failed = SetConsoleOutputCP(output) == 0;
+		failed = SetConsoleOutputCP(output) == FALSE;
 
 		if (failed)
 		{
@@ -78,7 +78,7 @@ namespace wsl
 
 		// MSDN: Sets the input code page used by the console associated with the calling process
 		// If the function succeeds, the return value is nonzero
-		if (SetConsoleCP(input) == 0)
+		if (SetConsoleCP(input) == FALSE)
 		{
 			failed = true;
 			ShowError(ERROR_INFO_HR, "Failed to set console input code page");

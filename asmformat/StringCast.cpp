@@ -26,10 +26,18 @@ namespace wsl
 		if (param.empty())
 			return std::wstring();
 
-		// TODO: flags for string conversion
-		DWORD flags = MB_ERR_INVALID_CHARS;
-		//flags |= MB_USEGLYPHCHARS;
-		//flags |= MB_PRECOMPOSED;
+		// MSDN: Determines if a specified code page is valid
+		// Returns a nonzero value if the code page is valid, or 0 if the code page is invalid
+		if (IsValidCodePage(code_page) == FALSE)
+		{
+			ShowError(ErrorCode::BadArgument, "Code page is not valid");
+			return std::wstring();
+		}
+
+		// Always use precomposed characters, this in line with WC_COMPOSITECHECK in WideCharToMultiByte
+		DWORD flags = MB_PRECOMPOSED;
+		// Use glyph characters instead of control characters
+		// flags |= MB_USEGLYPHCHARS;
 
 		switch (code_page)
 		{
@@ -41,36 +49,54 @@ namespace wsl
 		case 50229:
 		case 65000:
 		case 42:
+			// Must be 0, otherwise, the function fails with ERROR_INVALID_FLAGS
 			flags = 0;
 			break;
 		case 54936:
 		case CP_UTF8:
+			// Fail if an invalid input character is encountered
+			// MSDN: This flag only applies when CodePage is specified as CP_UTF8 or 54936.
+			// It cannot be used with other code page values.
 			flags = MB_ERR_INVALID_CHARS; // or 0
 			break;
 		default:
+			// Must be 0, otherwise, the function fails with ERROR_INVALID_FLAGS
 			if ((code_page >= 57002) && (code_page <= 57011))
 				flags = 0;
 			break;
 		}
 
-		const int source_char_size = static_cast<int>(param.size());
-		const int wchar_size_needed = MultiByteToWideChar(code_page, flags, param.c_str(), source_char_size, nullptr, 0);
+		const int source_string_size = static_cast<int>(param.size());
+		const int wchar_size_needed = MultiByteToWideChar(code_page, flags, param.c_str(),
+			// Size, in bytes, of the string indicated by the lpMultiByteStr parameter
+			source_string_size,
+			// Pointer to a buffer that receives the converted string
+			nullptr,
+			// If this value is 0, the function returns the required buffer size
+			0
+		);
 
+		// The function returns 0 if it does not succeed
 		if (wchar_size_needed == 0)
 		{
 			ShowError(ERROR_INFO);
 			return std::wstring();
 		}
 
-		std::wstring return_string(static_cast<const unsigned int>(wchar_size_needed), 0);
-
-		if (!MultiByteToWideChar(code_page, flags, param.c_str(), source_char_size, &return_string[0], wchar_size_needed))
+		std::wstring result(static_cast<const unsigned int>(wchar_size_needed), 0);
+		// Returns the number of characters written to the buffer indicated by lpWideCharStr if successful
+		const int wchars_written = MultiByteToWideChar(code_page, flags, param.c_str(), source_string_size,	&result[0],
+			// Size, in characters, of the buffer indicated by lpWideCharStr.
+			wchar_size_needed
+		);
+		
+		if (wchars_written == 0)
 		{
 			ShowError(ERROR_INFO);
 			return std::wstring();
 		}
 
-		return return_string;
+		return result;
 	}
 
 	std::string StringCast(const std::wstring& param, UINT code_page)
@@ -78,9 +104,21 @@ namespace wsl
 		if (param.empty())
 			return std::string();
 
-		DWORD flags = WC_ERR_INVALID_CHARS;
-		//flags |= WC_COMPOSITECHECK;
-		flags |= WC_NO_BEST_FIT_CHARS;
+		// MSDN: Determines if a specified code page is valid
+		// Returns a nonzero value if the code page is valid, or 0 if the code page is invalid
+		if (IsValidCodePage(code_page) == FALSE)
+		{
+			ShowError(ErrorCode::BadArgument, "Code page is not valid");
+			return std::string();
+		}
+
+		// Translate any Unicode characters that do not translate directly to multibyte equivalents to the default character specified by lpDefaultChar
+		DWORD flags = WC_NO_BEST_FIT_CHARS;
+		// Windows normally represents Unicode strings with precomposed data, making the use of the WC_COMPOSITECHECK flag unnecessary
+		// flags |= WC_COMPOSITECHECK;
+
+		// MSDN: For the CP_UTF7 and CP_UTF8 settings for CodePage, this parameter must be set to NULL.
+		LPCCH default_char = ((code_page == CP_UTF7) || (code_page == CP_UTF8)) ? nullptr : nullptr;
 
 		switch (code_page)
 		{
@@ -92,20 +130,34 @@ namespace wsl
 		case 50229:
 		case 65000:
 		case 42:
+			// Must be 0, otherwise, the function fails with ERROR_INVALID_FLAGS
 			flags = 0;
 			break;
 		case 54936:
 		case CP_UTF8:
+			// Fail if an invalid input character is encountered
+			// MSDN: This flag only applies when CodePage is specified as CP_UTF8 or 54936.
+			// It cannot be used with other code page values.
 			flags = WC_ERR_INVALID_CHARS; // or 0
 			break;
 		default:
+			// Must be 0, otherwise, the function fails with ERROR_INVALID_FLAGS
 			if ((code_page >= 57002) && (code_page <= 57011))
 				flags = 0;
 			break;
 		}
 
 		const int source_wchar_size = static_cast<int>(param.size());
-		const int char_size_needed = WideCharToMultiByte(code_page, flags, param.c_str(), source_wchar_size, nullptr, 0, nullptr, nullptr);
+
+		// If the function succeeds and cbMultiByte is 0, the return value is the required size, in bytes, for the buffer indicated by lpMultiByteStr
+		const int char_size_needed = WideCharToMultiByte(code_page, flags, param.c_str(),
+			// Size, in characters, of the string indicated by lpWideCharStr
+			source_wchar_size,
+			// Pointer to a buffer that receives the converted string
+			nullptr,
+			// If this value is 0, the function returns the required buffer size, in bytes, including any terminating null character
+			0,
+			default_char, nullptr);
 
 		if (char_size_needed == 0)
 		{
@@ -113,15 +165,33 @@ namespace wsl
 			return std::string();
 		}
 
-		std::string return_string(static_cast<const unsigned int>(char_size_needed), 0);
+		BOOL default_used = FALSE;
+		std::string result(static_cast<const unsigned int>(char_size_needed), 0);
 
-		if (!WideCharToMultiByte(code_page, flags, param.c_str(), source_wchar_size, &return_string[0], char_size_needed, nullptr, nullptr))
+		// If successful, returns the number of bytes written to the buffer pointed to by lpMultiByteStr
+		const int bytes_written = WideCharToMultiByte(code_page, flags, param.c_str(), source_wchar_size, &result[0],
+			// Size, in bytes, of the buffer indicated by lpMultiByteStr.
+			char_size_needed,
+			// Pointer to the character to use if a character cannot be represented in the specified code page
+			default_char,
+			// Pointer to a flag that indicates if the function has used a default character in the conversion.
+			&default_used
+		);
+
+		// The function returns 0 if it does not succeed
+		if (bytes_written == 0)
 		{
 			ShowError(ERROR_INFO);
 			return std::string();
 		}
 
-		return return_string;
+		// The flag is set to TRUE if one or more characters in the source string cannot be represented in the specified code page
+		if (default_used == TRUE)
+		{
+			ShowError(Exception(ErrorCode::ParseFailure, "One or more characters in the source string could not be represented in the specified code page"), ERROR_INFO, MB_ICONINFORMATION);
+		}
+
+		return result;
 	}
 
 	#if 0

@@ -39,7 +39,7 @@ int main(int argc, char* argv[])
 	#endif
 
 	fs::path executable_path = argv[0];
-	constexpr const char* syntax = " path\\file1.asm path\\file2.asm ... [--encoding ansi|utf8|utf16le] [--tabwidth N] [--spaces]";
+	constexpr const char* syntax = " path\\file1.asm path\\file2.asm ... [--encoding ansi|utf8|utf16le] [--tabwidth N] [--spaces] [--linebreaks crlf|lf]";
 
 	if (argc < 2)
 	{
@@ -56,15 +56,17 @@ int main(int argc, char* argv[])
 
 		std::cout << " --encoding\tspecifies encoding of source files if no BOM is present (defalt: utf8)" << std::endl;
 		std::cout << " --tabwidth\tspecifies tab width used in source files (defalt: 4)" << std::endl;
-		std::cout << " --spaces\tuse spaces instead of tabs (by defalt tabs are used)" << std::endl << std::endl;
+		std::cout << " --spaces\tuse spaces instead of tabs (by defalt tabs are used)" << std::endl;
+		std::cout << " --linebreaks\tperform line breaks conversion (by defalt line breaks are preserved)" << std::endl;
 
 		return 0;
 	}
 
 	// Default values
 	bool spaces = false;
-	unsigned tab_width = 4;
+	unsigned tabwidth = 4;
 	Encoding encoding = Encoding::UTF8;
+	LineBreak linebreaks = LineBreak::Preserve;
 
 	std::vector<fs::path> files;
 
@@ -114,7 +116,28 @@ int main(int argc, char* argv[])
 					return ExitCode(ErrorCode::InvalidParameter);
 				}
 
-				tab_width = width;
+				tabwidth = width;
+			}
+			else if (param == "--linebreaks")
+			{
+				if (arg == "crlf")
+				{
+					linebreaks = LineBreak::CRLF;
+				}
+				else if (arg == "lf")
+				{
+					linebreaks = LineBreak::LF;
+				}
+				else if (arg == "cr")
+				{
+					ShowError(ErrorCode::NoImplementation, "CR linebreak is not implemented");
+					return ExitCode(ErrorCode::NoImplementation);
+				}
+				else
+				{
+					ShowError(ErrorCode::InvalidParameter, "The specified linebreak '" + arg + "' was not recognized");
+					return ExitCode(ErrorCode::InvalidParameter);
+				}
 			}
 			else
 			{
@@ -164,8 +187,9 @@ int main(int argc, char* argv[])
 		std::cout << "Formatting file " << file_path.filename() << std::endl;
 
 		#ifdef _DEBUG
-		BOM bom;
-		std::string bom_string = GetBOM(file_path, bom);
+		std::vector<unsigned char> bom_string;
+		const BOM bom = GetBOM(file_path, bom_string);
+		static_cast<void>(bom);
 		#endif
 
 		switch (encoding)
@@ -174,8 +198,8 @@ int main(int argc, char* argv[])
 		{
 			std::stringstream filedata(LoadFileA(file_path.string()));
 
-			FormatFileA(filedata, tab_width, spaces);
-			WriteFileBytes(file_path, filedata.str());
+			FormatFileA(filedata, tabwidth, spaces, linebreaks);
+			WriteFileBytes(file_path, filedata.str(), false);
 			break;
 		}
 		case Encoding::UTF8:
@@ -183,19 +207,24 @@ int main(int argc, char* argv[])
 			std::string filebytes = LoadFileBytes(file_path);
 			std::wstringstream filedata(StringCast(filebytes));
 
-			FormatFileW(filedata, tab_width, spaces);
+			FormatFileW(filedata, tabwidth, spaces, linebreaks);
 
 			filebytes = StringCast(filedata.str());
-			WriteFileBytes(file_path, filebytes);
+			WriteFileBytes(file_path, filebytes, false);
 			break;
 		}
 		case Encoding::UTF16LE:
 		{
 			std::wstringstream filedata(LoadFileW(file_path, encoding));
-			FormatFileW(filedata, tab_width, spaces);
+			FormatFileW(filedata, tabwidth, spaces, linebreaks);
 
+			#if TRUE
+			// TODO: Converts from LF to CRLF
+			WriteFileW(file_path, filedata.str(), encoding);
+			#else
 			std::string coverted = StringCast(filedata.str());
-			WriteFileBytes(file_path, coverted);
+			WriteFileBytes(file_path, coverted, false);
+			#endif
 			break;
 		}
 		default:

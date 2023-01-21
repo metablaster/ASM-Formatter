@@ -18,6 +18,17 @@
 
 
 /**
+ * Line breaks used in file
+*/
+enum class LineBreak
+{
+	LF,
+	CRLF,
+	CR,
+	Preserve	// Use existing line breaks
+};
+
+/**
  * Format asm source file encoded as UTF-8, UTF-16 or UTF-16LE
  *
  * @param filedata	file contents loaded into memory
@@ -25,7 +36,7 @@
  * @param spaces	Use spaces instead of tabs?
  * 
 */
-void FormatFileW(std::wstringstream& filedata, unsigned tab_width, bool spaces);
+void FormatFileW(std::wstringstream& filedata, unsigned tab_width, bool spaces, LineBreak line_break = LineBreak::Preserve);
 
 /**
  * Format asm source file encoded as ANSI
@@ -35,4 +46,4 @@ void FormatFileW(std::wstringstream& filedata, unsigned tab_width, bool spaces);
  * @param spaces	Use spaces instead of tabs?
  *
 */
-void FormatFileA(std::stringstream& filedata, unsigned tab_width, bool spaces);
+void FormatFileA(std::stringstream& filedata, unsigned tab_width, bool spaces, LineBreak line_break = LineBreak::Preserve);

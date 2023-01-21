@@ -23,16 +23,55 @@
 using namespace wsl;
 
 
-std::string GetBOM(const std::filesystem::path& filepath, BOM& bom)
+BOM GetBOM(const std::filesystem::path& filepath, std::vector<unsigned char>& bom)
 {
 	std::string buffer = LoadFileBytes(filepath, 4);
 	buffer.shrink_to_fit();
 	return GetBOM(buffer, bom);
 }
 
-std::string GetBOM(const std::string& buffer, BOM& bom)
+std::vector<unsigned char> GetBOM(BOM bom)
 {
-	std::string result;
+	std::vector<unsigned char> result;
+
+	switch (bom)
+	{
+	case BOM::utf8:
+		result.push_back(0xEF);
+		result.push_back(0xBB);
+		result.push_back(0xBF);
+		break;
+	case BOM::utf16le:
+		result.push_back(0xFF);
+		result.push_back(0xFE);
+		break;
+	case BOM::utf16be:
+		result.push_back(0xFE);
+		result.push_back(0xFF);
+		break;
+	case BOM::utf32le:
+		result.push_back(0xFF);
+		result.push_back(0xFE);
+		result.push_back(0x00);
+		result.push_back(0x00);
+		break;
+	case BOM::utf32be:
+		result.push_back(0x00);
+		result.push_back(0x00);
+		result.push_back(0xFE);
+		result.push_back(0xFF);
+		break;
+	case BOM::none:
+	default:
+		break;
+	}
+
+	return result;
+}
+
+BOM GetBOM(const std::string& buffer, std::vector<unsigned char>& bom)
+{
+	BOM ebom = BOM::none;
 
 	if (!buffer.empty())
 	{
@@ -43,43 +82,32 @@ std::string GetBOM(const std::string& buffer, BOM& bom)
 
 		if ((ch1 == '\xEF') && (ch2 == '\xBB') && (ch3 == '\xBF'))
 		{
-			// UTF-8
-			bom = BOM::utf8;
-			result = { '\xEF', '\xBB', '\xBF' };
+			ebom = BOM::utf8;
 		}
 		else if ((ch1 == '\xFF') && (ch2 == '\xFE'))
 		{
-			// UTF-16, little endian
-			bom = BOM::utf16le;
-			result = { '\xFF', '\xFE' };
+			ebom = BOM::utf16le;
 		}
 		else if ((ch1 == '\xFE') && (ch2 == '\xFF'))
 		{
-			// UTF-16, big endian
-			bom = BOM::utf16be;
-			result = { '\xFE', '\xFF' };
+			ebom = BOM::utf16be;
 		}
 		else if ((ch1 == '\xFF') && (ch2 == '\xFE') && (ch3 == '\x00') && (ch4 == '\x00'))
 		{
-			// UTF-32, little endian
-			bom = BOM::utf32le;
-			result = { '\xFF', '\xFE', '\x00', '\x00' };
+			ebom = BOM::utf32le;
 		}
 		else if ((ch1 == '\x00') && (ch2 == '\x00') && (ch3 == '\xFE') && (ch4 == '\xFF'))
 		{
-			// UTF-32, big endian
-			bom = BOM::utf32be;
-			result = { '\x00', '\x00', '\xFE', '\xFF' };
+			ebom = BOM::utf32be;
 		}
 		else
 		{
-			bom = BOM::none;
+			ebom = BOM::none;
 		}
-
-		result.shrink_to_fit();
 	}
 
-	return result;
+	bom = GetBOM(ebom);
+	return ebom;
 }
 
 std::size_t GetFileByteCount(const std::filesystem::path& filepath)
@@ -152,7 +180,7 @@ std::wstring LoadFileW(const std::filesystem::path& filepath, const Encoding& en
 	}
 	else
 	{
-		ShowCrtError(Exception(ErrorCode::FunctionFailed, std::string("Failed to open file ") + filepath.string()), ERROR_INFO);
+		ShowCrtError(Exception(ErrorCode::FunctionFailed, "Failed to open file " + filepath.string()), ERROR_INFO);
 	}
 
 	return buffer;
@@ -179,7 +207,7 @@ std::string LoadFileBytes(const std::filesystem::path& filepath, DWORD bytes)
 	// MSDN: If the function fails, the return value is INVALID_HANDLE_VALUE
 	if (hFile == INVALID_HANDLE_VALUE)
 	{
-		ShowError(ERROR_INFO_HR, (std::string("Failed to open file ") + filepath.string()).c_str());
+		ShowError(ERROR_INFO_HR, ("Failed to open file " + filepath.string()).c_str());
 		return std::string();
 	}
 
@@ -216,7 +244,7 @@ std::string LoadFileBytes(const std::filesystem::path& filepath, DWORD bytes)
 		}
 
 		SetLastError(error);
-		ShowError(ERROR_INFO_HR, (std::string("Failed to read file ") + filepath.string()).c_str());
+		ShowError(ERROR_INFO_HR, ("Failed to read file " + filepath.string()).c_str());
 		return std::string();
 	}
 
@@ -257,7 +285,7 @@ std::string LoadFileA(const std::filesystem::path& filepath)
 	}
 	else
 	{
-		ShowCrtError(Exception(ErrorCode::FunctionFailed, std::string("Failed to open file ") + filepath.string()), ERROR_INFO);
+		ShowCrtError(Exception(ErrorCode::FunctionFailed, "Failed to open file " + filepath.string()), ERROR_INFO);
 	}
 
 	return buffer;
@@ -298,11 +326,11 @@ void WriteFileW(const std::filesystem::path& filepath, const std::wstring& filed
 	}
 	else
 	{
-		ShowCrtError(Exception(ErrorCode::FunctionFailed, std::string("Failed to write file ") + filepath.string()), ERROR_INFO);
+		ShowCrtError(Exception(ErrorCode::FunctionFailed, "Failed to write file " + filepath.string()), ERROR_INFO);
 	}
 }
 
-void WriteFileBytes(const std::filesystem::path& filepath, const std::string& filedata)
+void WriteFileBytes(const std::filesystem::path& filepath, const std::string& filedata, bool append)
 {
 	HANDLE hFile = CreateFileW(
 		filepath.c_str(),
@@ -314,6 +342,9 @@ void WriteFileBytes(const std::filesystem::path& filepath, const std::string& fi
 		NULL,
 		// If the specified file exists and is writable, the function overwrites the file,
 		// the function succeeds, and last-error code is set to ERROR_ALREADY_EXISTS
+		append ? OPEN_EXISTING :
+		// Opens a file or device, only if it exists.
+		// Otherwise the function fails and the last - error code is set to ERROR_FILE_NOT_FOUND
 		CREATE_ALWAYS,
 		// The file does not have other attributes set
 		FILE_ATTRIBUTE_NORMAL,
@@ -323,14 +354,22 @@ void WriteFileBytes(const std::filesystem::path& filepath, const std::string& fi
 
 	if (hFile == INVALID_HANDLE_VALUE)
 	{
-		ShowError(ERROR_INFO_HR, (std::string("Failed to open file ") + filepath.string()).c_str());
+		ShowError(ERROR_INFO_HR, ("Failed to open file " + filepath.string()).c_str());
 		return;
 	}
 
-	// Remove ERROR_ALREADY_EXISTS
-	SetLastError(0);
-	DWORD bytes_written;
+	if (!append)
+	{
+		// Remove ERROR_ALREADY_EXISTS
+		SetLastError(0);
+	}
+	else if (GetLastError() == ERROR_FILE_NOT_FOUND)
+	{
+		ShowError(ERROR_INFO_HR, ("Failed to open file " + filepath.string()).c_str());
+		return;
+	}
 
+	DWORD bytes_written = 0;
 	assert(std::numeric_limits<DWORD>::max() >= filedata.size());
 
 	const BOOL status = WriteFile(
@@ -348,14 +387,15 @@ void WriteFileBytes(const std::filesystem::path& filepath, const std::string& fi
 	{
 		const DWORD error = GetLastError();
 
-		// MSDN: If the function fails, the return value is zero.
 		if (CloseHandle(hFile) == 0)
 		{
 			ShowError(ERROR_INFO_HR, "Failed to close file");
 		}
 
 		SetLastError(error);
-		ShowError(ERROR_INFO_HR, (std::string("Failed to read file ") + filepath.string()).c_str());
+		ShowError(ERROR_INFO_HR, ("Failed to read file " + filepath.string()).c_str());
+
+		return;
 	}
 
 	if (CloseHandle(hFile) == 0)
@@ -384,6 +424,6 @@ void WriteFileA(const std::filesystem::path& filepath, const std::string& fileda
 	}
 	else
 	{
-		ShowCrtError(Exception(ErrorCode::FunctionFailed, std::string("Failed to write file ") + filepath.string()), ERROR_INFO);
+		ShowCrtError(Exception(ErrorCode::FunctionFailed, "Failed to write file " + filepath.string()), ERROR_INFO);
 	}
 }
