@@ -64,7 +64,7 @@ int main(int argc, char* argv[])
 	const std::string executable_name = executable_path.stem().string();
 	std::vector<std::string> all_params(argv + 1, argv + argc);
 
-	constexpr const char* version = "1.0.0";
+	constexpr const char* version = "0.3.0";
 	const bool nologo = std::find(all_params.begin(), all_params.end(), "--nologo") != all_params.end();
 	constexpr const char* syntax = " path\\file1.asm path\\file2.asm ... [--encoding ansi|utf8|utf16le] [--tabwidth N] [--spaces] [--linebreaks crlf|lf] [--compact] [--help] [--nologo]";
 
