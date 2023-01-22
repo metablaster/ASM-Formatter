@@ -1,38 +1,128 @@
+	; *****************************************************************
+	; This sample was taken from https://github.com/leonhad/asm-samples
+	; MIT License
+	; Copyright (C) 2019 Leonardo Alves da Costa
+	; -----------------------
+	; File was modifed by making the code style and syntax as ugly as
+	; possible to test ASM Formatter and udoing bad style
+	; This comment block must not be indented
+	; There should be blank line at the top of a file
+	; Blank line should follow, test by removing it
+	; *****************************************************************
+
+	.MODEL flat, c
+
+	.CODE
+; Comment prior proc should stay here, procedure label should not be indented
+			AVXPackedInt_16 proc
+
+
+			; Blank lines after proc should be removed
+
+
+	push ebp
+	mov ebp, esp
+
+	mov eax, [ebp+8]									         ; eax = *a, inline comment is misaligned
+	mov	ecx, [ebp+12]; ecx = *b, inline comment is too close
+	mov edx, [ebp+16]			;    	 edx = *c, inline comment has leading and trailing spaces
+
+; Multiple blank lines follow
+
+
+
+
+		;Comment missing space after semicolon
+			                    vmovdqa ymm0, ymmword ptr[eax]	; ymm0 = a, code is misaligned and has an incomplete tab
+	vmovdqa ymm1, ymmword ptr[ecx]	; ymm1 = b
+
+; Comment with trailing spaces and tabs
+	vpaddw ymm2, ymm0, ymm1		; ymm2 = ymm0 + ymm1
+	vpaddsw ymm3, ymm0, ymm1	; ymm3 = ymm0 + ymm1, signed saturation
+
+				      ; Comment with leading spaces and tabs
+	vpsubw ymm4, ymm0, ymm1
+	vpsubsw ymm5, ymm0, ymm1
+
+		; Blank line follows this comment but should be put right above code
+
+	vpminsw ymm6, ymm0, ymm1	; signed minimum
+	vpmaxsw ymm7, ymm0, ymm1	; signed maximum
+
+	; save results, the following comments contains UTF-8 chars
+	; λόγους οὓς ἀκούω· τοὺς μὲν γὰρ λόγους περὶ τοῦ
+	; ექსპერტებს ისეთ დარგებში როგორიცაა ინტერნეტი და Unicode-ი
+	; ℕ ⊆ ℕ₀ ⊂ ℤ ⊂ ℚ ⊂ ℝ ⊂ ℂ, ⊥ < a ≠ b ≡ c ≤ d ≪ ⊤ ⇒ (A ⇔ B)
+	; The following comment contains 4 byte chars
+	; 𒀠 𒁂 𒂷 𒅉 𒉶 𓀤 𓂚 𓂶 𝅙 🀄 🌳 🍰 🔑 😁
+	vmovdqa ymmword ptr[edx], ymm2
+	vmovdqa ymmword ptr[edx+32], ymm3
+	vmovdqa ymmword ptr[edx+64], ymm4
+	vmovdqa ymmword ptr[edx+96], ymm5
+	vmovdqa ymmword ptr[edx+128], ymm6
+	vmovdqa ymmword ptr[edx+160], ymm7
+
+	vzeroupper					; avoid performance penalties
+
+	pop ebp
+	ret
+
+
+	; Comment prior endp, endp should not be indented, blank line should follow endp
+			AVXPackedInt_16 endp
+AVXPackedInt_32 PROC
+	push ebp
+	mov ebp, esp
+
+; Following sections of code contain surplus lines
+	mov eax, [ebp+8]			; eax = *a
+	mov	ecx, [ebp+12]			; ecx = *b
+	mov edx, [ebp+16]			; edx = *c
+
+
+
+
+	vmovdqa ymm0, ymmword ptr[eax]	; ymm0 = a
+	vmovdqa ymm1, ymmword ptr[ecx]	; ymm1 = b
+
+
+
+
+	vphaddd ymm2, ymm0, ymm1	;		horizontal add, leading tabs in comment
+	vphsubd ymm3, ymm0, ymm1	; horizontal sub
+	vpmulld ymm4, ymm0, ymm1	; signed mul
+	vpsllvd ymm5, ymm0, ymm1	; logical shift left
+	vpsravd ymm6, ymm0, ymm1	; arimethic  shift 		right, this comment 	contains surplus   spaces within comment
+
+	; save results, scrambled code, leadign and trailing spaces
+	              vmovdqa ymmword ptr[edx], ymm2
+													vmovdqa ymmword ptr[edx+32], ymm3
+	vmovdqa ymmword ptr[edx+64], ymm4
+vmovdqa ymmword ptr[edx+96], ymm5
+				    vmovdqa ymmword ptr[edx+128], ymm6
+
+	vzeroupper					; avoid performance penalties
+
+;a bunch of blank lines after endp should be replaced by single line
+; blank lines before endp should be removed completely
+	pop ebp
+	ret
+
+
+
+AVXPackedInt_32 ENDP
+
+
+
+
+	END
+
+; a bunch of blank lines follow that should be replaced by single blank line
 
 
 
 
 
 
-  ;***************************************
-; Do not indent source file description
-  ; Test me: $(SolutionDir)assets\utf8-BOM.asm
-				;***************************************
 
 
- ;		   very bad source file
-	nl = 10                ; 4 (+1)
-	maxLen = 256                 ; 2 (+1)
-	public getTitle   ; 2
- getTitle proc			 ;-3
-	lea rax, titleStr   ; 1
-	ret                               ; 5 (+2)
-		  ; comment
-	  getTitle endp     ;ASCII code
-	public asmMain                ;.Οὐχὶ ταὐτὰ παρίσταταί μοι γιγνώσκειν, ὦ ἄνδρες ᾿Αθηναῖοι,
-		asmMain proc											;			ASCII code
-	lea rcx, prompt                          ;  Зарегистрируйтесь сейчас на Десятую Международную Конференцию по
-	   call printf                       ;ASCII code
-	   ;some comment
-	mov input, 0         ; 4 bytes chars are 𒂕 𒃼
-	lea rcx, input
-; comment
-mov rdx, maxLen											  ;ASCII code
-	call readLine             ;     ASCII code
-lea rcx, fmtStr   ; ASCII code
-	lea rdx, input             ;ASCII code
-		call printf            ;ASCII code
-	add rsp, 56  ; ASCII code
-	   ret                          ; ASCII code
-asmMain endp
-  end

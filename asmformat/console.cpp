@@ -16,7 +16,6 @@
 #include "pch.hpp"
 #include "console.hpp"
 #include "error.hpp"
-#include "ErrorMacros.hpp"
 #include "ErrorCode.hpp"
 
 

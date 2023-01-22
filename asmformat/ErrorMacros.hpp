@@ -14,6 +14,11 @@
 */
 
 #pragma once
+#include <cstring>
+//#include "error.hpp"
+//#include "ErrorCode.hpp"
+//#include "exception.hpp"
+
 
 // Exception class constructor takes std::string which may throw or
 // ShowError takes Exception class

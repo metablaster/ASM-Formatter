@@ -104,7 +104,7 @@ If you don't specify full path to file current working directory of `asmformat` 
 
 The following sample animation demonstrates current rudimentary capabilities:
 
-![Demonstration](/assets/presentation.gif)
+![Demonstration](/assets/demonstration.gif)
 
 [masm]: https://learn.microsoft.com/en-us/cpp/assembler/masm/microsoft-macro-assembler-reference
 [badge license]: https://img.shields.io/static/v1?label=License&message=MIT&color=success&style=plastic

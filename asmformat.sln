@@ -17,9 +17,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "assets", "assets", "{4713F9F3-6246-4049-9785-1372543D0F2D}"
 	ProjectSection(SolutionItems) = preProject
-		assets\ansi-LF.asm = assets\ansi-LF.asm
-		assets\ansi.asm = assets\ansi.asm
+		assets\ANSI-LF.asm = assets\ANSI-LF.asm
+		assets\ANSI.asm = assets\ANSI.asm
 		assets\ANSI.txt = assets\ANSI.txt
+		assets\ASCII.asm = assets\ASCII.asm
 		assets\ASCII.txt = assets\ASCII.txt
 		assets\utf16be.asm = assets\utf16be.asm
 		assets\utf16le-LF.asm = assets\utf16le-LF.asm
