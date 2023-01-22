@@ -259,6 +259,7 @@ std::string LoadFileBytes(const std::filesystem::path& filepath, DWORD bytes)
 
 std::string LoadFileA(const std::filesystem::path& filepath)
 {
+	// TODO: This function does not read \r, question is what else does it not read?
 	FILE* file = NULL;
 	std::string buffer;
 

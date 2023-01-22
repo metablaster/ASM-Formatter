@@ -38,22 +38,24 @@ from `Build` directory somewhere where it will be accessible, ex. `PATH`.
 
 Alternatively you can download already built executable from `Releases` section.
 
-- Default encoding, if not specified is `utf8`, to override use `--encoding` option
+- Default encoding, if not specified is `utf8`, to override use `--encoding` option.
 - Default tab width, if not specified is 4, to override use `tabwidth` option,\
-  note that tab width option also affects spaces!
-- By default tabs are used, to use spaces pass `--spaces` option to command line
+  note that tab width option also affects spaces.
+- By default tabs are used, to use spaces pass `--spaces` option to command line.
 - By default line breaks are preserved but you can override with `--linebreaks` option,\
   `--linebreaks` option currently doesn't have any effect on UTF-16 encoded files,
   UTF-16 files are always formatted with `CRLF`
-- By default surplus blank lines are removed at the top and at the end of a file, as well as blank
-  lines around procedures to make them compacted.\
+- By default surplus blank lines are removed at the top and at the end of a file, as well as surplus
+  blank lines around procedure labels to make them compacted to code.\
   if you whish to replace all surplus blank lines entirely with a single blank line specify
   `--compact` option.
 
 For up to date help and program command line syntax run `asmformat.exe --help`
 
 You have to be careful to specify correct encoding which depends on encoding of your asm sources,\
-specifying incorrect encoding may turn your sources into a pile garbage symbols.\
+specifying incorrect encoding may turn your sources into a pile garbage symbols, also formatting
+might not works as expected if encoding is not correct.
+
 Also tab width option must be correct, which depends on your editor configuration,
 specifying incorrect tab width will produce unexpected results.
 
@@ -74,7 +76,7 @@ Here is sample task configuration for `VSCode` which needs to be put into `.vsco
 			"args": [
 				"${file}",
 				"--encoding",
-				"utf8",
+				"ansi",
 				"--tabwidth",
 				"4"
 			],

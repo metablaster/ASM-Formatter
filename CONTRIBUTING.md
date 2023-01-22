@@ -51,8 +51,8 @@ For this reason only the following contributions are acceptable:
 - Your formatting implementation must be very basic and minimal because personal coding style
 preferences must not dictate how the formatter will work.
 
-- Implementation for other assemblers which should cover everything that is already implemented by
-this project.
+- Implementation for other assemblers which should cover functionalities that is already
+  implemented by this project.
 
 - Implementation for other operating systems
 
@@ -64,7 +64,7 @@ If you wish to do something unorthodox or if you believe some new feature might 
 please open a new issue to discuss it first.
 
 Formatting implementation for other assemblers should be a new function rather than mixed with
-existing format functions.
+existing formatting functions.
 
 ## Development environment
 

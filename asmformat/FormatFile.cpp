@@ -22,28 +22,56 @@
 
 
 /**
- * @brief				Check if line should be indented
- * @tparam RegexType	std::regex
+ * @brief Provides information about a line
+*/
+struct LineInfo
+{
+	bool proc = false;
+	bool endp = false;
+	bool comment = false;
+	bool blank = false;
+};
+
+/**
+ * @brief				Get detailed information about the line
  * @tparam StringType	std::string
+ * @tparam RegexType	std::regex
  * @param line			line which to check
- * @return				true if the line should be indented
+ * @return				LineInfo struct
 */
 template<typename RegexType, typename StringType>
-[[nodiscard]] inline bool TestIndentLine(const StringType& line)
+[[nodiscard]] LineInfo GetLineInfo(const StringType& line)
 {
-	RegexType regex;
+	LineInfo lineinfo = { 0 };
 
 	if constexpr (std::is_base_of_v<std::basic_string<wchar_t>, StringType>)
 	{
-		regex = L"\\w+\\s+(proc|endp)", std::regex_constants::icase;
+		if (lineinfo.proc = std::regex_search(line, RegexType(L"\\w+\\s+proc", std::regex_constants::icase)); lineinfo.proc)
+			return lineinfo;
+
+		if (lineinfo.endp = std::regex_search(line, RegexType(L"\\w+\\s+endp", std::regex_constants::icase)); lineinfo.endp)
+			return lineinfo;
 	}
 	else
 	{
-		regex = "\\w+\\s+(proc|endp)", std::regex_constants::icase;
+		if (lineinfo.proc = std::regex_search(line, RegexType("\\w+\\s+proc", std::regex_constants::icase)); lineinfo.proc)
+			return lineinfo;
+
+		if (lineinfo.endp = std::regex_search(line, RegexType("\\w+\\s+endp", std::regex_constants::icase)); lineinfo.endp)
+			return lineinfo;
 	}
 
-	const bool proc = std::regex_search(line, regex);
-	return !proc;
+	return lineinfo;
+}
+
+/**
+ * @brief				Check if line should be indented
+ * @param line			line which to check
+ * @return				true if the line should be indented
+*/
+[[nodiscard]] inline bool TestIndentLine(const LineInfo& lineinfo)
+{
+	return !(lineinfo.proc || lineinfo.endp);
 }
 
 /**
@@ -73,11 +101,16 @@ inline void PeekNextLine(StreamType& filedata, StringType& nextline)
 template<typename StringType, typename StreamType>
 [[nodiscard]] inline LineBreak GetLineBreak(StreamType& filedata)
 {
-	StringType nextline;
-	// TODO: What if next line is EOF?
-	PeekNextLine(filedata, nextline);
+	typename StringType::value_type cr;
 
-	if (nextline.empty() || (*(nextline.cend() - 1) != L'\r'))
+	if constexpr (std::is_base_of_v<std::basic_string<wchar_t>, StringType>)
+		cr = L'\r';
+	else cr = '\r';
+
+	StringType nextline;
+	PeekNextLine(filedata, nextline);
+	
+	if (nextline.empty() || (*(nextline.cend() - 1) != cr))
 		return LineBreak::LF;
 
 	return LineBreak::CRLF;
@@ -102,13 +135,8 @@ template<typename StreamType, typename StringType>
 	const std::streampos pos = filedata.tellg();
 
 	if constexpr (std::is_base_of_v<std::basic_string<wchar_t>, StringType>)
-	{
 		semicolon = L";";
-	}
-	else
-	{
-		semicolon = ";";
-	}
+	else semicolon = ";";
 
 	while (std::getline(filedata, codeline).good())
 	{
@@ -170,8 +198,8 @@ template<typename StringType, typename StreamType>
 // Minimum capacity for strings
 constexpr std::size_t MIN_CAPACITY = 1000;
 
-// Was previous line blank?
-static bool previous_blank = false;
+// Information about previous line
+static LineInfo previous_line;
 
 // Insert new blank line?
 static bool insert_blankline = false;
@@ -288,34 +316,41 @@ void FormatFileW(std::wstringstream& filedata, unsigned tab_width, bool spaces, 
 
 		if (line.empty())
 		{
-			previous_blank = true;
+			previous_line.blank = true;
 		}
 		else
 		{
 			// How comments are indented depends on what's after those comments
 			if (line.starts_with(L";"))
 			{
+				LineInfo nextcode = { 0 };
 				std::wstring nextline;
 
 				// Peek at next code line unless blank line is reached
 				const bool isblank = PeekNextCodeLine(filedata, nextline, crlf);
 
-				// Will next line be indented?
-				const bool next_indent = !isblank && TestIndentLine<std::wregex>(nextline);
+				if (!isblank)
+					nextcode = GetLineInfo<std::wregex>(nextline);
+
+				// Will next code line be indented?
+				const bool next_indent = !isblank && TestIndentLine(nextcode);
 
 				// Make only one space between semicolon and comment
 				regex = L";\\s*";
 				const std::wstring replacement = next_indent ? tab + L"; " : L"; ";
 				line = std::regex_replace(line, regex, replacement);
+
+				if (nextcode.proc && !previous_line.comment)
+					result += linebreak;
+
+				previous_line.comment = true;
 			}
 			else
 			{
-				const bool is_proc = std::regex_search(line, std::wregex(L"\\w+\\s+proc", std::regex_constants::icase));
-				const bool is_endproc = std::regex_search(line, std::wregex(L"\\w+\\s+endp", std::regex_constants::icase));
+				const LineInfo lineinfo = GetLineInfo<std::wregex>(line);
 
 				// Is code line indented with tab?
-				// Do not indent procedure labels
-				const bool indent = !(is_proc || is_endproc);
+				const bool indent = TestIndentLine(lineinfo);
 
 				if (indent)
 				{
@@ -323,16 +358,17 @@ void FormatFileW(std::wstringstream& filedata, unsigned tab_width, bool spaces, 
 					line.insert(0, tab);
 				}
 
-				// if previous line is not blank and this is procedure insert blank line so that procedure blocks are sectioned
-				if (is_proc)
+				if (lineinfo.proc)
 				{
-					if (!previous_blank)
+					// if previous line is not blank and this is procedure insert blank line so that procedure blocks are sectioned
+					// if previous line is comment blank line was already inserted
+					if (!previous_line.blank && !previous_line.comment)
 						result += linebreak;
 
 					// Remove blank lines that follow proc label
 					skiplines = GetBlankCount<std::wstring>(filedata, crlf);
 				}
-				else if (is_endproc)
+				else if (lineinfo.endp)
 				{
 					// Insert blank line later when done processing current line
 					insert_blankline = true;
@@ -391,9 +427,11 @@ void FormatFileW(std::wstringstream& filedata, unsigned tab_width, bool spaces, 
 
 					line = code.append(comment);
 				}
+
+				previous_line.comment = false;
 			}
 
-			previous_blank = false;
+			previous_line.blank = false;
 		}
 
 		// \n dropped by getline \r dropped manually
@@ -403,6 +441,7 @@ void FormatFileW(std::wstringstream& filedata, unsigned tab_width, bool spaces, 
 		{
 			result += linebreak;
 			insert_blankline = false;
+			previous_line.blank = true;
 		}
 	}
 
@@ -426,7 +465,7 @@ void FormatFileW(std::wstringstream& filedata, unsigned tab_width, bool spaces, 
 	}
 
 	// Remove all blank lines before endproc
-	regex = L"^(" + linebreak + L")+(?=\\w+\\s+endp)";
+	regex = std::wregex(L"^(" + linebreak + L")+(?=\\w+\\s+endp)", std::regex_constants::icase);
 	result = std::regex_replace(result, regex, L"");
 
 	// Remove surplus blank lines at the end of a file
@@ -582,34 +621,41 @@ void FormatFileA(std::stringstream& filedata, unsigned tab_width, bool spaces, b
 
 		if (line.empty())
 		{
-			previous_blank = true;
+			previous_line.blank = true;
 		}
 		else
 		{
 			// How comments are indented depends on what's after those comments
 			if (line.starts_with(";"))
 			{
+				LineInfo nextcode = { 0 };
 				std::string nextline;
 
 				// Peek at next code line unless blank line is reached
 				const bool isblank = PeekNextCodeLine(filedata, nextline, crlf);
 
-				// Will next line be indented?
-				const bool next_indent = !isblank && TestIndentLine<std::regex>(nextline);
+				if (!isblank)
+					nextcode = GetLineInfo<std::regex>(nextline);
+
+				// Will next code line be indented?
+				const bool next_indent = !isblank && TestIndentLine(nextcode);
 
 				// Make only one space between semicolon and comment
 				regex = ";\\s*";
 				const std::string replacement = next_indent ? tab + "; " : "; ";
 				line = std::regex_replace(line, regex, replacement);
+
+				if (nextcode.proc && !previous_line.comment)
+					result += linebreak;
+
+				previous_line.comment = true;
 			}
 			else
 			{
-				const bool is_proc = std::regex_search(line, std::regex("\\w+\\s+proc", std::regex_constants::icase));
-				const bool is_endproc = std::regex_search(line, std::regex("\\w+\\s+endp", std::regex_constants::icase));
+				const LineInfo lineinfo = GetLineInfo<std::regex>(line);
 
 				// Is code line indented with tab?
-				// Do not indent procedure labels
-				const bool indent = !(is_proc || is_endproc);
+				const bool indent = TestIndentLine(lineinfo);
 
 				if (indent)
 				{
@@ -617,16 +663,17 @@ void FormatFileA(std::stringstream& filedata, unsigned tab_width, bool spaces, b
 					line.insert(0, tab);
 				}
 
-				// if previous line is not blank and this is procedure insert blank line so that procedure blocks are sectioned
-				if (is_proc)
+				if (lineinfo.proc)
 				{
-					if (!previous_blank)
+					// if previous line is not blank and this is procedure insert blank line so that procedure blocks are sectioned
+					// if previous line is comment blank line was already inserted
+					if (!previous_line.blank && !previous_line.comment)
 						result += linebreak;
 
 					// Remove blank lines that follow proc label
 					skiplines = GetBlankCount<std::string>(filedata, crlf);
 				}
-				else if (is_endproc)
+				else if (lineinfo.endp)
 				{
 					// Insert blank line later when done processing current line
 					insert_blankline = true;
@@ -685,9 +732,11 @@ void FormatFileA(std::stringstream& filedata, unsigned tab_width, bool spaces, b
 
 					line = code.append(comment);
 				}
+
+				previous_line.comment = false;
 			}
 
-			previous_blank = false;
+			previous_line.blank = false;
 		}
 
 		// \n dropped by getline \r dropped manually
@@ -697,6 +746,7 @@ void FormatFileA(std::stringstream& filedata, unsigned tab_width, bool spaces, b
 		{
 			result += linebreak;
 			insert_blankline = false;
+			previous_line.blank = true;
 		}
 	}
 
@@ -719,7 +769,7 @@ void FormatFileA(std::stringstream& filedata, unsigned tab_width, bool spaces, b
 	}
 
 	// Remove all blank lines before endproc
-	regex = "^(" + linebreak + ")+(?=\\w+\\s+endp)";
+	regex = std::regex("^(" + linebreak + ")+(?=\\w+\\s+endp)", std::regex_constants::icase);
 	result = std::regex_replace(result, regex, "");
 
 	// Remove surplus blank lines at the end of a file

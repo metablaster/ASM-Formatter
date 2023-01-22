@@ -91,7 +91,6 @@ std::vector<unsigned char> GetBOM(BOM bom);
 
 /**
  * @brief			Read source file into memory as byte stream
- *
  * @param filepath	Full path and file name of a source file
  * @param bytes		Specify how many bytes to read, if 0 all bytes are read
  * @return			Source file contents as ANSI string
