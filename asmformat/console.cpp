@@ -41,7 +41,7 @@ namespace wsl
 		return TRUE;
 	}
 
-	bool RegisterConsoleHandler()
+	bool RegisterConsoleHandler() noexcept(false)
 	{
 		// MSDN: If the function fails, the return value is zero.
 		// To get extended error information, call GetLastError
@@ -86,7 +86,7 @@ namespace wsl
 		return !failed;
 	}
 
-	std::pair<UINT, UINT> GetConsoleCodePage()
+	std::pair<UINT, UINT> GetConsoleCodePage() noexcept(false)
 	{
 		// MSDN: If the return value is zero, the function has failed.
 		// To get extended error information, call GetLastError

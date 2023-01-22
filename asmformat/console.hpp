@@ -33,7 +33,7 @@ namespace wsl
 	 * 
 	 * @return	true if function succeeded
 	*/
-	bool RegisterConsoleHandler();
+	bool RegisterConsoleHandler() noexcept(false);
 
 	/**
 	 * @brief Set console input and output code page
@@ -49,5 +49,5 @@ namespace wsl
 	 * @brief Get console input and output code page
 	 * @return	Input followed by Output code page pair
 	*/
-	std::pair<UINT, UINT> GetConsoleCodePage();
+	std::pair<UINT, UINT> GetConsoleCodePage() noexcept(false);
 }

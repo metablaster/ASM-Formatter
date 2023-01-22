@@ -13,6 +13,10 @@
  * Debug command arguments: $(SolutionDir)assets\utf8-BOM.asm
  * Debug working directory: $(SolutionDir)Build\$(Platform)\$(Configuration)
  * Debugger type: Native Only
+ * 
+ * TODO: Implement --codepage option
+ * TODO: Implement --path option
+ * TODO: Implement --recurse option
  *
 */
 
@@ -51,31 +55,51 @@ int main(int argc, char* argv[])
 	}
 
 	#ifdef _DEBUG
+	// TODO: Figure out which code page to set depending on contents of a source file
+	// It's needed when there is an error parsing characters which may result in printing them
 	const auto old_CP = GetConsoleCodePage();
 	#endif
 
 	fs::path executable_path = argv[0];
-	constexpr const char* syntax = " path\\file1.asm path\\file2.asm ... [--encoding ansi|utf8|utf16le] [--tabwidth N] [--spaces] [--linebreaks crlf|lf] [--compact]";
+	const std::string executable_name = executable_path.stem().string();
+	std::vector<std::string> all_params(argv + 1, argv + argc);
 
-	if (argc < 2)
+	constexpr const char* version = "1.0.0";
+	const bool nologo = std::find(all_params.begin(), all_params.end(), "--nologo") != all_params.end();
+	constexpr const char* syntax = " path\\file1.asm path\\file2.asm ... [--encoding ansi|utf8|utf16le] [--tabwidth N] [--spaces] [--linebreaks crlf|lf] [--compact] [--help] [--nologo]";
+
+	if (!nologo)
 	{
-		std::cerr << "Usage: " << executable_path.filename().string() << syntax << std::endl;
+		std::cout << std::endl << "ASM Formatter " << version << " https://github.com/metablaster/ASM-Formatter" << std::endl;
+		std::cout << "Copyright (C) 2023 metablaster (zebal@protonmail.ch)" << std::endl;
+	}
+
+	if (argc < (nologo ? 3 : 2))
+	{
+		std::cerr << std::endl << "Usage: " << std::endl << std::endl;
+		std::cerr << executable_name << syntax << std::endl;
 		return ExitCode(ErrorCode::InvalidCommand);
 	}
 
 	// Show help if --help was specified
-	std::vector<std::string> all_params(argv + 1, argv + argc);
-
 	if (std::find(all_params.begin(), all_params.end(), "--help") != all_params.end())
 	{
-		std::cout << std::endl << executable_path.filename().string() << syntax << std::endl << std::endl;
+		std::cout << std::endl << "Syntax:" << std::endl;
+		std::cout << std::endl << executable_name << syntax << std::endl << std::endl;
 
-		std::cout << " --encoding\tspecifies encoding of source files if no BOM is present (defalt: ansi)" << std::endl;
-		std::cout << " --tabwidth\tspecifies tab width used in source files (defalt: 4)" << std::endl;
-		std::cout << " --spaces\tuse spaces instead of tabs (by defalt tabs are used)" << std::endl;
-		std::cout << " --linebreaks\tperform line breaks conversion (by defalt line breaks are preserved)" << std::endl;
-		std::cout << " --compact\treplaces all surplus blank lines with single blank line" << std::endl;
+		std::cout << " --encoding\tSpecifies encoding of source files if no BOM is present (default: ansi)" << std::endl;
+		std::cout << " --tabwidth\tSpecifies tab width used in source files (default: 4)" << std::endl;
+		std::cout << " --spaces\tUse spaces instead of tabs (by default tabs are used)" << std::endl;
+		std::cout << " --linebreaks\tPerform line breaks conversion (by default line breaks are preserved)" << std::endl;
+		std::cout << " --compact\tReplaces all surplus blank lines with single blank line" << std::endl;
+		std::cout << " --nologo\tSuppresses the display of the program banner, version and Copyright when the " << executable_name << " starts up" << std::endl;
+		std::cout << " --help\t\tDisplays this help" << std::endl;
 
+		std::cout << std::endl << "Notes:" << std::endl << std::endl;
+		std::cout << "--linebreaks option doesn't have any effect on UTF-16 encoded files, UTF-16 files are always formatted with CRLF" << std::endl;
+		std::cout << "By default surplus blank lines are removed at the topand at the end of a file," << std::endl;
+		std::cout << "as well as surplus blank lines around procedure labels to make them compacted to code." << std::endl;
+		std::cout << "If you whish to replace all surplus blank lines entirely with a single blank line specify --compact option." << std::endl;
 		return 0;
 	}
 
@@ -88,6 +112,7 @@ int main(int argc, char* argv[])
 	LineBreak linebreaks = LineBreak::Preserve;
 
 	std::vector<fs::path> files;
+	std::cout << std::endl;
 
 	for (int i = 1; i < argc; ++i)
 	{
@@ -95,7 +120,11 @@ int main(int argc, char* argv[])
 
 		if (param.starts_with("--"))
 		{
-			if (param == "--spaces")
+			if (param == "--nologo")
+			{
+				continue;
+			}
+			else if (param == "--spaces")
 			{
 				spaces = true;
 				std::cout << "using --spaces option" << std::endl;
@@ -216,7 +245,7 @@ int main(int argc, char* argv[])
 	#endif // _DEBUG
 
 	std::cout << "using tab width of " << tabwidth << std::endl;
-	std::cout << "using "<< EncodingToString(encoding) << " encoding" << std::endl;
+	std::cout << "using "<< EncodingToString(encoding) << " encoding" << std::endl << std::endl;
 
 	for (const auto& file_path : files)
 	{

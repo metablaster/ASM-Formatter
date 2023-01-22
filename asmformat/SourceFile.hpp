@@ -166,7 +166,7 @@ void WriteFileBytes(const std::filesystem::path& filepath, const DataType& filed
 	{
 		// MSDN: If the function succeeds and lpDistanceToMoveHigh is NULL, the return value is the low-order DWORD of the new file pointer
 		// If the function returns a value other than INVALID_SET_FILE_POINTER, the call to SetFilePointer has succeeded
-		DWORD bytes_moved = SetFilePointer(hFile, 0l, nullptr, FILE_END);
+		const DWORD bytes_moved = SetFilePointer(hFile, 0l, nullptr, FILE_END);
 		if (bytes_moved == INVALID_SET_FILE_POINTER)
 		{
 			ShowError(ERROR_INFO_HR, ("Failed to move file pointer to the end of file " + filepath.string()).c_str());

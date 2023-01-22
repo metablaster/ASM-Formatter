@@ -54,17 +54,17 @@ preferences must not dictate how the formatter will work.
 - Implementation for other assemblers which should cover functionalities that is already
   implemented by this project.
 
-- Implementation for other operating systems
+- Implementation for other operating systems.
 
-- Support for more file encodings
+- Support for more file encodings.
 
-- Bugfixes, optimizations, improvements and tests of existing code base
+- Bugfixes, optimizations, improvements and tests of existing code base.
 
 If you wish to do something unorthodox or if you believe some new feature might be useful then
 please open a new issue to discuss it first.
 
 Formatting implementation for other assemblers should be a new function rather than mixed with
-existing formatting functions.
+existing formatting functions due to potential complexity and for easier code maintenance.
 
 ## Development environment
 
@@ -72,7 +72,7 @@ By default Visual Studio is used but you feel free to use and contribute your ow
 
 Please do:
 
-1. Compile clean `\W4` including static analysis
+1. Compile clean `\W4` including static code analysis
 2. Get familiar with existing error handling code
 3. Review code design, criticize and optimize code
 

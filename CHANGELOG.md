@@ -16,3 +16,5 @@ Here is a list of changes for each of the releases.
 - Added `--compact` option to optionally replace surplus blank lines with single blank line
 - Improved how procedures are separated and compacted
 - Improved file read\write operations
+- Added `--nologo` option to suppress startup banner
+- When the `asmformat` runs it will show what options it is using to format file

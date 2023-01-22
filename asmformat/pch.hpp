@@ -47,6 +47,7 @@
 #include <cassert>		// assert (FormatFile.cpp)
 #include <limits>		// std::numeric_limits (SourceFile.spp)
 #include <cstring>		// std::strrchr (ErrorMacros.hpp)
+#include <algorithm>	// std::find (main.cpp)
 
 // C Standard header files
 #include <stdio.h>		// fopen_s (SourceFile.cpp)
