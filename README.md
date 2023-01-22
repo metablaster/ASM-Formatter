@@ -52,7 +52,7 @@ currently opened file.
 Here is a sample task configuration for `VSCode` which needs to be put into `.vscode\tasks.json` file.\
 For more information about tasks please refer to [Integrate with External Tools via Tasks][tasks]
 
-```json
+```jsonc
 {
 	"version": "2.0.0",
 	"tasks": [
@@ -95,15 +95,15 @@ If you don't specify full path to file current working directory of `asmformat` 
 
 ## Formatter command line syntax
 
-| Option       | Description                                                                                       |
-| ------------ | ------------------------------------------------------------------------------------------------- |
-| --encoding   | Specifies encoding of source files if no BOM is present (default: ansi)                           |
-| --tabwidth   | Specifies tab width used in source files (default: 4)                                             |
-| --spaces     | Use spaces instead of tabs (by default tabs are used)                                             |
-| --linebreaks | Perform line breaks conversion (by default line breaks are preserved)                             |
-| --compact    | Replaces all surplus blank lines with single blank line                                           |
-| --nologo     | Suppresses the display of the program banner, version and Copyright when the asmformat starts up  |
-| --help       | Displays up to date detailed help                                                                 |
+| Option         | Description                                                                                       |
+| -------------- | ------------------------------------------------------------------------------------------------- |
+| --encoding     | Specifies encoding of source files if no BOM is present (default: ansi)                           |
+| --tabwidth     | Specifies tab width used in source files (default: 4)                                             |
+| --spaces       | Use spaces instead of tabs (by default tabs are used)                                             |
+| --linebreaks   | Perform line breaks conversion (by default line breaks are preserved)                             |
+| --compact      | Replaces all surplus blank lines with single blank line                                           |
+| --nologo       | Suppresses the display of the program banner, version and Copyright when the asmformat starts up  |
+| --help         | Displays up to date detailed help                                                                 |
 
 **Notes:**
 
@@ -112,7 +112,7 @@ If you don't specify full path to file current working directory of `asmformat` 
   as well as surplus blank lines around procedure labels to make them compacted to code.
 - If you whish to replace all surplus blank lines entirely with a single blank line specify `--compact` option.
 
-- Default encoding, if not specified is `ansi`, to override use `--encoding` option.
+- Default encoding, if not specified is `ANSI`, to override use `--encoding` option.
 
 - Default tab width, if not specified is 4, to override use `--tabwidth` option,\
   note that tab width option also affects spaces.
@@ -124,7 +124,7 @@ If you don't specify full path to file current working directory of `asmformat` 
   UTF-16 files are always formatted with `CRLF`
 
 - By default surplus blank lines are removed at the top and at the end of a file, as well as surplus
-  blank lines around procedure labels to make them compacted to code.\
+  blank lines around procedure labels to make them compacted to code.
 
 - If you whish to replace all surplus blank lines entirely with a single blank line specify
   `--compact` option.
