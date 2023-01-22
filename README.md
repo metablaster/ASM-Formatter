@@ -38,7 +38,7 @@ from `Build` directory somewhere where it will be accessible, ex. `PATH`.
 
 Alternatively you can download already built executable from `Releases` section.
 
-- Default encoding, if not specified is `utf8`, to override use `--encoding` option.
+- Default encoding, if not specified is `ansi`, to override use `--encoding` option.
 - Default tab width, if not specified is 4, to override use `tabwidth` option,\
   note that tab width option also affects spaces.
 - By default tabs are used, to use spaces pass `--spaces` option to command line.
@@ -78,7 +78,8 @@ Here is sample task configuration for `VSCode` which needs to be put into `.vsco
 				"--encoding",
 				"ansi",
 				"--tabwidth",
-				"4"
+				"4",
+				"--compact"
 			],
 			"presentation": {
 				"showReuseMessage": false
@@ -92,10 +93,10 @@ Here is sample task configuration for `VSCode` which needs to be put into `.vsco
 Then simply open your assembly source file in `VSCode` and click on menu `Terminal -> Run Task...`\
 and choose `asm: format` option which will format currently opened file.
 
-Otherwise you can as well run the formatter on command line, ex:
+Otherwise you can as well run the formatter on command line, for ex:
 
 ```batch
-asmformat.exe .\filename.asm --encoding utf8 --tabwidth 4
+asmformat.exe .\filename.asm --encoding utf8 --tabwidth 4 --compact
 ```
 
 Any command line argument which doesn't start with `"--"` is interpreted as path to asm file,

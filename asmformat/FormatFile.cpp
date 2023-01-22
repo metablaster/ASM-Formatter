@@ -69,7 +69,7 @@ template<typename RegexType, typename StringType>
  * @param line			line which to check
  * @return				true if the line should be indented
 */
-[[nodiscard]] inline bool TestIndentLine(const LineInfo& lineinfo)
+[[nodiscard]] inline bool TestIndentLine(const LineInfo& lineinfo) noexcept
 {
 	return !(lineinfo.proc || lineinfo.endp);
 }
@@ -140,6 +140,7 @@ template<typename StreamType, typename StringType>
 
 	while (std::getline(filedata, codeline).good())
 	{
+		// Skip comments
 		if (!codeline.starts_with(semicolon))
 		{
 			if (!codeline.empty() && crlf)
@@ -323,24 +324,21 @@ void FormatFileW(std::wstringstream& filedata, unsigned tab_width, bool spaces, 
 			// How comments are indented depends on what's after those comments
 			if (line.starts_with(L";"))
 			{
-				LineInfo nextcode = { 0 };
-				std::wstring nextline;
+				std::wstring nextcode;
 
 				// Peek at next code line unless blank line is reached
-				const bool isblank = PeekNextCodeLine(filedata, nextline, crlf);
-
-				if (!isblank)
-					nextcode = GetLineInfo<std::wregex>(nextline);
+				const bool isblank = PeekNextCodeLine(filedata, nextcode, crlf);
+				const LineInfo codeinfo = isblank ? LineInfo{ 0 } : GetLineInfo<std::wregex>(nextcode);
 
 				// Will next code line be indented?
-				const bool next_indent = !isblank && TestIndentLine(nextcode);
+				const bool next_indent = !isblank && TestIndentLine(codeinfo);
 
 				// Make only one space between semicolon and comment
 				regex = L";\\s*";
 				const std::wstring replacement = next_indent ? tab + L"; " : L"; ";
 				line = std::regex_replace(line, regex, replacement);
 
-				if (nextcode.proc && !previous_line.comment)
+				if (codeinfo.proc && !previous_line.comment)
 					result += linebreak;
 
 				previous_line.comment = true;
@@ -500,7 +498,7 @@ void FormatFileW(std::wstringstream& filedata, unsigned tab_width, bool spaces, 
 	filedata.clear();
 	filedata.str(result);
 
-	#ifdef _DEBUG
+	#if FALSE
 	// TODO: Reason why output is incorrect in the console is because not all tabs consume tab_width spaces
 	std::string str = wsl::StringCast(result);
 	wsl::ReplaceAll(str, "\t", std::string(tab_width, ' '));
@@ -600,7 +598,7 @@ void FormatFileA(std::stringstream& filedata, unsigned tab_width, bool spaces, b
 	assert(result.capacity() > MIN_CAPACITY);
 
 	// Count of characters missing to make a full tab of the max length code line
-	const std::size_t maxmissing = 4 - maxcodelen % 4;
+	const std::size_t maxmissing = tab_width - maxcodelen % tab_width;
 
 	// Count of lines to skip
 	std::size_t skiplines = 0;
@@ -628,24 +626,21 @@ void FormatFileA(std::stringstream& filedata, unsigned tab_width, bool spaces, b
 			// How comments are indented depends on what's after those comments
 			if (line.starts_with(";"))
 			{
-				LineInfo nextcode = { 0 };
-				std::string nextline;
+				std::string nextcode;
 
 				// Peek at next code line unless blank line is reached
-				const bool isblank = PeekNextCodeLine(filedata, nextline, crlf);
-
-				if (!isblank)
-					nextcode = GetLineInfo<std::regex>(nextline);
+				const bool isblank = PeekNextCodeLine(filedata, nextcode, crlf);
+				const LineInfo codeinfo = isblank ? LineInfo{ 0 } : GetLineInfo<std::regex>(nextcode);
 
 				// Will next code line be indented?
-				const bool next_indent = !isblank && TestIndentLine(nextcode);
+				const bool next_indent = !isblank && TestIndentLine(codeinfo);
 
 				// Make only one space between semicolon and comment
 				regex = ";\\s*";
 				const std::string replacement = next_indent ? tab + "; " : "; ";
 				line = std::regex_replace(line, regex, replacement);
 
-				if (nextcode.proc && !previous_line.comment)
+				if (codeinfo.proc && !previous_line.comment)
 					result += linebreak;
 
 				previous_line.comment = true;
@@ -804,7 +799,7 @@ void FormatFileA(std::stringstream& filedata, unsigned tab_width, bool spaces, b
 	filedata.clear();
 	filedata.str(result);
 
-	#ifdef _DEBUG
+	#if FALSE
 	// TODO: Reason why output is incorrect in the console is because not all tabs consume tab_width spaces
 	wsl::ReplaceAll(result, "\t", std::string(tab_width, ' '));
 	std::cout << result << std::endl;

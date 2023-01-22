@@ -12,13 +12,12 @@
  * File read\write function definitions
  * TODO: Testing needed with better samples
  * TODO: CRT error handling is not well implemented, ex. override invalid parameter handler,
- * see docs for function used in this source
+ * see docs for functions used in this file
  *
 */
 
 #include "pch.hpp"
 #include "SourceFile.hpp"
-#include "error.hpp"
 #include "ErrorCode.hpp"
 using namespace wsl;
 
@@ -329,82 +328,6 @@ void WriteFileW(const std::filesystem::path& filepath, const std::wstring& filed
 	{
 		ShowCrtError(Exception(ErrorCode::FunctionFailed, "Failed to write file " + filepath.string()), ERROR_INFO);
 	}
-}
-
-void WriteFileBytes(const std::filesystem::path& filepath, const std::string& filedata, bool append)
-{
-	HANDLE hFile = CreateFileW(
-		filepath.c_str(),
-		// Write access
-		GENERIC_WRITE,
-		// Prevents subsequent open operations on a file or device if they request delete, read, or write access
-		0,
-		// Default security
-		NULL,
-		// If the specified file exists and is writable, the function overwrites the file,
-		// the function succeeds, and last-error code is set to ERROR_ALREADY_EXISTS
-		append ? OPEN_EXISTING :
-		// Opens a file or device, only if it exists.
-		// Otherwise the function fails and the last - error code is set to ERROR_FILE_NOT_FOUND
-		CREATE_ALWAYS,
-		// The file does not have other attributes set
-		FILE_ATTRIBUTE_NORMAL,
-		// No attributes template
-		NULL
-	);
-
-	if (hFile == INVALID_HANDLE_VALUE)
-	{
-		ShowError(ERROR_INFO_HR, ("Failed to open file " + filepath.string()).c_str());
-		return;
-	}
-
-	if (!append)
-	{
-		// Remove ERROR_ALREADY_EXISTS
-		SetLastError(0);
-	}
-	else if (GetLastError() == ERROR_FILE_NOT_FOUND)
-	{
-		ShowError(ERROR_INFO_HR, ("Failed to open file " + filepath.string()).c_str());
-		return;
-	}
-
-	DWORD bytes_written = 0;
-	assert(std::numeric_limits<DWORD>::max() >= filedata.size());
-
-	const BOOL status = WriteFile(
-		hFile,
-		filedata.data(),
-		// The number of bytes to be written to the file
-		static_cast<DWORD>(filedata.size()),
-		// A pointer to the variable that receives the number of bytes written when using a synchronous hFile parameter
-		&bytes_written,
-		// A pointer to an OVERLAPPED structure is required if the hFile parameter was opened with FILE_FLAG_OVERLAPPED
-		NULL
-	);
-
-	if (status == FALSE)
-	{
-		const DWORD error = GetLastError();
-
-		if (CloseHandle(hFile) == 0)
-		{
-			ShowError(ERROR_INFO_HR, "Failed to close file");
-		}
-
-		SetLastError(error);
-		ShowError(ERROR_INFO_HR, ("Failed to read file " + filepath.string()).c_str());
-
-		return;
-	}
-
-	if (CloseHandle(hFile) == 0)
-	{
-		ShowError(ERROR_INFO_HR, "Failed to close file");
-	}
-
-	assert(bytes_written == static_cast<DWORD>(filedata.size()));
 }
 
 void WriteFileA(const std::filesystem::path& filepath, const std::string& filedata)

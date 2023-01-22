@@ -15,3 +15,4 @@ Here is a list of changes for each of the releases.
 - Added `--linebreaks` option to force specific line breaks
 - Added `--compact` option to optionally replace surplus blank lines with single blank line
 - Improved how procedures are separated and compacted
+- Improved file read\write operations

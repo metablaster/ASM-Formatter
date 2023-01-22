@@ -27,6 +27,22 @@ using namespace wsl;
 namespace fs = std::filesystem;
 
 
+inline static std::string EncodingToString(Encoding encoding)
+{
+	switch (encoding)
+	{
+	case Encoding::UTF8:
+		return "UTF-8";
+		break;
+	case Encoding::UTF16LE:
+		return "UTF-16LE";
+		break;
+	case Encoding::ANSI:
+	default:
+		return "ANSI";
+	}
+}
+
 int main(int argc, char* argv[])
 {
 	if (!RegisterConsoleHandler())
@@ -54,7 +70,7 @@ int main(int argc, char* argv[])
 	{
 		std::cout << std::endl << executable_path.filename().string() << syntax << std::endl << std::endl;
 
-		std::cout << " --encoding\tspecifies encoding of source files if no BOM is present (defalt: utf8)" << std::endl;
+		std::cout << " --encoding\tspecifies encoding of source files if no BOM is present (defalt: ansi)" << std::endl;
 		std::cout << " --tabwidth\tspecifies tab width used in source files (defalt: 4)" << std::endl;
 		std::cout << " --spaces\tuse spaces instead of tabs (by defalt tabs are used)" << std::endl;
 		std::cout << " --linebreaks\tperform line breaks conversion (by defalt line breaks are preserved)" << std::endl;
@@ -68,7 +84,7 @@ int main(int argc, char* argv[])
 	// TODO: There could multiple verbosities of compact
 	bool compact = false;
 	unsigned tabwidth = 4;
-	Encoding encoding = Encoding::UTF8;
+	Encoding encoding = Encoding::ANSI;
 	LineBreak linebreaks = LineBreak::Preserve;
 
 	std::vector<fs::path> files;
@@ -82,11 +98,13 @@ int main(int argc, char* argv[])
 			if (param == "--spaces")
 			{
 				spaces = true;
+				std::cout << "using --spaces option" << std::endl;
 				continue;
 			}
 			else if (param == "--compact")
 			{
 				compact = true;
+				std::cout << "using --compact option" << std::endl;
 				continue;
 			}
 
@@ -101,15 +119,15 @@ int main(int argc, char* argv[])
 
 			if (param == "--encoding")
 			{
-				if (arg == "ansi")
+				if (arg == "utf8")
 				{
-					encoding = Encoding::ANSI;
+					encoding = Encoding::UTF8;
 				}
 				else if (arg == "utf16le")
 				{
 					encoding = Encoding::UTF16LE;
 				}
-				else if (arg != "utf8")
+				else if (arg != "ansi")
 				{
 					ShowError(ErrorCode::InvalidParameter, "The specified encoding '" + arg + "' was not recognized");
 					return ExitCode(ErrorCode::InvalidParameter);
@@ -146,6 +164,8 @@ int main(int argc, char* argv[])
 					ShowError(ErrorCode::InvalidParameter, "The specified linebreak '" + arg + "' was not recognized");
 					return ExitCode(ErrorCode::InvalidParameter);
 				}
+
+				std::cout << "forcing " << arg << " line breaks" << std::endl;
 			}
 			else
 			{
@@ -195,21 +215,21 @@ int main(int argc, char* argv[])
 	}
 	#endif // _DEBUG
 
+	std::cout << "using tab width of " << tabwidth << std::endl;
+	std::cout << "using "<< EncodingToString(encoding) << " encoding" << std::endl;
+
 	for (const auto& file_path : files)
 	{
 		std::cout << "Formatting file " << file_path.filename() << std::endl;
 
-		#ifdef _DEBUG
-		std::vector<unsigned char> bom_string;
-		const BOM bom = GetBOM(file_path, bom_string);
-		static_cast<void>(bom);
-		#endif
+		std::vector<unsigned char> bom_bytes;
+		const BOM bom = GetBOM(file_path, bom_bytes);
 
 		switch (encoding)
 		{
 		case Encoding::ANSI:
 		{
-			std::stringstream filedata(LoadFileA(file_path.string()));
+			std::stringstream filedata(LoadFileBytes(file_path.string()));
 
 			FormatFileA(filedata, tabwidth, spaces, compact, linebreaks);
 			WriteFileBytes(file_path, filedata.str(), false);
@@ -222,8 +242,11 @@ int main(int argc, char* argv[])
 
 			FormatFileW(filedata, tabwidth, spaces, compact, linebreaks);
 
+			if (bom == BOM::utf8)
+				WriteFileBytes(file_path, bom_bytes, false);
+
 			filebytes = StringCast(filedata.str());
-			WriteFileBytes(file_path, filebytes, false);
+			WriteFileBytes(file_path, filebytes, true);
 			break;
 		}
 		case Encoding::UTF16LE:
@@ -235,8 +258,12 @@ int main(int argc, char* argv[])
 			// TODO: Converts from LF to CRLF
 			WriteFileW(file_path, filedata.str(), encoding);
 			#else
-			std::string coverted = StringCast(filedata.str());
-			WriteFileBytes(file_path, coverted, false);
+			// TODO: Not working and unclear if LoadFileW loads BOM
+			if (bom == BOM::utf16le)
+				WriteFileBytes(file_path, bom_bytes, false);
+
+			std::string converted = StringCast(filedata.str());
+			WriteFileBytes(file_path, converted, true);
 			#endif
 			break;
 		}

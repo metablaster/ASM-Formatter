@@ -44,7 +44,7 @@
 	vpsubw ymm4, ymm0, ymm1
 	vpsubsw ymm5, ymm0, ymm1
 
-		; Blank line follows this comment but should be put right above code
+		; Blank line follows this comment so it won't be indented
 
 	vpminsw ymm6, ymm0, ymm1	; signed minimum
 	vpmaxsw ymm7, ymm0, ymm1	; signed maximum
@@ -118,8 +118,6 @@ AVXPackedInt_32 ENDP
 	END
 
 ; a bunch of blank lines follow that should be replaced by single blank line
-
-
 
 
 
