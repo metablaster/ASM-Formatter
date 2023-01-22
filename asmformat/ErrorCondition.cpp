@@ -80,54 +80,56 @@ namespace wsl
 		//
 	public:
 		/**
-		 * @brief Category name
-		 * @return A pointer to a null-terminated byte string that specifies the name of the error category.
+		 * @brief	Category name
+		 * @return	A pointer to a null-terminated byte string that specifies the name of the error category.
 		*/
 		const char* name() const noexcept override;
 		
 		/**
-		 * @brief Maps error_code to error_condition
+		 * @brief		Maps error_code to error_condition
 		 *
 		 * Returns the default error_condition object of this category that is associated with
 		 * the error_code identified by a value of code.
 		 *
-		 * @param code A numerical value identifying an error
-		 * @return The default error_condition associated with error value
+		 * @param code	A numerical value identifying an error
+		 * @return		The default error_condition associated with error value
 		*/
 		std::error_condition default_error_condition(int code) const noexcept override;
 		
 		// TODO: Needs testing
 		/**
-		 * @brief Compares error_code and error_condition for equivalence
+		 * @brief			Compares error_code and error_condition for equivalence
+		 * 
 		 * Checks whether, for the category, an error code is equivalent to an error condition, specifically
 		 * Checks whether error code is equivalent to an error condition for the error category represented by *this
 		 *
-		 * @param code An object of an error_code type
-		 * @param condition A numerical value identifying an error condition
-		 * @return true if equivalent, false otherwise
+		 * @param code		An object of an error_code type
+		 * @param condition	A numerical value identifying an error condition
+		 * @return			true if equivalent, false otherwise
 		*/
 		bool equivalent(const std::error_code& code, int condition) const noexcept override;
 
 		/**
-		 * @brief Compares error_code and error_condition for equivalence
+		 * @brief			Compares error_code and error_condition for equivalence
+		 * 
 		 * Checks whether, for the category, an error code is equivalent to an error condition, specifically
 		 * Checks whether error code is equivalent to an error condition for the error category represented by *this
 		 *
-		 * @param code A numerical value identifying an error code
-		 * @param condition An object of an error_condition type
-		 * @return true if equivalent, false otherwise
+		 * @param code		A numerical value identifying an error code
+		 * @param condition	An object of an error_condition type
+		 * @return			true if equivalent, false otherwise
 		*/
 		bool equivalent(int code, const std::error_condition& condition) const noexcept override;
 
 		/**
-		 * @brief Returns a string describing the given error
+		 * @brief			Returns a string describing the given error
 		 *
 		 * In derived classes, the function returns a string object with a message describing the error condition denoted by err_value.
 		 * This function is called both by error_code::message and error_condition::message to obtain the corresponding message in the category.
 		 * Therefore, numerical values used by custom error codes and error conditions should only match for a category if they describe the same error.
 		 *
-		 * @param condition A numerical value identifying an error condition
-		 * @return A string object with the message
+		 * @param condition	A numerical value identifying an error condition
+		 * @return			A string object with the message
 		*/
 		std::string message(int condition) const override;
 	} ConditionCategory;
@@ -145,9 +147,10 @@ namespace wsl
 
 	bool ErrorConditionCategory::equivalent(const std::error_code& code, int condition) const noexcept
 	{
-		// Workaround to get category for error code
-		// TODO: can we avoid creating a temporary?
+		// What this does it get's reference to error_category associated with ErrorCode enum
+		// which is an instance to ErrorCodeCategory from ErrorCode.cpp
 		const std::error_category& code_category_enum = std::error_code{ ErrorCode{} }.category();
+		// By comparing it to error_category of the code arg we know the code is from ErrorCode enum
 		const std::error_category& code_category_param = code.category();
 
 		switch (static_cast<ErrorCondition>(condition))
@@ -158,50 +161,54 @@ namespace wsl
 			return false;
 
 		case ErrorCondition::code_error:
-			switch (static_cast<ErrorCode>(code.value()))
-			{
-			case ErrorCode::BadArgument:
-			case ErrorCode::InvalidPointer:
-			case ErrorCode::NotImplemented:
-			case ErrorCode::OutOfRange:
-			case ErrorCode::AlocationFailed:
-			case ErrorCode::MemoryReadFailed:
-			case ErrorCode::Unexpected:
-			case ErrorCode::PointerNotNULL:
-			case ErrorCode::CaseNotHandled:
-			case ErrorCode::InvalidHandle:
-			case ErrorCode::FunctionFailed:
-			case ErrorCode::MemoryLeak:
-			case ErrorCode::BadFunctionCall:
-			case ErrorCode::ObjectNotValid:
-			case ErrorCode::InitializationFailed:
-			case ErrorCode::InvalidFlags:
-			case ErrorCode::BadResult:
-			case ErrorCode::RunTimeLibraryError:
-			case ErrorCode::BadDelete:
-			case ErrorCode::ExceptionInDestructor:
-			case ErrorCode::UnhandledException:
-			case ErrorCode::ResourceLeak:
-			case ErrorCode::ParseFailure:
-			case ErrorCode::UnsuportedOperation:
-			case ErrorCode::BadVariableData:
-			case ErrorCode::BadCast:
-			case ErrorCode::NotFound:
-				return true;
-			default:
-				return false;
-			}
+			if (code_category_param == code_category_enum)
+				switch (static_cast<ErrorCode>(code.value()))
+				{
+				case ErrorCode::BadArgument:
+				case ErrorCode::InvalidPointer:
+				case ErrorCode::NotImplemented:
+				case ErrorCode::OutOfRange:
+				case ErrorCode::AlocationFailed:
+				case ErrorCode::MemoryReadFailed:
+				case ErrorCode::Unexpected:
+				case ErrorCode::PointerNotNULL:
+				case ErrorCode::CaseNotHandled:
+				case ErrorCode::InvalidHandle:
+				case ErrorCode::FunctionFailed:
+				case ErrorCode::MemoryLeak:
+				case ErrorCode::BadFunctionCall:
+				case ErrorCode::ObjectNotValid:
+				case ErrorCode::InitializationFailed:
+				case ErrorCode::InvalidFlags:
+				case ErrorCode::BadResult:
+				case ErrorCode::RunTimeLibraryError:
+				case ErrorCode::BadDelete:
+				case ErrorCode::ExceptionInDestructor:
+				case ErrorCode::UnhandledException:
+				case ErrorCode::ResourceLeak:
+				case ErrorCode::ParseFailure:
+				case ErrorCode::UnsuportedOperation:
+				case ErrorCode::BadVariableData:
+				case ErrorCode::BadCast:
+				case ErrorCode::NotFound:
+					return true;
+				default:
+					return false;
+				}
+			else return false;
 
 		case ErrorCondition::user_error:
-			switch (static_cast<ErrorCode>(code.value()))
-			{
-			case ErrorCode::UnknownOption:
-			case ErrorCode::InvalidParameter:
-			case ErrorCode::InvalidCommand:
-				return true;
-			default:
-				return false;
-			}
+			if (code_category_param == code_category_enum)
+				switch (static_cast<ErrorCode>(code.value()))
+				{
+				case ErrorCode::UnknownOption:
+				case ErrorCode::InvalidParameter:
+				case ErrorCode::InvalidCommand:
+					return true;
+				default:
+					return false;
+				}
+			else return false;
 
 		case ErrorCondition::unspecified_error:
 			if (code_category_param == code_category_enum)
@@ -215,7 +222,6 @@ namespace wsl
 
 	bool ErrorConditionCategory::equivalent(int code, const std::error_condition& condition) const noexcept
 	{
-		// Since this is condition category (not error) this should never be called!
 		return default_error_condition(code) == condition;
 	}
 

@@ -40,6 +40,7 @@ struct LineInfo
  * @return				LineInfo struct
 */
 template<typename RegexType, typename StringType>
+requires std::is_same_v<typename RegexType::value_type, typename StringType::value_type>
 [[nodiscard]] LineInfo GetLineInfo(const StringType& line)
 {
 	LineInfo lineinfo = { 0 };
@@ -82,6 +83,7 @@ template<typename RegexType, typename StringType>
  * @param nextline		string which receives next line
 */
 template<typename StreamType, typename StringType>
+requires std::is_same_v<typename StreamType::char_type, typename StringType::value_type>
 inline void PeekNextLine(StreamType& filedata, StringType& nextline)
 {
 	const std::streampos pos = filedata.tellg();
@@ -99,6 +101,7 @@ inline void PeekNextLine(StreamType& filedata, StringType& nextline)
  * @return				LineBreak enum
 */
 template<typename StringType, typename StreamType>
+requires std::is_same_v<typename StringType::value_type, typename StreamType::char_type>
 [[nodiscard]] inline LineBreak GetLineBreak(StreamType& filedata)
 {
 	typename StringType::value_type cr;
@@ -107,7 +110,7 @@ template<typename StringType, typename StreamType>
 		cr = L'\r';
 	else cr = '\r';
 
-	StringType nextline;
+	StringType nextline{};
 	PeekNextLine(filedata, nextline);
 	
 	if (nextline.empty() || (*(nextline.cend() - 1) != cr))
@@ -128,6 +131,7 @@ template<typename StringType, typename StreamType>
  * @return				true if blank line was reached before code line, false otherwise
 */
 template<typename StreamType, typename StringType>
+requires std::is_same_v<typename StreamType::char_type, typename StringType::value_type>
 [[nodiscard]] inline bool PeekNextCodeLine(StreamType& filedata, StringType& codeline, bool crlf)
 {
 	bool isblank = false;
@@ -171,9 +175,10 @@ template<typename StreamType, typename StringType>
  * @return				Count of blank lines that follow
 */
 template<typename StringType, typename StreamType>
+requires std::is_same_v<typename StringType::value_type, typename StreamType::char_type>
 [[nodiscard]] inline std::size_t GetBlankCount(StreamType& filedata, bool crlf)
 {
-	StringType line;
+	StringType line{};
 	std::size_t count = 0;
 	const std::streampos pos = filedata.tellg();
 
@@ -205,7 +210,7 @@ static LineInfo previous_line;
 // Insert new blank line?
 static bool insert_blankline = false;
 
-void FormatFileW(std::wstringstream& filedata, unsigned tab_width, bool spaces, bool compact, LineBreak line_break)
+void FormatFileW(std::wstringstream& filedata, std::size_t tab_width, bool spaces, bool compact, LineBreak line_break)
 {
 	#ifdef _DEBUG
 	std::wstring maxlenline;
@@ -507,7 +512,7 @@ void FormatFileW(std::wstringstream& filedata, unsigned tab_width, bool spaces, 
 	#endif
 }
 
-void FormatFileA(std::stringstream& filedata, unsigned tab_width, bool spaces, bool compact, LineBreak line_break)
+void FormatFileA(std::stringstream& filedata, std::size_t tab_width, bool spaces, bool compact, LineBreak line_break)
 {
 	#ifdef _DEBUG
 	std::string maxlenline;

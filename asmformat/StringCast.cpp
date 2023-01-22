@@ -194,7 +194,7 @@ namespace wsl
 		return result;
 	}
 
-	#if 0
+	#if FALSE
 	std::wstring StringCast(const std::u8string& param)
 	{
 		char char_buff[MB_LEN_MAX]{};

@@ -36,7 +36,7 @@ enum class LineBreak
  * @param compact		Replace all surplus blank lines with single blank line
  * @param line_break	Specify line breaks kind
 */
-void FormatFileW(std::wstringstream& filedata, unsigned tab_width, bool spaces, bool compact, LineBreak line_break = LineBreak::Preserve);
+void FormatFileW(std::wstringstream& filedata, std::size_t tab_width, bool spaces, bool compact, LineBreak line_break = LineBreak::Preserve);
 
 /**
  * @brief				Format asm source file encoded as ANSI
@@ -46,4 +46,4 @@ void FormatFileW(std::wstringstream& filedata, unsigned tab_width, bool spaces, 
  * @param compact		Replace all surplus blank lines with single blank line
  * @param line_break	Specify line breaks kind
 */
-void FormatFileA(std::stringstream& filedata, unsigned tab_width, bool spaces, bool compact, LineBreak line_break = LineBreak::Preserve);
+void FormatFileA(std::stringstream& filedata, std::size_t tab_width, bool spaces, bool compact, LineBreak line_break = LineBreak::Preserve);

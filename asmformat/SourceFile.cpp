@@ -105,8 +105,46 @@ BOM GetBOM(const std::string& buffer, std::vector<unsigned char>& bom)
 		}
 	}
 
+	bom.clear();
 	bom = GetBOM(ebom);
+	bom.shrink_to_fit();
 	return ebom;
+}
+
+std::string BomToString(BOM bom)
+{
+	switch (bom)
+	{
+	case BOM::utf8:
+		return "UTF-8";
+	case BOM::utf16le:
+		return "UTF-16LE";
+	case BOM::utf16be:
+		return "UTF-16BE";
+	case BOM::utf32le:
+		return "UTF-32LE";
+	case BOM::utf32be:
+		return "UTF-32BE";
+	case BOM::none:
+	default:
+		return "ANSI";
+	}
+}
+
+std::string EncodingToString(Encoding encoding)
+{
+	switch (encoding)
+	{
+	case Encoding::UTF8:
+		return "UTF-8";
+		break;
+	case Encoding::UTF16LE:
+		return "UTF-16LE";
+		break;
+	case Encoding::ANSI:
+	default:
+		return "ANSI";
+	}
 }
 
 std::size_t GetFileByteCount(const std::filesystem::path& filepath)
@@ -122,7 +160,7 @@ std::size_t GetFileByteCount(const std::filesystem::path& filepath)
 
 	// MSDN: Size of the file in bytes
 	// a 64-bit integer for variations with the i64 suffix
-	return fileinfo.st_size;
+	return static_cast<std::size_t>(fileinfo.st_size);
 }
 
 std::wstring LoadFileW(const std::filesystem::path& filepath, const Encoding& encoding)

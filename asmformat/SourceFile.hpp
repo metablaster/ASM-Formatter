@@ -16,6 +16,7 @@
 #pragma once
 #include <vector>
 #include <filesystem>
+#include <type_traits>
 #include "error.hpp"
 
 
@@ -74,6 +75,18 @@ enum class BOM
 std::vector<unsigned char> GetBOM(BOM bom);
 
 /**
+ * @brief Convert BOM enum to string
+*/
+std::string BomToString(BOM bom);
+
+/**
+ * @brief			Convert encoding enum to string
+ * @param encoding	Encoding enum
+ * @return			String result
+*/
+std::string EncodingToString(Encoding encoding);
+
+/**
  * @brief	Get size of a file in bytes
  * @param	filepath file path for which to get byte count
  * @return	Size of the file in bytes
@@ -124,6 +137,7 @@ void WriteFileW(const std::filesystem::path& filepath, const std::wstring& filed
  * @param append	Set to true to append data to file, by default file contents are replaced
 */
 template<typename DataType>
+requires std::is_same_v<std::vector<unsigned char>, DataType> || std::is_same_v<std::string, DataType>
 void WriteFileBytes(const std::filesystem::path& filepath, const DataType& filedata, bool append)
 {
 	HANDLE hFile = CreateFileW(
@@ -131,7 +145,7 @@ void WriteFileBytes(const std::filesystem::path& filepath, const DataType& filed
 		// Append or overwrite
 		append ? FILE_APPEND_DATA : GENERIC_WRITE,
 		// Prevents subsequent open operations on a file or device if they request delete, read, or write access
-		0,
+		0ul,
 		// Default security
 		NULL,
 		// If the specified file exists and is writable, the function overwrites the file,
@@ -166,7 +180,8 @@ void WriteFileBytes(const std::filesystem::path& filepath, const DataType& filed
 	{
 		// MSDN: If the function succeeds and lpDistanceToMoveHigh is NULL, the return value is the low-order DWORD of the new file pointer
 		// If the function returns a value other than INVALID_SET_FILE_POINTER, the call to SetFilePointer has succeeded
-		const DWORD bytes_moved = SetFilePointer(hFile, 0l, nullptr, FILE_END);
+		const DWORD bytes_moved = SetFilePointer(hFile, 0L, nullptr, FILE_END);
+
 		if (bytes_moved == INVALID_SET_FILE_POINTER)
 		{
 			ShowError(ERROR_INFO_HR, ("Failed to move file pointer to the end of file " + filepath.string()).c_str());

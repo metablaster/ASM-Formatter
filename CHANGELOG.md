@@ -6,6 +6,7 @@ Here is a list of changes for each of the releases.
 
 - [Changelog](#changelog)
   - [Table of Contents](#table-of-contents)
+  - [v0.4.0](#v040)
   - [v0.3.0](#v030)
 
 ## v0.3.0
@@ -18,3 +19,7 @@ Here is a list of changes for each of the releases.
 - Improved file read\write operations
 - Added `--nologo` option to suppress startup banner
 - When the `asmformat` runs it will show what options it is using to format file
+
+## v0.4.0
+
+- When possible report an error when an invalid encoding is specified

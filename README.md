@@ -40,7 +40,7 @@ Alternatively you can download already built executable from `Releases` section.
 First step is to run `asmformat.exe --help` for an up to date help to learn formatter options.
 
 You have to be careful to specify correct encoding which depends on encoding of your asm sources,\
-specifying incorrect encoding may turn your sources into a pile garbage symbols, also formatting
+specifying incorrect encoding may turn your sources into a pile of garbage symbols, also formatting
 might not work properly or not work at all if incorrect encoding is specified.
 
 Also tab width option must be correct, which depends on your editor configuration,
@@ -60,6 +60,7 @@ For more information about tasks please refer to [Integrate with External Tools 
 			"label": "asm: format",
 			"detail": "format current file",
 			"type": "process",
+			// TODO: Update path to asmformat
 			"command": "${workspaceFolder}\\asmformat.exe",
 			"args": [
 				// TODO: Run: asmformat --help and specify correct args
@@ -95,15 +96,15 @@ If you don't specify full path to file current working directory of `asmformat` 
 
 ## Formatter command line syntax
 
-| Option         | Description                                                                                       |
-| -------------- | ------------------------------------------------------------------------------------------------- |
-| --encoding     | Specifies encoding of source files if no BOM is present (default: ansi)                           |
-| --tabwidth     | Specifies tab width used in source files (default: 4)                                             |
-| --spaces       | Use spaces instead of tabs (by default tabs are used)                                             |
-| --linebreaks   | Perform line breaks conversion (by default line breaks are preserved)                             |
-| --compact      | Replaces all surplus blank lines with single blank line                                           |
-| --nologo       | Suppresses the display of the program banner, version and Copyright when the asmformat starts up  |
-| --help         | Displays up to date detailed help                                                                 |
+| Option         | Description                                                                              |
+| -------------- | -----------------------------------------------------------------------------------------|
+| --encoding     | Specifies encoding of source files if no BOM is present (default: ansi)                  |
+| --tabwidth     | Specifies tab width used in source files (default: 4)                                    |
+| --spaces       | Use spaces instead of tabs (by default tabs are used)                                    |
+| --linebreaks   | Perform line breaks conversion (by default line breaks are preserved)                    |
+| --compact      | Replaces all surplus blank lines with single blank line                                  |
+| --nologo       | Suppresses the display of the program banner and Copyright when the asmformat starts up  |
+| --help         | Displays up to date detailed help                                                        |
 
 **Notes:**
 

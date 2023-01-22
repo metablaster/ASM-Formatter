@@ -81,10 +81,8 @@
 // Disable compiler rules temporarily (consider toggling on/off from time to time)
 //
 
-#pragma warning (disable : 4365)	// [temp] (W4) conversion from 'type_1' to 'type_2', signed/unsigned mismatch
-#pragma warning (disable : 5219)	// [temp] (W2) implicit conversion from 'type-1' to 'type-2', possible loss of data
-// TODO: Likely false positive
-#pragma warning (disable : 5264)	// (W4) 'variable-name': 'const' variable is not used
+//#pragma warning (disable : 4365)	// [temp] (W4) conversion from 'type_1' to 'type_2', signed/unsigned mismatch
+//#pragma warning (disable : 5219)	// [temp] (W2) implicit conversion from 'type-1' to 'type-2', possible loss of data
 
 #ifdef NDEBUG
 // Not /Wall
@@ -167,6 +165,7 @@
 
 #pragma warning (disable : 5243)	// (W1) 'function' using incomplete class 'class' can cause potential one definition rule violation due to ABI limitation
 #pragma warning (disable : 5262)	// (W1) implicit fall-through occurs here; are you missing a break statement? Use [[fallthrough]] when a break statement is intentionally omitted between cases
+#pragma warning (disable : 5264)	// (W4) 'variable-name': 'const' variable is not used
 #pragma warning (disable : 4464)	// (W4) relative include path contains '..'
 
 // Not /Wall warnings

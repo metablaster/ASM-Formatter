@@ -115,8 +115,8 @@ namespace wsl
 	 *						message box appearance
 	 * @return				returns raw error code, the code depends on type of error
 	*/
-	template <typename ExceptionClass,
-		typename std::enable_if_t<std::is_base_of<std::exception, ExceptionClass>::value, bool> = 0>
+	template <typename ExceptionClass>
+	requires std::is_base_of_v<std::exception, ExceptionClass>
 	void ShowErrorA(
 		ExceptionClass exception,
 		PCSTR file_name,

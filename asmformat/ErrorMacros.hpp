@@ -15,6 +15,8 @@
 
 #pragma once
 #include <cstring>
+
+// Not included to avoid circular inclusion
 //#include "error.hpp"
 //#include "ErrorCode.hpp"
 //#include "exception.hpp"
@@ -34,7 +36,7 @@
 #define SUPPRESS(...) __pragma(warning(suppress : __VA_ARGS__))
 #define DISABLE(...) __pragma(warning(disable : __VA_ARGS__))
 
-#if defined _DEBUG || !defined SHOW_ERRORS || !defined USE_LOGGING
+#if defined _DEBUG || !defined SHOW_ERRORS
 // used for empty macro functions to avoid warning for "empty statement found ';' "
 #define EMPTY_STATEMENT static_cast<void>(0)
 #endif
@@ -98,7 +100,7 @@
 */
 #define ShowError(...) EXPAND(GET_ERR_FUNC(__VA_ARGS__, ERR_FUNC6, ERR_FUNC5, ERR_FUNC4, ERR_FUNC3, ERR_FUNC2, ERR_FUNC1)(__VA_ARGS__))
 
-// TODO: need to revisit where below macros are used, should be used only temporally for debugging
+// TODO: need to revisit where the below macros are used, should be used only temporally for debugging
 
 // show message if failed hr
 #define CHECK_HR(hresult) if(FAILED(hresult)) { ShowError(ERROR_INFO, hresult); }
