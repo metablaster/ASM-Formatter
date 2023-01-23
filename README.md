@@ -33,15 +33,15 @@ license and Copyright notices are thus maintained ["per file"][file scope].
 
 ## How to use
 
-Download or clone this repository and open VS solution, select `Release` configuration and compile this
-project, then copy `asmformat.exe` from `Build` directory somewhere where it will be accessible, ex. `PATH`.\
+Download or clone this repository, open VS solution, select `Release` configuration and compile project,
+then copy `asmformat.exe` from `Build` directory somewhere where it will be accessible, ex. `PATH`.\
 Alternatively you can download already built executable from `Releases` section.
 
 First step is to run `asmformat.exe --help` for an up to date help to learn formatter options.
 
 You have to be careful to specify correct encoding which depends on encoding of your asm sources,\
-specifying incorrect encoding may turn your sources into a pile of garbage symbols, also formatting
-might not work properly or not work at all if incorrect encoding is specified.
+specifying an incorrect encoding may turn your sources into a pile of garbage symbols, also formatting
+might not work properly or may not work at all if incorrect encoding is specified.
 
 Also tab width option must be correct, which depends on your editor configuration,
 specifying incorrect tab width will produce unexpected results.
@@ -108,9 +108,13 @@ If you don't specify full path to file current working directory of `asmformat` 
 
 **Notes:**
 
+- By default line breaks are preserved but you can override with `--linebreaks` option
+
 - --linebreaks option doesn't have any effect on `UTF-16` encoded files, `UTF-16` files are always formatted with `CRLF`
+
 - By default surplus blank lines are removed at the top and at the end of a file,
   as well as surplus blank lines around procedure labels to make them compacted to code.
+
 - If you whish to replace all surplus blank lines entirely with a single blank line specify `--compact` option.
 
 - Default encoding, if not specified is `ANSI`, to override use `--encoding` option.
@@ -119,16 +123,6 @@ If you don't specify full path to file current working directory of `asmformat` 
   note that tab width option also affects spaces.
 
 - By default tabs are used, to use spaces pass `--spaces` option to command line.
-
-- By default line breaks are preserved but you can override with `--linebreaks` option,\
-  `--linebreaks` option currently doesn't have any effect on UTF-16 encoded files,
-  UTF-16 files are always formatted with `CRLF`
-
-- By default surplus blank lines are removed at the top and at the end of a file, as well as surplus
-  blank lines around procedure labels to make them compacted to code.
-
-- If you whish to replace all surplus blank lines entirely with a single blank line specify
-  `--compact` option.
 
 ## Demonstration
 

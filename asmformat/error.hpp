@@ -90,7 +90,7 @@ namespace wsl
 		int line,
 		HRESULT hr = S_OK,
 		PCSTR info = "",
-		long flags = MB_ICONERROR) noexcept;
+		long flags = MB_ICONERROR);
 
 	/**
 	 * Show CRT error in human readable text + additional information.
@@ -101,7 +101,7 @@ namespace wsl
 		PCSTR file_name,
 		PCSTR func_name,
 		int line,
-		long flags = MB_ICONERROR) noexcept;
+		long flags = MB_ICONERROR);
 
 	/**
 	 * Show error message from exception objects in MessageBox or Console.
@@ -122,7 +122,7 @@ namespace wsl
 		PCSTR file_name,
 		PCSTR func_name,
 		int line,
-		long flags = MB_ICONERROR) noexcept try
+		long flags = MB_ICONERROR) try
 	{
 		std::string error_title = GenerateErrorTitle(flags);
 		std::string error_message("File:\t\t");
@@ -137,10 +137,10 @@ namespace wsl
 		SUPPRESS(26496);	// The variable is assigned only once, mark it as const
 		DWORD error_code{};
 
-		if constexpr (has_method<ExceptionClass, const std::error_code & ()>::value)
+		if constexpr (HasCodeMethod<ExceptionClass, const std::error_code & ()>::value)
 		{
 			// TODO: needs reconsideration
-			// if we don't cast it won't compile in case if ExceptionClass
+			// if we don't cast, it won't compile in case if ExceptionClass
 			// is std exception class, otherwise cast is valid.
 			const ExceptionClass& ref = dynamic_cast<ExceptionClass&>(exception);
 			const std::error_code& ref_code = ref.code();
@@ -157,6 +157,7 @@ namespace wsl
 		else
 		{
 			// TODO: Category name for uncategorized exceptions
+			// This won't be called since the function for other exception objects isn't instantiated
 			error_message.append("-");
 		}
 

@@ -96,7 +96,6 @@ namespace wsl
 		*/
 		std::error_condition default_error_condition(int code) const noexcept override;
 		
-		// TODO: Needs testing
 		/**
 		 * @brief			Compares error_code and error_condition for equivalence
 		 * 

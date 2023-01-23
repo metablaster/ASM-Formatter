@@ -55,5 +55,3 @@
 
 // Restore warnings disabled for precompiled header
 #pragma warning (pop)
-
-// Project specific pragmas

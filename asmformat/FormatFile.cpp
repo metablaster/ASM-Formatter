@@ -10,7 +10,7 @@
  * @file asmformat\FormatFile.cpp
  *
  * ASM source file formatting function definitions
- * TODO: Maybe using macros to conditionally use wide and ansi strings to reduce code bloat?
+ * TODO: Maybe using macros or templates to conditionally use wide and ansi strings to reduce code bloat?
  *
 */
 
@@ -66,9 +66,9 @@ requires std::is_same_v<typename RegexType::value_type, typename StringType::val
 }
 
 /**
- * @brief				Check if line should be indented
- * @param line			line which to check
- * @return				true if the line should be indented
+ * @brief		Check if line should be indented
+ * @param line	line which to check
+ * @return		true if the line should be indented
 */
 [[nodiscard]] inline bool TestIndentLine(const LineInfo& lineinfo) noexcept
 {
@@ -289,10 +289,13 @@ void FormatFileW(std::wstringstream& filedata, std::size_t tab_width, bool space
 	if (filedata.bad() || (!filedata.eof() && filedata.fail()))
 	{
 		ShowError(wsl::ErrorCode::ParseFailure, ("Processing source file data failed after line: " + wsl::StringCast(line)).c_str());
+
+		// filedata is unchanged
+		return;
 	}
 
-	// set good bit (remove eofbit)
 	assert(filedata.eof());
+	// set good bit (remove eof bit)
 	filedata.clear();
 	filedata.str(result);
 
@@ -448,6 +451,14 @@ void FormatFileW(std::wstringstream& filedata, std::size_t tab_width, bool space
 		}
 	}
 
+	if (filedata.bad() || (!filedata.eof() && filedata.fail()))
+	{
+		ShowError(wsl::ErrorCode::ParseFailure, ("Processing source file data failed after line: " + wsl::StringCast(line)).c_str());
+
+		// filedata is unchanged
+		return;
+	}
+
 	// Make sure first line is blank
 	if (!result.starts_with(linebreak))
 	{
@@ -494,12 +505,8 @@ void FormatFileW(std::wstringstream& filedata, std::size_t tab_width, bool space
 		}
 	}
 	
-	if (filedata.bad() || (!filedata.eof() && filedata.fail()))
-	{
-		ShowError(wsl::ErrorCode::ParseFailure, ("Processing source file data failed after line: " + wsl::StringCast(line)).c_str());
-	}
-
 	assert(filedata.eof());
+	// set good bit (remove eof bit)
 	filedata.clear();
 	filedata.str(result);
 
@@ -591,10 +598,13 @@ void FormatFileA(std::stringstream& filedata, std::size_t tab_width, bool spaces
 	if (filedata.bad() || (!filedata.eof() && filedata.fail()))
 	{
 		ShowError(wsl::ErrorCode::ParseFailure, ("Processing source file data failed after line: " + line).c_str());
+
+		// filedata is unchanged
+		return;
 	}
 
-	// set good bit (remove eofbit)
 	assert(filedata.eof());
+	// set good bit (remove eof bit)
 	filedata.clear();
 	filedata.str(result);
 
@@ -750,6 +760,14 @@ void FormatFileA(std::stringstream& filedata, std::size_t tab_width, bool spaces
 		}
 	}
 
+	if (filedata.bad() || (!filedata.eof() && filedata.fail()))
+	{
+		ShowError(wsl::ErrorCode::ParseFailure, ("Processing source file data failed after line: " + line).c_str());
+
+		// filedata is unchanged
+		return;
+	}
+
 	// Make sure first line is blank
 	if (!result.starts_with(linebreak))
 	{
@@ -794,13 +812,9 @@ void FormatFileA(std::stringstream& filedata, std::size_t tab_width, bool spaces
 			break;
 		}
 	}
-
-	if (filedata.bad() || (!filedata.eof() && filedata.fail()))
-	{
-		ShowError(wsl::ErrorCode::ParseFailure, ("Processing source file data failed after line: " + line).c_str());
-	}
 	
 	assert(filedata.eof());
+	// set good bit (remove eof bit)
 	filedata.clear();
 	filedata.str(result);
 

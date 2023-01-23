@@ -10,6 +10,11 @@
  * @file asmformat\console.hpp
  *
  * Function declarations specific for console projects
+ * 
+ * MSDN: It is recommended for all new and updated command-line applications to avoid code pages and use Unicode.
+ * UTF-16 formatted text can be sent to the W family of console APIs.
+ * UTF-8 formatted text can be sent to the A family of console APIs after ensuring the code page is first set to 65001 (CP_UTF8)
+ * with the SetConsoleCP and SetConsoleOutputCP functions.
  *
 */
 

@@ -69,7 +69,7 @@ namespace wsl
 	[[nodiscard]] bool IsConsole() noexcept;
 
 	/**
-	 * Used for template expansion by has_method template
+	 * Used for template expansion by HasCodeMethod template
 	 * 
 	 * AUTHOR:
 	 * https://stackoverflow.com/a/16824239/12091999
@@ -79,15 +79,15 @@ namespace wsl
 	 * rename of variables and types
 	*/
 	template<typename, typename T>
-	struct has_method
+	struct HasCodeMethod
 	{
 		static_assert(std::integral_constant<T, false>::value,
 			"Second template parameter needs to be member function");
 	};
 
 	/**
-	 * Type trait to check if a class has 'code' method with given signature
-	 * used to check if exception class has code method
+	 * Type trait to check if a class has "code" method with given signature.
+	 * Used to check if exception class has code method
 	 * 
 	 * AUTHOR:
 	 * https://stackoverflow.com/a/16824239/12091999
@@ -97,7 +97,7 @@ namespace wsl
 	 * rename of variables and types
 	*/
 	template<typename ClassType, typename FuncType, typename... FuncArgs>
-	struct has_method<ClassType, FuncType(FuncArgs...)>
+	struct HasCodeMethod<ClassType, FuncType(FuncArgs...)>
 	{
 	private:
 		template<typename T>

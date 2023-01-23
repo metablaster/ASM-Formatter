@@ -100,8 +100,6 @@
 */
 #define ShowError(...) EXPAND(GET_ERR_FUNC(__VA_ARGS__, ERR_FUNC6, ERR_FUNC5, ERR_FUNC4, ERR_FUNC3, ERR_FUNC2, ERR_FUNC1)(__VA_ARGS__))
 
-// TODO: need to revisit where the below macros are used, should be used only temporally for debugging
-
 // show message if failed hr
 #define CHECK_HR(hresult) if(FAILED(hresult)) { ShowError(ERROR_INFO, hresult); }
 
@@ -115,10 +113,6 @@
 #define CHECK_POINTER(ptr) if(ptr == nullptr) { ShowError(wsl::ErrorCode::InvalidPointer); }
 
 #else
-
-// TODO: how to handle these macros in release builds? warnings generated for empty control statement.
-// define throw _VA_ARGS_ with the help of macros header, then Exception class needs new constructor to accept ERROR_INFO
-// or somehow make use of HandleException
 
 // not used
 #define ShowError(...) EMPTY_STATEMENT

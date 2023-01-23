@@ -101,7 +101,7 @@ namespace wsl
 		if (output == 0)
 		{
 			ShowError(ERROR_INFO);
-			return std::make_pair(0u, 0u);
+			return std::make_pair(input, 0u);
 		}
 
 		return std::make_pair(input, output);

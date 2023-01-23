@@ -25,3 +25,7 @@ Here is a list of changes for each of the releases.
 - When possible report an error when an invalid encoding is specified
 - Report an error when no files to format were specified
 - Improved string conversion functions and conversion error reporting
+- Added `--version` option to display program version
+- Fixed few mistakes with error and exception handling
+- Console code page is set depending on `--encoding` option to be able to print data
+contents for error reporting and during debugging

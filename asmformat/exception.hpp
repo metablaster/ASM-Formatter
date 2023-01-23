@@ -15,12 +15,10 @@
 
 #pragma once
 #include <stdexcept>
-#include "ErrorMacros.hpp"
 
 
 namespace wsl
 {
-	#pragma warning (disable : 4275)	// base needs to have DLL interface
 	/*
 	 * Custom exception class used to pass into ShowError function
 	 * it's interface provides basic functions to retrieve more
@@ -66,41 +64,46 @@ namespace wsl
 		Exception& operator=(Exception&&) noexcept(false) = default;
 
 		//
-		// Ungrouped methods
+		// Class interface
 		//
 
-		/** Append informational message to exception */
-		inline void AddInfo(std::string info);
+		/** Append additional informational message to exception */
+		void AddInfo(std::string info);
 
-		/** Get error_condidtion name */
-		[[nodiscard]] virtual std::string ConditionName() const;
+		/** Returns the message describing the error */
+		[[nodiscard]] virtual std::string ErrorMessage() const;
 
-		/** Get error_category name */
-		[[nodiscard]] virtual std::string CategoryName() const;
+		/** Returns the message describing the error condition */
+		[[nodiscard]] virtual std::string ConditionMessage() const;
 
-		/** Get error_condition value */
-		[[nodiscard]] inline virtual int ConditionValue() const noexcept;
+		/** Returns name of error_category associated with error_code */
+		[[nodiscard]] virtual std::string ErrorCategoryName() const;
 
-		/** Get error_code value */
+		/** Returns name of error_category associated with error_condition */
+		[[nodiscard]] virtual std::string ConditionCategoryName() const;
+
+		/** Returns the error value associated with the error_code object */
 		[[nodiscard]] inline virtual int ErrorValue() const noexcept;
 
-		/** Get additional information string passed to constructor */
-		[[nodiscard]] inline virtual const std::string& GetInfo() const noexcept;
+		/** Returns the value associated with the error_condition object */
+		[[nodiscard]] inline virtual int ConditionValue() const noexcept;
 
-		/** Get error_code object associated with this exception object */
+		/** Returns error_code object associated with this exception object */
 		[[nodiscard]] inline virtual const std::error_code& code() const noexcept;
+
+		/** Returns additional information string passed to constructor */
+		[[nodiscard]] inline virtual const std::string& GetInfo() const noexcept;
 
 		//
 		// Members
 		//
 	private:
-		SUPPRESS(4251);		// member needs to have DLL interface
+		// Object describing the error
 		std::error_code mCode;
 
-		SUPPRESS(4251);		// member needs to have DLL interface
+		// Additional information
 		std::string mInfo;
 	};
-	#pragma warning (default : 4275)	// base needs to have DLL interface
 
 	template<typename Enum>
 	Exception::Exception(Enum err_enum) :
@@ -132,19 +135,14 @@ namespace wsl
 	{
 	}
 
-	int Exception::ConditionValue() const noexcept
-	{
-		return mCode.default_error_condition().value();
-	}
-
 	int wsl::Exception::ErrorValue() const noexcept
 	{
 		return mCode.value();
 	}
 
-	const std::string& Exception::GetInfo() const noexcept
+	int Exception::ConditionValue() const noexcept
 	{
-		return mInfo;
+		return mCode.default_error_condition().value();
 	}
 
 	const std::error_code& Exception::code() const noexcept
@@ -152,8 +150,8 @@ namespace wsl
 		return mCode;
 	}
 
-	void Exception::AddInfo(std::string info)
+	const std::string& Exception::GetInfo() const noexcept
 	{
-		mInfo.append(info);
+		return mInfo;
 	}
 }

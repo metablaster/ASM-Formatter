@@ -16,7 +16,10 @@
 #include "pch.hpp"
 #include "error.hpp"
 #include "ErrorCode.hpp"
+#include "console.hpp"
 
+
+extern std::pair<UINT, UINT> default_CP;
 
 namespace wsl
 {
@@ -38,8 +41,6 @@ namespace wsl
 		return message;
 	}
 
-	// TODO: limit prompt to OK, CANCEL depending on flags,
-	// ex: only abort if error.
 	void GetUserResponse(
 		const std::string& error_title,
 		std::string& error_message,
@@ -92,6 +93,8 @@ namespace wsl
 		}
 		else
 		{
+			// TODO: limit prompt to OK, CANCEL depending on flags,
+			// ex: only abort if error.
 			long result_flags = MB_OK | flags;
 
 			if (flags & MB_ICONSTOP)
@@ -112,6 +115,8 @@ namespace wsl
 			return;
 		case IDCANCEL:
 		default:
+			// Restore modified console code page and exit program
+			SetConsoleCodePage(default_CP.first, default_CP.second);
 			std::exit(static_cast<int>(error_code));
 		}
 	}
@@ -120,13 +125,11 @@ namespace wsl
 	{
 		std::string error_title("Runtime Error");
 
-		// Welcome to Microsoft non standard behavior!
-		// TODO: see if HIWORD OR LOWORD can be used.
-		if ((flags & 0xf0u) == MB_ICONWARNING)
+		if (LOWORD(flags) == MB_ICONWARNING)
 		{
 			error_title = "Runtime Warning";
 		}
-		else if ((flags & 0xf0u) == MB_ICONINFORMATION)
+		else if (LOWORD(flags) == MB_ICONINFORMATION)
 		{
 			error_title = "Runtime Information";
 		}
@@ -166,7 +169,7 @@ namespace wsl
 		int line,
 		HRESULT hr,
 		PCSTR info,
-		long flags) noexcept try
+		long flags) try
 	{
 		// We need to get error code immediately,
 		// ex. std::string below will set it to zero!
@@ -245,11 +248,11 @@ namespace wsl
 		PCSTR file_name,
 		PCSTR func_name,
 		int line,
-		long flags) noexcept try
+		long flags) try
 	{
 		constexpr std::size_t size = 100;
 
-		// we will use SUPPRESS for false warning because
+		// We will use SUPPRESS for false warning because
 		// MSDN: The error-message string is terminated by the newline character ('\n')
 		char crt_error[size];
 
@@ -282,20 +285,15 @@ namespace wsl
 		}
 
 		error_message.append("\r\nCategory:\t");
-		error_message.append(exception.ConditionName());
-
+		error_message.append(exception.ConditionMessage());
 		error_message.append("\r\nError:\t\t");
-		error_message.append(exception.what());
+		error_message.append(exception.ErrorMessage());
 		error_message.append("\r\nCRT Error\t");
 
 		SUPPRESS(6054 26485);	// String might not be zero-terminated and No array to pointer decay
 		error_message.append(crt_error);
 
-		std::string error_info{};
-		std::string info_data = exception.GetInfo();
-
-		if (!info_data.empty())
-			error_info.append(info_data);
+		std::string error_info = exception.GetInfo();
 
 		// Format message adds new line (for WIN32 errors)
 		// for exceptions and HRESULTS we add manually

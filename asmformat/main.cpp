@@ -31,26 +31,31 @@ using namespace wsl;
 namespace fs = std::filesystem;
 
 
-int main(int argc, char* argv[])
+// Code page originally used by the console
+std::pair<UINT, UINT> default_CP;
+
+int main(int argc, char* argv[]) try
 {
 	if (!RegisterConsoleHandler())
 	{
 		return ExitCode(ErrorCode::FunctionFailed);
 	}
 
-	#ifdef _DEBUG
-	// TODO: Figure out which code page to set depending on contents of a source file
-	// It's needed when there is an error parsing characters which may result in printing them
-	const auto old_CP = GetConsoleCodePage();
-	#endif
-
+	default_CP = GetConsoleCodePage();
 	fs::path executable_path = argv[0];
 	const std::string executable_name = executable_path.stem().string();
 	std::vector<std::string> all_params(argv + 1, argv + argc);
 
 	constexpr const char* version = "0.4.0";
 	const bool nologo = std::find(all_params.begin(), all_params.end(), "--nologo") != all_params.end();
-	constexpr const char* syntax = " path\\file1.asm path\\file2.asm ... [--encoding ansi|utf8|utf16le] [--tabwidth N] [--spaces] [--linebreaks crlf|lf] [--compact] [--help] [--nologo]";
+	constexpr const char* syntax = " path\\file1.asm path\\file2.asm ... [--encoding ansi|utf8|utf16le] [--tabwidth N] [--spaces] [--linebreaks crlf|lf] [--compact] [--version] [--nologo] [--help]";
+
+	// Show program version if --version was specified
+	if (std::find(all_params.begin(), all_params.end(), "--version") != all_params.end())
+	{
+		std::cout << "asmformat version " << version;
+		return 0;
+	}
 
 	if (!nologo)
 	{
@@ -76,6 +81,7 @@ int main(int argc, char* argv[])
 		std::cout << " --spaces\tUse spaces instead of tabs (by default tabs are used)" << std::endl;
 		std::cout << " --linebreaks\tPerform line breaks conversion (by default line breaks are preserved)" << std::endl;
 		std::cout << " --compact\tReplaces all surplus blank lines with single blank line" << std::endl;
+		std::cout << " --version\tShows program version" << std::endl;
 		std::cout << " --nologo\tSuppresses the display of the program banner, version and Copyright when the " << executable_name << " starts up" << std::endl;
 		std::cout << " --help\t\tDisplays this help" << std::endl;
 
@@ -218,17 +224,6 @@ int main(int argc, char* argv[])
 		}
 	}
 
-	#ifdef _DEBUG
-	// MSDN: It is recommended for all new and updated command-line applications to avoid code pages and use Unicode.
-	// UTF-16 formatted text can be sent to the W family of console APIs.
-	// UTF-8 formatted text can be sent to the A family of console APIs after ensuring the code page is first set to 65001 (CP_UTF8)
-	// with the SetConsoleCP and SetConsoleOutputCP functions.
-	if (!SetConsoleCodePage(old_CP.first, CP_UTF8))
-	{
-		return ExitCode(ErrorCode::FunctionFailed);
-	}
-	#endif // _DEBUG
-
 	if (files.empty())
 	{
 		ShowError(Exception(ErrorCode::InvalidCommand, "No files were specified to format"), ERROR_INFO, MB_ICONINFORMATION);
@@ -239,6 +234,20 @@ int main(int argc, char* argv[])
 	std::cout << "using "<< EncodingToString(encoding) << " encoding" << std::endl << std::endl;
 
 	std::vector<unsigned char> bom_bytes;
+
+	switch (encoding)
+	{
+	case Encoding::ANSI:
+	case Encoding::UTF8:
+		if (!SetConsoleCodePage(default_CP.first, CP_UTF8))
+			return ExitCode(ErrorCode::FunctionFailed);
+		break;
+	case Encoding::UTF16LE:
+		// Use default code page
+		break;
+	default:
+		break;
+	}
 
 	for (const auto& file_path : files)
 	{
@@ -308,12 +317,28 @@ int main(int argc, char* argv[])
 		ShowError(ErrorCode::InvalidParameter, EncodingToString(encoding) + " was specified but file " + file_path.filename().string() + " is encoded as " + BomToString(bom));
 	}
 
-	#ifdef _DEBUG
-	if (!SetConsoleCodePage(old_CP.first, old_CP.second))
+	if (!SetConsoleCodePage(default_CP.first, default_CP.second))
 	{
 		return ExitCode(ErrorCode::FunctionFailed);
 	}
-	#endif // _DEBUG
 
 	return 0;
+}
+catch (Exception& custom)
+{
+	if (custom.GetInfo().empty())
+		custom.AddInfo("An unhandled exception occuerd");
+
+	ShowError(custom, ERROR_INFO);
+	return custom.ErrorValue();
+}
+catch (const std::exception& ex)
+{
+	ShowError(ex, ERROR_INFO);
+	return ExitCode(ErrorCode::UnhandledException);
+}
+catch (...)
+{
+	ShowError(ErrorCode::UnhandledException, "An unhandled exception occuerd");
+	return ExitCode(ErrorCode::UnhandledException);
 }

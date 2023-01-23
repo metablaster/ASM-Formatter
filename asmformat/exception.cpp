@@ -35,13 +35,39 @@ namespace wsl
 	{
 	}
 
-	std::string Exception::CategoryName() const
+	void Exception::AddInfo(std::string info)
 	{
+		if (!mInfo.empty())
+			mInfo.append(", ");
+
+		mInfo.append(info);
+	}
+
+	std::string Exception::ErrorMessage() const
+	{
+		// Calls error_category::message
+		// Where error_category is implementation detail of error_code
+		return mCode.message();
+	}
+
+	std::string Exception::ConditionMessage() const
+	{
+		// Calls error_category::message
+		// Where error_category is implementation detail of error_condition
+		return mCode.default_error_condition().message();
+	}
+
+	std::string Exception::ErrorCategoryName() const
+	{
+		// Calls error_category::name
+		// Where error_category is implementation detail of error_code
 		return mCode.category().name();
 	}
 
-	std::string Exception::ConditionName() const
+	std::string Exception::ConditionCategoryName() const
 	{
-		return mCode.default_error_condition().message();
+		// Calls error_category::name
+		// Where error_category is implementation detail of error_condition
+		return mCode.default_error_condition().category().name();
 	}
 }

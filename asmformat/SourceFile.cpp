@@ -10,7 +10,6 @@
  * @file asmformat\SourceFile.cpp
  *
  * File read\write function definitions
- * TODO: Testing needed with better samples
  * TODO: CRT error handling is not well implemented, ex. override invalid parameter handler,
  * see docs for functions used in this file
  *

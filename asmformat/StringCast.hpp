@@ -57,8 +57,8 @@ namespace wsl
 	/**
 	 * @brief				Converts a UTF string to its narrow multibyte representation
 	 * @tparam StringType	One of the UTF versions of std::string types
-	 * @param param			u32string or char32_t string
-	 * @param locale		The multibyte encoding used
+	 * @param param			u32string, u16string string or char32_t, char16_t character
+	 * @param locale		The multibyte encoding used is dictated by the locale
 	 * @return				Converted string
 	*/
 	template<typename StringType>
@@ -78,32 +78,34 @@ namespace wsl
 		if (old_locale.empty())
 			ShowError(ErrorCode::FunctionFailed, "Setting locale to " + locale + " failed");
 
-		std::mbstate_t state{};
-		std::stringstream string_buff{};
-		char char_buff[MB_LEN_MAX]{};
-		std::size_t(*function)(char*, typename StringType::value_type, std::mbstate_t*) = nullptr;
+		using char_type = typename StringType::value_type;
+		std::size_t(*function)(char*, char_type, std::mbstate_t*) = nullptr;
 
-		static_assert(!std::is_same_v<typename StringType::value_type, char8_t>, "MSVC does not yet support std::c8rtomb");
-
-		if constexpr (std::is_same_v<typename StringType::value_type, char16_t>)
+		if constexpr (std::is_same_v<char_type, char16_t>)
 			function = std::c16rtomb;
-		else if constexpr (std::is_same_v<typename StringType::value_type, char32_t>)
+		else if constexpr (std::is_same_v<char_type, char32_t>)
 			function = std::c32rtomb;
+
+		static_assert(!std::is_same_v<char_type, char8_t>, "MSVC does not yet support std::c8rtomb");
 		#if FALSE
-		else if constexpr (std::is_same_v<typename StringType::value_type, char8_t>)
+		else if constexpr (std::is_same_v<char_type, char8_t>)
 			func = std::c8rtomb;
 		#endif
 
-		for (const typename StringType::value_type char_type : param)
+		std::mbstate_t state{};
+		std::stringstream string_buff{};
+		char char_buff[MB_LEN_MAX]{};
+
+		for (const char_type char_value : param)
 		{
 			// MSDN: The number of bytes stored in array object mbchar, including any shift sequences.
-			// If char_type isn't a valid wide character, the value (size_t)(-1) is returned,
+			// If char_value isn't a valid wide character, the value (size_t)(-1) is returned,
 			// errno is set to EILSEQ, and the value of state is unspecified
-			const std::size_t ret = function(char_buff, char_type, &state);
+			const std::size_t ret = function(char_buff, char_value, &state);
 
 			if (ret == static_cast<std::size_t>(-1))
 			{
-				ShowError(ErrorCode::ConversionFailed, "Conversion from char16_t failed - Illegal byte sequence");
+				ShowError(ErrorCode::ConversionFailed, std::string("Conversion from ") + typeid(char_type).name() + " failed - Illegal byte sequence");
 				return std::string();
 			}
 			else
@@ -123,7 +125,6 @@ namespace wsl
 
 	#pragma warning (default: 28183)
 
-	// TODO: Not tested
 	/**
 	 * @brief			Converts a narrow multibyte character to UTF-16 character representation
 	 * @param param		string or char
@@ -132,7 +133,6 @@ namespace wsl
 	*/
 	[[nodiscard]] std::u16string StringCast16(const std::string& param, const std::string locale = "en_US.utf8");
 
-	// TODO: Not tested
 	/**
 	 * @brief			Converts a narrow multibyte character to its UTF-32 character representation
 	 * @param param		string or char
