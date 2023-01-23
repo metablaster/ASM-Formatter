@@ -31,7 +31,7 @@
 #include <iostream>
 #include <filesystem>	// std::filesystem::path (SourceFile.hpp)
 #include <string>		// std::string
-#include <sstream>		// std::stringstream (SourceFile.hpp)
+#include <sstream>		// std::stringstream (SourceFile.hpp, StringCast.hpp)
 #include <cuchar>		// std::c16rtomb (StringCast.cpp)
 #include <regex>		// std::regex_search (FormatFile.cpp)
 #include <bit>			// std::endian (utils.hpp)
@@ -48,6 +48,7 @@
 #include <limits>		// std::numeric_limits (SourceFile.spp)
 #include <cstring>		// std::strrchr (ErrorMacros.hpp)
 #include <algorithm>	// std::find (main.cpp)
+#include <clocale>		// std::setlocale (StringCast.cpp)
 
 // C Standard header files
 #include <stdio.h>		// fopen_s (SourceFile.cpp)

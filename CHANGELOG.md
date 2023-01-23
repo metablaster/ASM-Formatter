@@ -23,3 +23,5 @@ Here is a list of changes for each of the releases.
 ## v0.4.0
 
 - When possible report an error when an invalid encoding is specified
+- Report an error when no files to format were specified
+- Improved string conversion functions and conversion error reporting

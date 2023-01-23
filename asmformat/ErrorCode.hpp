@@ -38,7 +38,7 @@ namespace wsl
 		PointerNotNULL,		// Attempt to re-initialize valid pointer
 		CaseNotHandled,		// Case label not explicitly handled
 		InvalidHandle,		// The handle is NULL or invalid
-		FunctionFailed,		// Function call failed
+		FunctionFailed,		// Result of function call was not sucess
 		MemoryLeak,			// Possible memory leak
 		BadFunctionCall,	// Function should not be called
 		ObjectNotValid,		// Object is not valid
@@ -55,6 +55,7 @@ namespace wsl
 		BadVariableData,	// unexpected variable data
 		BadCast,			// Bad cast
 		NotFound,			// Item not found
+		ConversionFailed,	// Data conversion failed
 
 		// User errors
 		UnknownOption = 500,// Unrecognized option passed to program

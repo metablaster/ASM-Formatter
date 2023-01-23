@@ -66,7 +66,7 @@ namespace wsl
 		{
 			MessageBeep(static_cast<UINT>(flags));
 
-			std::cerr << error_title.c_str() << std::endl;
+			std::cerr << std::endl << error_title.c_str() << std::endl;
 			std::cerr << error_message.c_str() << std::endl;
 
 			const bool iconstop = flags & MB_ICONSTOP;

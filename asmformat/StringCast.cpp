@@ -15,8 +15,6 @@
 
 #include "pch.hpp"
 #include "StringCast.hpp"
-#include "error.hpp"
-#include "ErrorCode.hpp"
 
 
 namespace wsl
@@ -194,83 +192,177 @@ namespace wsl
 		return result;
 	}
 
-	#if FALSE
-	std::wstring StringCast(const std::u8string& param)
+	// 'setlocale(0, locale.c_str())' could be '0', and is a copy of the value found in 'setlocale()`252'
+	// Functions handle it's not null but not if same
+	#pragma warning (disable: 28183)
+
+	std::u16string StringCast16(const std::string& param, const std::string locale)
 	{
-		char char_buff[MB_LEN_MAX]{};
-
-		std::mbstate_t state{};
-		std::stringstream string_buff{};
-
-		for (char8_t c8 : param)
+		if (locale.empty())
 		{
-			std::size_t ret = std::c8rtomb(char_buff, c8, &state);
+			ShowError(ErrorCode::BadArgument, "locale cannot be empty string");
+			return std::u16string();
+		}
 
-			if (ret == -1)
+		// null pointer on failure
+		std::string old_locale = std::setlocale(LC_ALL, locale.c_str());
+		if (old_locale.empty())
+			ShowError(ErrorCode::FunctionFailed, "Setting locale to " + locale + " failed");
+
+		char16_t char_buff{};
+		std::mbstate_t state{};
+		std::u16string string_buff{};
+
+		const char* ptr = param.c_str();
+		const char* end = param.c_str() + param.size() + 1; // + null character
+		std::ptrdiff_t max_bytes = end - ptr;
+
+		#if _DEBUG
+		std::cout << "Processing " << param.size() << " bytes: [ " << std::showbase;
+		for (const unsigned char ch : param)
+			std::cout << std::hex << +ch << ' ';
+		std::cout << "]" << std::endl;
+		#endif
+
+		// args: destination, source, max_bytes, state
+		while (const std::size_t ret = std::mbrtoc16(&char_buff, ptr, end - ptr, &state))
+		{
+			#ifdef _DEBUG
+			std::cout << "Next UTF-16 char: " << std::hex << static_cast<int>(char_buff) << " obtained from ";
+			#endif
+
+			switch (ret)
 			{
-				ShowError(ErrorCode::FunctionFailed, L"Conversion from char8_t failed");
-			}
-			else
-			{
-				string_buff << std::string_view{ char_buff, ret };
+			case static_cast<size_t>(-1):
+				// MSDN: An encoding error has occurred
+				// The next max_bytes or fewer bytes don't contribute to a complete and valid UTF-8 multibyte character
+				// No value is stored in destination
+				// EILSEQ is stored in errno and the conversion state value state is unspecified
+				ShowError(ErrorCode::ConversionFailed, "Conversion to char32_t failed - Illegal byte sequence");
+				return std::u16string();
+			case static_cast<size_t>(-2):
+				// MSDN: The next max_bytes bytes represent an incomplete, but potentially valid, UTF-8 multibyte character.
+				// No value is stored in destination
+				// This result can occur if max_bytes is zero.
+				max_bytes = end - ptr;
+				continue;
+			case static_cast<size_t>(-3):
+				// MSDN: The next wide character resulting from a previous call to the function has been stored in destination
+				// No bytes from source are consumed by this call to the function
+				#if _DEBUG
+				// https://unicode.org/faq/utf_bom.html#utf16-2
+				std::cout << "earlier surrogate pair" << std::endl;
+				#endif
+
+				max_bytes = end - ptr;
+				string_buff.push_back(char_buff);
+				continue;
+			case 0:
+				// The character converted from source (and stored in destination if non-null) was the null character
+			default:
+				// The number of bytes of the multibyte character converted from source
+				#if _DEBUG
+				std::cout << std::dec << ret << " bytes [ ";
+				for (std::size_t bytes = 0; bytes < ret; ++bytes)
+					std::cout << std::hex << +static_cast<unsigned char>(ptr[bytes]) << ' ';
+				std::cout << "]" << std::endl;
+				#endif
+
+				ptr += ret;
+				max_bytes = end - ptr;
+				// Which also puts the null character
+				string_buff.push_back(char_buff);
+				continue;
 			}
 		}
 
-		string_buff << '\0';
+		if (!old_locale.empty())
+			if (std::setlocale(LC_ALL, old_locale.c_str()) == nullptr)
+				ShowError(ErrorCode::FunctionFailed, "Restoring locale to " + old_locale + " failed");
 
-		return StringCast(string_buff.str());
+		return string_buff;
 	}
-	#endif
 
-	std::wstring StringCast(const std::u16string& param)
+	std::u32string StringCast32(const std::string& param, const std::string locale)
 	{
-		char char_buff[MB_LEN_MAX]{};
-
-		std::mbstate_t state{};
-		std::stringstream string_buff{};
-
-		for (const char16_t c16 : param)
+		if (locale.empty())
 		{
-			const std::size_t ret = std::c16rtomb(char_buff, c16, &state);
+			ShowError(ErrorCode::BadArgument, "locale cannot be empty string");
+			return std::u32string();
+		}
 
-			if (ret == -1)
+		// null pointer on failure
+		std::string old_locale = std::setlocale(LC_ALL, locale.c_str());
+		if (old_locale.empty())
+			ShowError(ErrorCode::FunctionFailed, "Setting locale to " + locale + " failed");
+
+		char32_t char_buff{};
+		std::mbstate_t state{};
+		std::u32string string_buff{};
+
+		const char* ptr = param.c_str();
+		const char* end = param.c_str() + param.size() + 1; // + null character
+		std::ptrdiff_t max_bytes = end - ptr;
+
+		#if _DEBUG
+		std::cout << "Processing " << param.size() << " bytes: [ " << std::showbase;
+		for (const unsigned char ch : param)
+			std::cout << std::hex << +ch << ' ';
+		std::cout << "]" << std::endl;
+		#endif
+		
+		// args: destination, source, max_bytes, state
+		while (const std::size_t ret = std::mbrtoc32(&char_buff, ptr, max_bytes, &state))
+		{
+			#ifdef _DEBUG
+			std::cout << "Next UTF-32 char: " << std::hex << static_cast<int>(char_buff) << " obtained from ";
+			#endif
+
+			switch (ret)
 			{
-				ShowError(ErrorCode::FunctionFailed, "Conversion from char16_t failed");
-			}
-			else
-			{
-				string_buff << std::string_view{ char_buff, ret };
+			case static_cast<size_t>(-1):
+				// MSDN: An encoding error has occurred
+				// The next max_bytes or fewer bytes don't contribute to a complete and valid UTF-8 multibyte character
+				// No value is stored in destination
+				// EILSEQ is stored in errno and the conversion state value state is unspecified
+				ShowError(ErrorCode::ConversionFailed, "Conversion to char32_t failed - Illegal byte sequence");
+				return std::u32string();
+			case static_cast<size_t>(-2):
+				// MSDN: The next max_bytes bytes represent an incomplete, but potentially valid, UTF-8 multibyte character.
+				// No value is stored in destination
+				// This result can occur if max_bytes is zero.
+				max_bytes = end - ptr;
+				continue;
+			case static_cast<size_t>(-3):
+				// MSDN: The next wide character resulting from a previous call to the function has been stored in destination
+				// No bytes from source are consumed by this call to the function
+				ShowError(ErrorCode::Unexpected, "Conversion to char32_t failed - Surrogates don't exist in UTF-32");
+				return std::u32string();
+			case 0:
+				// The character converted from source (and stored in destination if non-null) was the null character
+			default:
+				// The number of bytes of the multibyte character converted from source
+				#if _DEBUG
+				std::cout << std::dec << ret << " bytes [ ";
+				for (std::size_t bytes = 0; bytes < ret; ++bytes)
+					std::cout << std::hex << +static_cast<unsigned char>(ptr[bytes]) << ' ';
+				std::cout << "]" << std::endl;
+				#endif
+
+				ptr += ret;
+				max_bytes = end - ptr;
+				// Which also puts the null character
+				string_buff.push_back(char_buff);
+				continue;
 			}
 		}
 
-		string_buff << '\0';
+		if (!old_locale.empty())
+			if (std::setlocale(LC_ALL, old_locale.c_str()) == nullptr)
+				ShowError(ErrorCode::FunctionFailed, "Restoring locale to " + old_locale + " failed");
 
-		return StringCast(string_buff.str());
+		return string_buff;
 	}
 
-	std::wstring StringCast(const std::u32string& param)
-	{
-		char char_buff[MB_LEN_MAX]{};
-
-		std::mbstate_t state{};
-		std::stringstream string_buff{};
-
-		for (const char32_t c32 : param)
-		{
-			const std::size_t ret = std::c32rtomb(char_buff, c32, &state);
-
-			if (ret == -1)
-			{
-				ShowError(ErrorCode::FunctionFailed, "Conversion from char32_t failed");
-			}
-			else
-			{
-				string_buff << std::string_view{ char_buff, ret };
-			}
-		}
-
-		string_buff << '\0';
-
-		return StringCast(string_buff.str());
-	}
+	#pragma warning (default: 28183)
 }

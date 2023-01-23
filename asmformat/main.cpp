@@ -229,6 +229,12 @@ int main(int argc, char* argv[])
 	}
 	#endif // _DEBUG
 
+	if (files.empty())
+	{
+		ShowError(Exception(ErrorCode::InvalidCommand, "No files were specified to format"), ERROR_INFO, MB_ICONINFORMATION);
+		return ExitCode(ErrorCode::InvalidCommand);
+	}
+
 	std::cout << "using tab width of " << tabwidth << std::endl;
 	std::cout << "using "<< EncodingToString(encoding) << " encoding" << std::endl << std::endl;
 

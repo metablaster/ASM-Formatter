@@ -172,6 +172,7 @@ namespace wsl
 		case ErrorCode::BadVariableData:
 		case ErrorCode::BadCast:
 		case ErrorCode::NotFound:
+		case ErrorCode::ConversionFailed:
 			return make_error_condition(ErrorCondition::code_error);
 		case ErrorCode::UnknownOption:
 		case ErrorCode::InvalidParameter:
@@ -256,6 +257,8 @@ namespace wsl
 			return "Bad cast";
 		case ErrorCode::NotFound:
 			return "Item not found";
+		case ErrorCode::ConversionFailed:
+			return "Conversion failed";
 			// User error
 		case ErrorCode::UnknownOption:
 			return "Unknown option";

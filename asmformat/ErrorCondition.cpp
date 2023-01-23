@@ -191,6 +191,7 @@ namespace wsl
 				case ErrorCode::BadVariableData:
 				case ErrorCode::BadCast:
 				case ErrorCode::NotFound:
+				case ErrorCode::ConversionFailed:
 					return true;
 				default:
 					return false;
