@@ -140,7 +140,8 @@ namespace wsl
 
 	std::error_condition ErrorConditionCategory::default_error_condition(int code) const noexcept
 	{
-		// Since this is condition category (not error) this should never be called!
+		// TODO: Since this is condition category (not error) this should not be called
+		// It's called in Exception class, what's the purpose?
 		return std::error_condition(code, std::generic_category());
 	}
 
@@ -236,9 +237,8 @@ namespace wsl
 		case ErrorCondition::user_error:
 			return "User error";
 		case ErrorCondition::unspecified_error:
-			return "Unspecified error";
 		default:
-			return "Unknown error";
+			return "Unspecified error";
 		}
 	}
 

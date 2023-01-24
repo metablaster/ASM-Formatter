@@ -1,0 +1,91 @@
+
+/*
+ * Project: "ASM Formatter" https://github.com/metablaster/ASM-Formatter
+ * Copyright(C) 2023 metablaster (zebal@protonmail.ch)
+ * Licensed under the MIT license
+ *
+*/
+
+/**
+ * @file asmformat\cpp.hint
+ *
+ * Hint files help the Visual Studio IDE interpret Visual C++ identifiers
+ * such as names of functions and macros.
+ * For more information see https://go.microsoft.com/fwlink/?linkid=865984
+ *
+*/
+
+// Macros used by ErrorMacros.hpp
+#define FAILED(hr) (((HRESULT)(hr)) < 0)
+
+// Macros from ErrorMacros.hpp
+#if defined _DEBUG
+#define NOEXCEPT noexcept(false)
+#else
+#define NOEXCEPT noexcept
+#endif // _DEBUG
+
+#define PUSH __pragma(warning(push))
+#define POP __pragma(warning(pop))
+#define SUPPRESS(...) __pragma(warning(suppress : __VA_ARGS__))
+#define DISABLE(...) __pragma(warning(disable : __VA_ARGS__))
+
+#define EMPTY_STATEMENT static_cast<void>(0)
+
+#define EXPAND(x) x
+#define FILE_NAME PUSH DISABLE(26485) \
+	(std::strrchr(__FILE__, '\\') ? \
+	std::strrchr(__FILE__, '\\') + 1 : __FILE__) POP
+
+#define FUNC_NAME __FUNCTION__
+#define ERROR_INFO FILE_NAME, FUNC_NAME, __LINE__
+#define ERROR_INFO_HR FILE_NAME, FUNC_NAME, __LINE__, S_OK
+
+#if defined SHOW_ERRORS || defined _DEBUG
+
+#define ERR_FUNC wsl::ShowErrorA
+#define ShowCrtError wsl::ShowCrtErrorA
+
+#define GET_ERR_FUNC(N1, N2, N3, N4, N5, N6, FUNC, ...) FUNC
+
+#define ERR_FUNC1(N1) ERR_FUNC(wsl::Exception(N1), ERROR_INFO)
+#define ERR_FUNC2(N1, N2) ERR_FUNC(wsl::Exception(N1, N2), ERROR_INFO)
+#define ERR_FUNC3(N1, N2, N3) ERR_FUNC(N1, N2, N3)
+#define ERR_FUNC4(N1, N2, N3, N4) ERR_FUNC(N1, N2, N3, N4)
+#define ERR_FUNC5(N1, N2, N3, N4, N5) ERR_FUNC(N1, N2, N3, N4, N5)
+#define ERR_FUNC6(N1, N2, N3, N4, N5, N6) ERR_FUNC(N1, N2, N3, N4, N5, N6)
+
+#define ShowError(...) EXPAND(GET_ERR_FUNC(__VA_ARGS__, ERR_FUNC6, ERR_FUNC5, ERR_FUNC4, ERR_FUNC3, ERR_FUNC2, ERR_FUNC1)(__VA_ARGS__))
+
+#define CHECK_HR(hresult) if(FAILED(hresult)) { ShowError(ERROR_INFO, hresult); }
+#define CHECK_HR_RETURN(hresult) if(FAILED(hresult)) { ShowError(ERROR_INFO, hresult); return hresult; }
+#define CHECK_WIN32(win32_error) if(win32_error) { ShowError(ERROR_INFO); }
+#define CHECK_POINTER(ptr) if(ptr == nullptr) { ShowError(wsl::ErrorCode::InvalidPointer); }
+
+#else
+
+#define ShowError(...) EMPTY_STATEMENT
+#define ShowCrtError(...) EMPTY_STATEMENT
+#define CHECK_HR(hresult) EMPTY_STATEMENT
+#define CHECK_HR_RETURN(hresult) EMPTY_STATEMENT
+#define CHECK_WIN32(win32_error) EMPTY_STATEMENT
+#define CHECK_POINTER(ptr) EMPTY_STATEMENT
+
+#endif // SHOW_ERRORS | _DEBUG
+
+// Macros used in SourceFile.cpp
+#ifdef _USE_32BIT_TIME_T
+#define _fstat      _fstat32
+#define _fstati64   _fstat32i64
+#define _stat       _stat32
+#define _stati64    _stat32i64
+#define _wstat      _wstat32
+#define _wstati64   _wstat32i64
+#else
+#define _fstat      _fstat64i32
+#define _fstati64   _fstat64
+#define _stat       _stat64i32
+#define _stati64    _stat64
+#define _wstat      _wstat64i32
+#define _wstati64   _wstat64
+#endif

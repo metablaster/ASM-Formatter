@@ -19,9 +19,6 @@
  * /Wall warnings means /Wall only:
  * https://docs.microsoft.com/en-us/cpp/preprocessor/compiler-warnings-that-are-off-by-default
  *
- * TODO: pragmas are not grouped according to warning level
- * pragmas marked with [temp] are temporarily disabled, should be re-enabled and problem fixed
- *
 */
 
 #pragma once
@@ -75,19 +72,20 @@
 // /Qspectre - Specifies compiler generation of instructions to mitigate certain
 // Spectre variant 1 security vulnerabilities.
 // NOTE: This warning will pop up regardless of /Qspectre switch (unknown if this is /Wall)
-#pragma warning (disable : 5045)	// (?) Compiler will insert Spectre mitigation for memory load if /Qspectre switch specified
-
-//
-// Disable compiler rules temporarily (consider toggling on/off from time to time)
-//
-
-//#pragma warning (disable : 4365)	// [temp] (W4) conversion from 'type_1' to 'type_2', signed/unsigned mismatch
-//#pragma warning (disable : 5219)	// [temp] (W2) implicit conversion from 'type-1' to 'type-2', possible loss of data
+#pragma warning (disable : 5045)	// (W3 ?) Compiler will insert Spectre mitigation for memory load if /Qspectre switch specified
 
 #ifdef NDEBUG
 // Not /Wall
 #pragma warning (disable : 4711)	// (W1) function 'function' selected for inline expansion ( raised in release builds only )
 #endif // NDEBUG
+
+//
+// Disable compiler rules temporarily (consider toggling on/off from time to time)
+//
+
+#pragma warning (disable : 4365)	// (W4) conversion from 'type_1' to 'type_2', signed/unsigned mismatch
+//#pragma warning (disable : 5219)	// (W2) implicit conversion from 'type-1' to 'type-2', possible loss of data
+#pragma warning (disable: 4061)		// (W4) enumerator 'enum name' in switch of enum 'enum name' is not explicitly handled by a case label
 
 //
 // Disable static analysis rules temporarily for user code (consider toggling on/off from time to time)
@@ -96,9 +94,9 @@
 
 // NOTE: C26415 and C26418 likely false positive, see link below for more info
 // https://developercommunity.visualstudio.com/content/problem/461654/analysis-cant-see-move-to-constructor-inside-of-st.html
-#pragma warning (disable : 26415)	// [temp] Smart pointer parameter 'pointer' is used only to access contained pointer. Use T * or T & instead(r.30)
-#pragma warning (disable : 26418)	// [temp] Shared pointer parameter 'pointer' is not copied or moved. Use T * or T & instead(r.36)
-#pragma warning (disable : 26467)	// Converting from floating point to unsigned integral types results in non-portable code.
+//#pragma warning (disable : 26415)	// Smart pointer parameter 'pointer' is used only to access contained pointer. Use T * or T & instead(r.30)
+//#pragma warning (disable : 26418)	// Shared pointer parameter 'pointer' is not copied or moved. Use T * or T & instead(r.36)
+//#pragma warning (disable : 26467)	// Converting from floating point to unsigned integral types results in non-portable code.
 
 #ifdef TEST_PROJECT
 //
@@ -178,8 +176,6 @@
 //
 #if !MANUAL_CODE_ANALYISIS
 #pragma warning (disable : ALL_CODE_ANALYSIS_WARNINGS )
-
-// NOTE: this was used prior discovery of ALL_CODE_ANALYSIS_WARNINGS
 #else
 #pragma warning (disable : 6244)	// Local declaration of 'var' hides previous declaration
 #pragma warning (disable : 26432)	// If you define or delete any default operation in the type 'type', define or delete them all
@@ -221,44 +217,44 @@
 
 #pragma region ruleset_modification
 //
-// Following analyzer warnings are reported as "Info" in ruleset for user code
+// The following analyzer warnings are reported as "Info" in ruleset for user code
 // Disabling (uncommenting) them won't have any effect on user code (infos), only to library code.
 // TODO: Some library (not user) code warnings always appear as warning, even is set as info.
 //
 
-// NOTE: this was used prior discovery of ALL_CODE_ANALYSIS_WARNINGS
 #if MANUAL_CODE_ANALYISIS
 #pragma warning (disable : 26426)	// Global initializer calls non constexpr functions
-//#pragma warning (disable : 26430)	// Symbol is not tested for nullness on all paths
+#pragma warning (disable : 26430)	// Symbol is not tested for nullness on all paths
 // Overriding pragma
 #pragma warning (disable : 26440)	// Function can be declared 'noexcept'
 #pragma warning (disable : 26460)	// The reference argument for function can be marked as const
 #pragma warning (disable : 26461)	// The pointer argument for function can be marked as a pointer to const
-#pragma warning (disable : 26485)	// No array to pointer decay
-
-// Promoted from Hidden to Info (Separated here if willing to toggle to "hidden")
-//#pragma warning (disable : 26409)	// Avoid calling new and delete explicitly, use std::make_unique<T> instead
-//#pragma warning (disable : 26477)	// Use 'nullptr' rather than 0 or NULL
-//#pragma warning (disable : 26481)	// Don't use pointer arithmetic. Use span instead
-//#pragma warning (disable : 26487)	// Don't return a pointer that may be invalid.
-//#pragma warning (disable : 26489)	// Don't dereference a pointer that may be invalid
-#pragma warning (disable : 26493)	// [temp] Do not use C style casts
+#pragma warning (disable : 26493)	// Do not use C style casts
 
 //
-// Following analyzer warnings are disabled in ruleset for all code,
+// The following analyzer warnings are "Hidden" and "None" (respectively) in ruleset for all code,
 // if you see them review the ruleset and/or update project files to read from ruleset instead!
 // https://docs.microsoft.com/en-us/visualstudio/code-quality/working-in-the-code-analysis-rule-set-editor
 //
 
+// Hidden:
+//#pragma warning (disable : 26409)	// Avoid calling new and delete explicitly, use std::make_unique<T> instead
+//#pragma warning (disable : 26438)	// Avoid 'goto'
+//#pragma warning (disable : 26472)	// Don't use a static_cast for arithmetic conversions. Use brace initialization, gsl::narrow_cast or gsl::narrow
+//#pragma warning (disable : 26477)	// Use 'nullptr' rather than 0 or NULL
+//#pragma warning (disable : 26481)	// Don't use pointer arithmetic. Use span instead
+//#pragma warning (disable : 26482)	// Only index into array using constant expressions
+//#pragma warning (disable : 26485)	// No array to pointer decay
+//#pragma warning (disable : 26486)	// Don't pass a pointer that may be invalid to a function. The parameter in a call may be invalid
+//#pragma warning (disable : 26487)	// Don't return a pointer that may be invalid
+//#pragma warning (disable : 26489)	// Don't dereference a pointer that may be invalid
+//#pragma warning (disable : 26490)	// Don't use reinterpret_cast
+// None:
 //#pragma warning (disable : 26400)	// Do not assign the result of an allocation or a function call with an owner<T> return value to a raw pointer, use owner<T> instead
 //#pragma warning (disable : 26401)	// Do not delete a raw pointer that is not an owner<T>
 //#pragma warning (disable : 26429)	// Symbol is never tested for nullness, it can be marked as gsl::not_null
-//#pragma warning (disable : 26438)	// Avoid 'goto'
 //#pragma warning (disable : 26446)	// Prefer to use gsl::at() instead of unchecked subscript operator
-//#pragma warning (disable : 26472)	// Don't use a static_cast for arithmetic conversions. Use brace initialization, gsl::narrow_cast or gsl::narrow
-//#pragma warning (disable : 26482)	// Only index into array using constant expressions
-//#pragma warning (disable : 26486)	// Don't pass a pointer that may be invalid to a function. The parameter in a call may be invalid
-//#pragma warning (disable : 26490)	// Don't use reinterpret_cast
+
 #endif // MANUAL_CODE_ANALYISIS
 #pragma endregion Filter out only user code info messages
 
@@ -266,7 +262,7 @@
 
 //
 // Disable compiler warnings for library code if enabled for user code
-// (toggle on if it's disabled for user code, toggle off otherwise)
+// (toggle on (uncomment) if it's disabled (commented) for user code, toggle off otherwise)
 //
 
 // Only /Wall warnings
@@ -274,14 +270,14 @@
 //#pragma warning (disable : 4571)	// (W4) catch(...) structured exceptions (SEH) are not caught
 //#pragma warning (disable : 4820)	// (W4) 'x' bytes padding added after data member 'member'
 
-// unknown if this is /Wall
+// Unknown if this is /Wall
 //#pragma warning (disable : 5045)	// (?) /Qspectre - Specifies compiler generation of instructions to mitigate certain Spectre variant 1 security vulnerabilities.
 
 // Additional warnings raised in release build (disabled globally)
-//#ifdef NDEBUG
+#ifdef NDEBUG
 // Not /Wall
 //#pragma warning (disable : 4711)	// (W1) function 'function' selected for inline expansion
-//#endif
+#endif
 #pragma endregion Toggle specific user code pragmas
 
 //

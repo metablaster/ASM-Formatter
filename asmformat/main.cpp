@@ -10,6 +10,7 @@
  * @file asmformat\main.cpp
  *
  * Defines the entry point for application
+ *
  * Debug command arguments: $(SolutionDir)assets\utf8-BOM.asm
  * Debug working directory: $(SolutionDir)Build\$(Platform)\$(Configuration)
  * Debugger type: Native Only
@@ -336,6 +337,7 @@ int main(int argc, char* argv[]) try
 
 	invalid_encoding:
 		ShowError(ErrorCode::InvalidParameter, EncodingToString(encoding) + " was specified but file " + file_path.filename().string() + " is encoded as " + BomToString(bom));
+		encoding = default_encoding;
 	}
 
 	if (!SetConsoleCodePage(default_CP.first, default_CP.second))
@@ -345,6 +347,7 @@ int main(int argc, char* argv[]) try
 
 	return 0;
 }
+// Those exit codes won't be returned if the user chooses to exit
 catch (Exception& custom)
 {
 	if (custom.GetInfo().empty())

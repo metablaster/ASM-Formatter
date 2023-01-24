@@ -94,14 +94,10 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile />
     <Link />
-    <ClCompile />
-    <ClCompile />
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile />
     <Link />
-    <ClCompile />
-    <ClCompile />
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="console.cpp" />
@@ -135,6 +131,9 @@
     <ClInclude Include="StringCast.hpp" />
     <ClInclude Include="targetver.hpp" />
     <ClInclude Include="utils.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="cpp.hint" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

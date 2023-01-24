@@ -268,9 +268,8 @@ namespace wsl
 			return "Invalid command";
 			// Unspecified
 		case ErrorCode::UnspecifiedError:
-			return "Unspecified error";
 		default:
-			return "Unknown error";
+			return "Unspecified error";
 		}
 	}
 

@@ -134,7 +134,6 @@ namespace wsl
 		error_message.append(std::to_string(line));
 		error_message.append("\r\nCategory:\t");
 
-		SUPPRESS(26496);	// The variable is assigned only once, mark it as const
 		DWORD error_code{};
 
 		if constexpr (HasCodeMethod<ExceptionClass, const std::error_code & ()>::value)
@@ -156,9 +155,10 @@ namespace wsl
 		}
 		else
 		{
-			// TODO: Category name for uncategorized exceptions
-			// This won't be called since the function for other exception objects isn't instantiated
-			error_message.append("-");
+			// This will be the case when one of the std::exception derivates is casted to std::exception
+			// Neither error code nor category can be determined
+			error_code = EXIT_FAILURE;
+			error_message.append("Unable to determine category");
 		}
 
 		std::string error_info{};

@@ -122,7 +122,7 @@ If you don't specify full path to file current working directory of `asmformat` 
 
 - Default encoding, if not specified is `ANSI`, to override use `--encoding` option.
 
-- Default tab width, if not specified is 4, to override use `--tabwidth` option,\
+- Default tab width, if not specified is `4`, to override use `--tabwidth` option,\
   note that tab width option also affects spaces.
 
 - By default tabs are used, to use spaces pass `--spaces` option to command line.

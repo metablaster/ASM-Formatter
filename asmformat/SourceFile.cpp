@@ -144,7 +144,7 @@ std::string EncodingToString(Encoding encoding)
 	}
 }
 
-Encoding BomToEncoding(BOM bom)
+Encoding BomToEncoding(BOM bom) noexcept
 {
 	switch (bom)
 	{

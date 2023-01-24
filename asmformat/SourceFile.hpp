@@ -90,10 +90,10 @@ enum class BOM
 
 /**
  * @brief		Associate BOM enum to Encoding enum
- * @param bom	BOM enum 
+ * @param bom	BOM enum
  * @return		Encoding enum
 */
-[[nodiscard]] Encoding BomToEncoding(BOM bom);
+[[nodiscard]] Encoding BomToEncoding(BOM bom) noexcept;
 
 /**
  * @brief	Get size of a file in bytes

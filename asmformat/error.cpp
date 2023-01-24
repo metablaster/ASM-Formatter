@@ -116,7 +116,10 @@ namespace wsl
 		case IDCANCEL:
 		default:
 			// Restore modified console code page and exit program
-			SetConsoleCodePage(default_CP.first, default_CP.second);
+			// Using SetConsoleCodePage() would produce infinite loop if code page is invalid
+			SetConsoleCP(default_CP.first);
+			SetConsoleOutputCP(default_CP.second);
+
 			std::exit(static_cast<int>(error_code));
 		}
 	}
@@ -251,18 +254,18 @@ namespace wsl
 		long flags) try
 	{
 		constexpr std::size_t size = 100;
-
-		// We will use SUPPRESS for false warning because
-		// MSDN: The error-message string is terminated by the newline character ('\n')
 		char crt_error[size];
 
-		// Zero if successful, an error code on failure.
+		// MSDN: Zero if successful, an error code on failure.
 		// If buffer is NULL or if the size parameter is 0, the invalid parameter handler is invoked.
 		// If execution is allowed to continue, the functions return EINVAL and set errno to EINVAL
-		const errno_t status = strerror_s<size>(crt_error, errno);
+		// This function truncates the error message if its length exceeds the size of the buffer - 1.
+		// The resulting string in buffer will always be null-terminated
+		const errno_t status = strerror_s(crt_error, errno);
 
 		if (status != 0)
 		{
+			// MSDN: The size of the destination buffer, in bytes. This value must consider the length of pszSrc plus the terminating null character
 			StringCbCopyA(crt_error, size, ("strerror_s failed with " + std::to_string(status) + " to translate " + std::to_string(errno)).c_str());
 		}
 
@@ -290,7 +293,7 @@ namespace wsl
 		error_message.append(exception.ErrorMessage());
 		error_message.append("\r\nCRT Error\t");
 
-		SUPPRESS(6054 26485);	// String might not be zero-terminated and No array to pointer decay
+		SUPPRESS(6054);	// String might not be zero-terminated (false positive)
 		error_message.append(crt_error);
 
 		std::string error_info = exception.GetInfo();

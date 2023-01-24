@@ -58,11 +58,11 @@ namespace wsl
 		ConversionFailed,	// Data conversion failed
 
 		// User errors
-		UnknownOption = 500,// Unrecognized option passed to program
+		UnknownOption = 200,// Unrecognized option passed to program
 		InvalidParameter,	// Invalid program option parameter specified
 		InvalidCommand,		// Invalid command passed to program
 
-		UnspecifiedError = 1000	// The type of error is undefined
+		UnspecifiedError = 300	// The type of error is undefined
 	};
 
 	/** Exit status code from error enum */
@@ -87,7 +87,7 @@ namespace wsl
 	 * This function is called by error_code constructor for error code enum types,
 	 * and should be overloaded for all custom error code enum types defined in order to
 	 * provide a mechanism to generate the appropriate error_code objects from them.
-	 * 
+	 *
 	 * @param code	Custom error code
 	 * @return		error_code object
 	*/

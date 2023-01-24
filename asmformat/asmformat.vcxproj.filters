@@ -15,6 +15,9 @@
     <Filter Include="Source Files\Error">
       <UniqueIdentifier>{4a3c2928-b4f2-482c-a921-4966dc0ead8c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Project Items">
+      <UniqueIdentifier>{95205b11-3de4-48f5-9544-4f63be627cc5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -91,5 +94,10 @@
     <ClInclude Include="exception.hpp">
       <Filter>Header Files\Error</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="cpp.hint">
+      <Filter>Project Items</Filter>
+    </None>
   </ItemGroup>
 </Project>
