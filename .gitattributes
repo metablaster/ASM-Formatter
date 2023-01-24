@@ -30,12 +30,16 @@
 # Binary files
 *.gif		binary
 # Text files to interpret as binary due to issues with encoding
-ansi.asm		binary
+ANSI-LF.asm		binary
+ANSI.asm		binary
 ANSI.txt		binary
+ASCII.asm		binary
 ASCII.txt		binary
 utf16be.asm		binary
+utf16le-LF.asm	binary
 utf16le.asm		binary
 utf8-BOM.asm	binary
+utf8-LF.asm		binary
 utf8.asm		binary
 # C++ code files
 *.cpp		text eol=crlf whitespace=trailing-space,space-before-tab,indent-with-non-tab,tabwidth=4
@@ -43,7 +47,8 @@ utf8.asm		binary
 # Text files
 *.md		text eol=crlf whitespace=trailing-space,space-before-tab,tab-in-indent,tabwidth=2
 *.txt		text eol=crlf whitespace=trailing-space,space-before-tab,indent-with-non-tab,tabwidth=4
-# VS files
+*.hint		text eol=crlf whitespace=trailing-space,space-before-tab,indent-with-non-tab,tabwidth=4
+# VS files (xml)
 *.ruleset	text eol=crlf whitespace=trailing-space,space-before-tab,indent-with-non-tab,tabwidth=2
 *.vcxproj	text eol=crlf whitespace=trailing-space,space-before-tab,indent-with-non-tab,tabwidth=2
 *.filters	text eol=crlf whitespace=trailing-space,space-before-tab,indent-with-non-tab,tabwidth=2

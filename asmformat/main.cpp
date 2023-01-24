@@ -15,7 +15,7 @@
  * Debug working directory: $(SolutionDir)Build\$(Platform)\$(Configuration)
  * Debugger type: Native Only
  *
- * TODO: Implement --codepage option
+ * TODO: Implement codepage option and locale options and defaults
  * TODO: Implement --path and directory option
  * TODO: Implement --recurse option
  *
@@ -35,8 +35,41 @@ namespace fs = std::filesystem;
 // Code page originally used by the console
 std::pair<UINT, UINT> default_CP;
 
+// https://learn.microsoft.com/en-us/cpp/c-runtime-library/parameter-validation
+// The parameters all have the value NULL in release build
+extern "C" void RunTimeLibraryError(
+	// Argument expression that raised the error
+	const wchar_t* expression,
+	// The name of the CRT function that received the invalid argument
+	const wchar_t* function,
+	// The name of the CRT source file that contains the function
+	const wchar_t* file,
+	// The line number in that file
+	unsigned int line,
+	// Reserved
+	uintptr_t pReserved
+)
+{
+	UNREFERENCED_PARAMETER(pReserved);
+
+	#ifdef _DEBUG
+	ShowError(Exception(ErrorCode::RunTimeLibraryError, StringCast(expression).c_str()), StringCast(file).c_str(), StringCast(function).c_str(), line);
+	#else
+	UNREFERENCED_PARAMETER(expression);
+	UNREFERENCED_PARAMETER(function);
+	UNREFERENCED_PARAMETER(file);
+	UNREFERENCED_PARAMETER(line);
+	#endif
+
+	std::abort();
+}
+
 int main(int argc, char* argv[]) try
 {
+	#ifdef _DEBUG
+	_set_invalid_parameter_handler(RunTimeLibraryError);
+	#endif
+
 	if (!RegisterConsoleHandler())
 	{
 		return ExitCode(ErrorCode::FunctionFailed);
@@ -298,12 +331,12 @@ int main(int argc, char* argv[]) try
 			if (!SetConsoleCodePage(default_CP.first, default_CP.second))
 				return ExitCode(ErrorCode::FunctionFailed);
 
-			std::wstringstream filedata(LoadFileW(file_path, encoding));
+			std::wstringstream filedata(LoadFile<std::wstring>(file_path, encoding));
 			FormatFileW(filedata, tabwidth, spaces, compact, linebreaks);
 
 			#if TRUE
 			// TODO: Converts from LF to CRLF
-			WriteFileW(file_path, filedata.str(), encoding);
+			WriteFile(file_path, filedata.str(), encoding);
 			#else
 			// TODO: Not working and unclear if LoadFileW loads BOM
 			if (bom == BOM::utf16le)
@@ -347,7 +380,7 @@ int main(int argc, char* argv[]) try
 
 	return 0;
 }
-// Those exit codes won't be returned if the user chooses to exit
+// Those exit codes won't be returned if the user chooses to exit or if there is an exception in ShowError
 catch (Exception& custom)
 {
 	if (custom.GetInfo().empty())

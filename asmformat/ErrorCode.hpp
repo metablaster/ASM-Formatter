@@ -62,7 +62,7 @@ namespace wsl
 		InvalidParameter,	// Invalid program option parameter specified
 		InvalidCommand,		// Invalid command passed to program
 
-		UnspecifiedError = 300	// The type of error is undefined
+		UnspecifiedError = 300	// The type of error is undefined or unknown
 	};
 
 	/** Exit status code from error enum */

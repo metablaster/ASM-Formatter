@@ -21,7 +21,10 @@
 #include "exception.hpp"
 #include "utils.hpp"
 #include "ErrorMacros.hpp"
+#include "ErrorCode.hpp"
 
+
+extern std::pair<UINT, UINT> default_CP;
 
 namespace wsl
 {
@@ -49,7 +52,7 @@ namespace wsl
 	 * @param dwChars		Number of TCHARs returned, excluding the terminating null character, 0 if failed.
 	*/
 	[[nodiscard]] const std::shared_ptr<std::array<char, msg_buff_size>>
-		FormatErrorMessage(const DWORD& error_code, DWORD& dwChars);
+		FormatErrorMessageA(const DWORD& error_code, DWORD& dwChars);
 
 	/** Helper method to extract info if any from std exception object */
 	[[nodiscard]] std::string GetStdExceptionInfo(const std::exception& refStdExcept);
@@ -157,7 +160,7 @@ namespace wsl
 		{
 			// This will be the case when one of the std::exception derivates is casted to std::exception
 			// Neither error code nor category can be determined
-			error_code = EXIT_FAILURE;
+			error_code = static_cast<DWORD>(wsl::ErrorCode::UnspecifiedError);
 			error_message.append("Unable to determine category");
 		}
 
@@ -198,8 +201,14 @@ namespace wsl
 	}
 	catch (...)
 	{
+		// Restore modified console code page and exit program
+		// Using SetConsoleCodePage() would produce infinite loop if code page is invalid
+		SetConsoleCP(default_CP.first);
+		SetConsoleOutputCP(default_CP.second);
+
 		// TODO: For exception free ShowError custom string class is needed that works on stack with
 		// only purpose to be used for customized ShowError function.
 		MessageBoxA(nullptr, "Likely string constructor exception", "Exception in ShowError", MB_ICONERROR);
+		std::exit(wsl::ExitCode(ErrorCode::UnspecifiedError));
 	}
 }

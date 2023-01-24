@@ -15,16 +15,13 @@
 
 #include "pch.hpp"
 #include "error.hpp"
-#include "ErrorCode.hpp"
 #include "console.hpp"
 
-
-extern std::pair<UINT, UINT> default_CP;
 
 namespace wsl
 {
 	const std::shared_ptr<std::array<char, msg_buff_size>>
-		FormatErrorMessage(const DWORD& error_code, DWORD& dwChars)
+		FormatErrorMessageA(const DWORD& error_code, DWORD& dwChars)
 	{
 		const std::shared_ptr<std::array<char, msg_buff_size>> message =
 			std::make_shared<std::array<char, msg_buff_size>>();
@@ -202,7 +199,7 @@ namespace wsl
 			}
 
 			DWORD dwChars = 0;
-			auto message = FormatErrorMessage(error_code, dwChars);
+			auto message = FormatErrorMessageA(error_code, dwChars);
 
 			// If the function succeeds, the return value is
 			// the number of TCHARs stored in the output buffer,
@@ -243,7 +240,13 @@ namespace wsl
 	}
 	catch (...)
 	{
+		// Restore modified console code page and exit program
+		// Using SetConsoleCodePage() would produce infinite loop if code page is invalid
+		SetConsoleCP(default_CP.first);
+		SetConsoleOutputCP(default_CP.second);
+
 		MessageBoxA(nullptr, "Likely string constructor exception", "Exception in ShowError", MB_ICONERROR);
+		std::exit(wsl::ExitCode(ErrorCode::UnspecifiedError));
 	}
 
 	void ShowCrtErrorA(
@@ -306,6 +309,12 @@ namespace wsl
 	}
 	catch (...)
 	{
+		// Restore modified console code page and exit program
+		// Using SetConsoleCodePage() would produce infinite loop if code page is invalid
+		SetConsoleCP(default_CP.first);
+		SetConsoleOutputCP(default_CP.second);
+
 		MessageBoxA(nullptr, "Likely string constructor exception", "Exception in ShowError", MB_ICONERROR);
+		std::exit(wsl::ExitCode(ErrorCode::UnspecifiedError));
 	}
 }

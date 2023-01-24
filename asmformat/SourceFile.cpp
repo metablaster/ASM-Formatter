@@ -17,7 +17,6 @@
 
 #include "pch.hpp"
 #include "SourceFile.hpp"
-#include "ErrorCode.hpp"
 using namespace wsl;
 
 
@@ -178,66 +177,6 @@ std::size_t GetFileByteCount(const std::filesystem::path& filepath)
 	return static_cast<std::size_t>(fileinfo.st_size);
 }
 
-std::wstring LoadFileW(const std::filesystem::path& filepath, const Encoding& encoding)
-{
-	FILE* file = NULL;
-	std::wstring buffer;
-
-	// MSDN: Opens for reading. If the file doesn't exist or can't be found, the fopen_s call fails.
-	std::string mode = "r";
-
-	switch (encoding)
-	{
-	case Encoding::UTF8:
-		mode += ", ccs=UTF-8";
-		break;
-	case Encoding::UTF16LE:
-		mode += ", ccs=UTF-16LE";
-		break;
-	default:
-		ShowError(ErrorCode::UnsuportedOperation, "Encoding not supported by LoadFileW");
-		return std::wstring();
-	}
-
-	_set_errno(0);
-	// MSDN: The fopen_s doesn't open a file for sharing
-	// the byte order mark (BOM), if present in the file, determines the encoding.
-	// The BOM encoding takes precedence over the encoding that's specified by the ccs flag.
-	// The ccs encoding is only used when no BOM is present or if the file is a new file
-	// Files that are opened for writing in Unicode mode have a BOM written to them automatically
-	const errno_t status = fopen_s(&file, filepath.string().c_str(), mode.c_str());
-
-	if (status == 0)
-	{
-		const std::size_t filesize = GetFileByteCount(filepath);
-
-		if (filesize > 0)
-		{
-			buffer.resize(filesize);
-
-			// MSDN: The fread function reads up to count items of size bytes from the input stream
-			// fread returns the number of full items the function read, which may be less than count if an error occurs,
-			// or if it encounters the end of the file before reaching count
-			// TODO: Use of sizeof(wchar_t) works, but is it correct?
-			const std::size_t wchars_read = fread(&(buffer.front()), sizeof(wchar_t), filesize, file);
-			buffer.resize(wchars_read);
-			buffer.shrink_to_fit();
-		}
-
-		// MSDN: fclose returns 0 if the stream is successfully closed.
-		if (fclose(file) != 0)
-		{
-			ShowError(ErrorCode::FunctionFailed, "Failed to close file" + filepath.string());
-		}
-	}
-	else
-	{
-		ShowCrtError(Exception(ErrorCode::FunctionFailed, "Failed to open file " + filepath.string()), ERROR_INFO);
-	}
-
-	return buffer;
-}
-
 std::string LoadFileBytes(const std::filesystem::path& filepath, DWORD bytes)
 {
 	// https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilew
@@ -248,13 +187,13 @@ std::string LoadFileBytes(const std::filesystem::path& filepath, DWORD bytes)
 		// Enables subsequent open operations on a file or device to request read access
 		FILE_SHARE_READ,
 		// Default security
-		NULL,
+		nullptr,
 		// Opens a file or device, only if it exists
 		OPEN_EXISTING,
 		// The file does not have other attributes set
 		FILE_ATTRIBUTE_NORMAL,
 		// No attributes template
-		NULL);
+		nullptr);
 
 	// MSDN: If the function fails, the return value is INVALID_HANDLE_VALUE
 	if (hFile == INVALID_HANDLE_VALUE)
@@ -280,7 +219,7 @@ std::string LoadFileBytes(const std::filesystem::path& filepath, DWORD bytes)
 		// ReadFile sets this value to zero before doing any work or error checking
 		&bytes_read,
 		// A pointer to an OVERLAPPED structure is required if the hFile parameter was opened with FILE_FLAG_OVERLAPPED
-		NULL
+		nullptr
 	);
 
 	// MSDN: If the function fails, or is completing asynchronously, the return value is zero (FALSE)
@@ -292,7 +231,7 @@ std::string LoadFileBytes(const std::filesystem::path& filepath, DWORD bytes)
 		// MSDN: If the function fails, the return value is zero.
 		if (CloseHandle(hFile) == 0)
 		{
-			ShowError(ERROR_INFO_HR, "Failed to close file");
+			ShowError(ERROR_INFO_HR, ("Failed to close file " + filepath.string()).c_str());
 		}
 
 		SetLastError(error);
@@ -302,105 +241,9 @@ std::string LoadFileBytes(const std::filesystem::path& filepath, DWORD bytes)
 
 	if (CloseHandle(hFile) == 0)
 	{
-		ShowError(ERROR_INFO_HR, "Failed to close file");
+		ShowError(ERROR_INFO_HR, ("Failed to close file" + filepath.string()).c_str());
 	}
 
 	assert(bytes_read == filesize);
 	return buffer;
-}
-
-std::string LoadFileA(const std::filesystem::path& filepath)
-{
-	// TODO: This function does not read \r, question is what else does it not read?
-	FILE* file = NULL;
-	std::string buffer;
-
-	_set_errno(0);
-	const errno_t status = fopen_s(&file, filepath.string().c_str(), "r");
-
-	if (status == 0)
-	{
-		const std::size_t filesize = GetFileByteCount(filepath);
-
-		if (filesize > 0)
-		{
-			buffer.resize(filesize);
-			const std::size_t chars_read = fread(&(buffer.front()), sizeof(char), filesize, file);
-
-			buffer.resize(chars_read);
-			buffer.shrink_to_fit();
-		}
-
-		if (fclose(file) != 0)
-		{
-			ShowError(ErrorCode::FunctionFailed, "Failed to close file" + filepath.string());
-		}
-	}
-	else
-	{
-		ShowCrtError(Exception(ErrorCode::FunctionFailed, "Failed to open file " + filepath.string()), ERROR_INFO);
-	}
-
-	return buffer;
-}
-
-void WriteFileW(const std::filesystem::path& filepath, const std::wstring& filedata, const Encoding& encoding)
-{
-	FILE* file = NULL;
-
-	// MSDN: Opens an empty file for writing. If the given file exists, its contents are destroyed.
-	std::string mode = "w";
-
-	switch (encoding)
-	{
-	case Encoding::UTF8:
-		mode += ", ccs=UTF-8";
-		break;
-	case Encoding::UTF16LE:
-		mode += ", ccs=UTF-16LE";
-		break;
-	default:
-		ShowError(ErrorCode::UnsuportedOperation, "Encoding not supported by WriteFileW");
-		return;
-	}
-
-	_set_errno(0);
-	const errno_t status = fopen_s(&file, filepath.string().c_str(), mode.c_str());
-
-	if (status == 0)
-	{
-		// MSDN: fwrite returns the number of full items the function writes, which may be less than count if an error occurs
-		fwrite(filedata.c_str(), sizeof(wchar_t), filedata.size(), file);
-
-		if (fclose(file) != 0)
-		{
-			ShowError(ErrorCode::FunctionFailed, "Failed to close file" + filepath.string());
-		}
-	}
-	else
-	{
-		ShowCrtError(Exception(ErrorCode::FunctionFailed, "Failed to write file " + filepath.string()), ERROR_INFO);
-	}
-}
-
-void WriteFileA(const std::filesystem::path& filepath, const std::string& filedata)
-{
-	FILE* file = NULL;
-
-	_set_errno(0);
-	const errno_t status = fopen_s(&file, filepath.string().c_str(), "w");
-
-	if (status == 0)
-	{
-		fwrite(filedata.c_str(), sizeof(char), filedata.size(), file);
-
-		if (fclose(file) != 0)
-		{
-			ShowError(ErrorCode::FunctionFailed, "Failed to close file" + filepath.string());
-		}
-	}
-	else
-	{
-		ShowCrtError(Exception(ErrorCode::FunctionFailed, "Failed to write file " + filepath.string()), ERROR_INFO);
-	}
 }

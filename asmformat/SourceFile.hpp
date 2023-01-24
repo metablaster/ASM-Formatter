@@ -18,6 +18,7 @@
 #include <filesystem>
 #include <type_traits>
 #include "error.hpp"
+#include "ErrorCode.hpp"
 
 
 /**
@@ -63,8 +64,8 @@ enum class BOM
 
 /**
  * @brief			Get Byte Order Mark from string buffer if there is one
- * @param filepath	full path to file
- * @param bom		receives BOM enumeration
+ * @param filepath	string buffer containing file data
+ * @param bom		receives BOM bytes
  * @return			BOM enumeration which also handles no BOM case
 */
 [[nodiscard]] BOM GetBOM(const std::string& buffer, std::vector<unsigned char>& bom);
@@ -106,11 +107,101 @@ enum class BOM
  * Read source file into memory encoded as UTF-8, UTF-16 or UTF-16LE
  * If the source file contains BOM then encoding parameter is ignored
  *
- * @param filepath	Full path and file name of a source file
- * @param encoding	Specify predefined file encoding
- * @return			Source file contents as wide string
+ * @tparam StringType	std::string or std::wstring depending on file encoding
+ * @param filepath		Full path and file name of a source file
+ * @param encoding		Specify predefined file encoding
+ * @return				Source file contents as wide or ANSI string
 */
-[[nodiscard]] std::wstring LoadFileW(const std::filesystem::path& filepath, const Encoding& encoding);
+template<typename StringType>
+requires std::is_same_v<std::string, StringType> || std::is_same_v<std::wstring, StringType>
+[[nodiscard]] StringType LoadFile(const std::filesystem::path& filepath, const Encoding& encoding)
+{
+	// TODO: This function does not read \r in ANSI mode, question is what else does it not read?
+	FILE* file = nullptr;
+	StringType buffer{ };
+
+	using namespace wsl;
+	constexpr bool iswide = std::is_same_v<std::wstring, StringType>;
+
+	// MSDN: Opens for reading.
+	// If the file doesn't exist or can't be found, the fopen_s call fails.
+	std::string mode = "r";
+
+	switch (encoding)
+	{
+	case Encoding::UTF8:
+		if (!iswide)
+			goto bad_argument;
+		mode += ", ccs=UTF-8";
+		break;
+	case Encoding::UTF16LE:
+		if (!iswide)
+			goto bad_argument;
+		mode += ", ccs=UTF-16LE";
+		break;
+	case Encoding::ANSI:
+		if (iswide)
+			goto bad_argument;
+		break;
+	case Encoding::Unknown:
+	case Encoding::Unsupported:
+	default:
+		ShowError(ErrorCode::UnsuportedOperation, "Encoding not supported by LoadFile");
+		return StringType();
+	}
+
+	_set_errno(0);
+	// MSDN: The fopen_s doesn't open a file for sharing
+	// the byte order mark (BOM), if present in the file, determines the encoding.
+	// The BOM encoding takes precedence over the encoding that's specified by the ccs flag.
+	// The ccs encoding is only used when no BOM is present or if the file is a new file
+	// Files that are opened for writing in Unicode mode have a BOM written to them automatically
+	// Zero if successful, If an error occurs, the error code is returned, and the global variable errno is set
+	if (fopen_s(&file, filepath.string().c_str(), mode.c_str()) == 0)
+	{
+		SUPPRESS(26496)	// mark it as const
+		std::size_t filesize = GetFileByteCount(filepath);
+
+		if (filesize > 0)
+		{
+			if constexpr (iswide)
+				filesize /= 2;
+
+			buffer.resize(filesize);
+
+			// MSDN: The fread function reads up to count items of size bytes from the input stream
+			// fread returns the number of full items the function read, which may be less than count if an error occurs,
+			// or if it encounters the end of the file before reaching count
+			const std::size_t wchars_read = fread(&(buffer.front()), sizeof(typename StringType::value_type), filesize, file);
+
+			// MSDN: If no error has occurred on stream, ferror returns 0
+			if (ferror(file) != 0)
+			{
+				ShowError(ErrorCode::BadResult, "Failed to read file " + filepath.string());
+				return StringType();
+			}
+
+			buffer.resize(wchars_read);
+			buffer.shrink_to_fit();
+		}
+
+		// MSDN: fclose returns 0 if the stream is successfully closed.
+		if (fclose(file) != 0)
+		{
+			ShowError(ErrorCode::FunctionFailed, "Failed to close file " + filepath.string());
+		}
+	}
+	else
+	{
+		ShowCrtError(Exception(ErrorCode::FunctionFailed, "Failed to open file " + filepath.string()), ERROR_INFO);
+	}
+
+	return buffer;
+
+bad_argument:
+	ShowError(ErrorCode::BadArgument, (std::string("Invalid combination of arguments: ") + typeid(typename StringType::value_type).name() + " and " + EncodingToString(encoding)).c_str());
+	return StringType();
+}
 
 /**
  * @brief			Read source file into memory as byte stream
@@ -121,22 +212,77 @@ enum class BOM
 [[nodiscard]] std::string LoadFileBytes(const std::filesystem::path& filepath, DWORD bytes = 0);
 
 /**
- * @brief			Read source file into memory encoded as ANSI
- * @param filepath	Full path and file name of a source file
- * @return			Source file contents as ANSI string
-*/
-[[nodiscard]] std::string LoadFileA(const std::filesystem::path& filepath);
-
-/**
- * Write formatted source file contents back to file encoded as UTF-8, UTF-16 or UTF-16LE.
- * This function puts BOM into file if it doesn't exist for the specified encoding.
+ * Write formatted source file contents back to file encoded as ANSI, UTF-8, UTF-16 or UTF-16LE.
+ * This function puts BOM into file if it doesn't exist for the specified UTF encoding.
  * This function converts LF to CRLF
  *
- * @param filepath	Full path and file name of a source file
- * @param filedata	Wide string contents which to write to file
- * @param encoding	Specify predefined file encoding
+ * @tparam StringType	std::string or std::wstring
+ * @param filepath		Full path and file name of a source file
+ * @param filedata		Wide or ANSI string contents which to write to file
+ * @param encoding		Specify predefined file encoding to use
 */
-void WriteFileW(const std::filesystem::path& filepath, const std::wstring& filedata, const Encoding& encoding);
+template<typename StringType>
+requires std::is_same_v<std::string, StringType> || std::is_same_v<std::wstring, StringType>
+void WriteFile(const std::filesystem::path& filepath, const StringType& filedata, const Encoding& encoding)
+{
+	FILE* file = nullptr;
+	using namespace wsl;
+	constexpr bool iswide = std::is_same_v<std::wstring, StringType>;
+
+	// MSDN: Opens an empty file for writing.
+	// If the given file exists, its contents are destroyed.
+	std::string mode = "w";
+
+	switch (encoding)
+	{
+	case Encoding::UTF8:
+		if (!iswide)
+			goto bad_argument;
+		mode += ", ccs=UTF-8";
+		break;
+	case Encoding::UTF16LE:
+		if (!iswide)
+			goto bad_argument;
+		mode += ", ccs=UTF-16LE";
+		break;
+	case Encoding::ANSI:
+		if (iswide)
+			goto bad_argument;
+		break;
+	case Encoding::Unknown:
+	case Encoding::Unsupported:
+	default:
+		ShowError(ErrorCode::UnsuportedOperation, "Encoding not supported by WriteFile");
+		return;
+	}
+
+	_set_errno(0);
+	if (fopen_s(&file, filepath.string().c_str(), mode.c_str()) == 0)
+	{
+		// MSDN: fwrite returns the number of full items the function writes, which may be less than count if an error occurs
+		// if an odd number of bytes to be written is specified in Unicode mode, the function invokes the invalid parameter handler
+		// If execution is allowed to continue, this function sets errno to EINVAL and returns 0
+		if (fwrite(filedata.c_str(), sizeof(typename StringType::value_type), filedata.size(), file) == 0)
+		{
+			ShowCrtError(Exception(ErrorCode::FunctionFailed, "Failed to write file " + filepath.string()), ERROR_INFO);
+		}
+
+		if (fclose(file) != 0)
+		{
+			ShowError(ErrorCode::FunctionFailed, "Failed to close file " + filepath.string());
+		}
+	}
+	else
+	{
+		ShowCrtError(Exception(ErrorCode::FunctionFailed, "Failed to open file " + filepath.string()), ERROR_INFO);
+	}
+
+	return;
+
+bad_argument:
+	ShowError(ErrorCode::BadArgument, (std::string("Invalid combination of arguments: ") + typeid(typename StringType::value_type).name() + " and " + EncodingToString(encoding)).c_str());
+	return;
+}
 
 /**
  * Write formatted source file contents back to file as byte stream
@@ -156,7 +302,7 @@ void WriteFileBytes(const std::filesystem::path& filepath, const DataType& filed
 		// Prevents subsequent open operations on a file or device if they request delete, read, or write access
 		0ul,
 		// Default security
-		NULL,
+		nullptr,
 		// If the specified file exists and is writable, the function overwrites the file,
 		// the function succeeds, and last-error code is set to ERROR_ALREADY_EXISTS
 		append ? OPEN_EXISTING :
@@ -166,7 +312,7 @@ void WriteFileBytes(const std::filesystem::path& filepath, const DataType& filed
 		// The file does not have other attributes set
 		FILE_ATTRIBUTE_NORMAL,
 		// No attributes template
-		NULL
+		nullptr
 	);
 
 	if (hFile == INVALID_HANDLE_VALUE)
@@ -209,7 +355,7 @@ void WriteFileBytes(const std::filesystem::path& filepath, const DataType& filed
 		// A pointer to the variable that receives the number of bytes written when using a synchronous hFile parameter
 		&bytes_written,
 		// A pointer to an OVERLAPPED structure is required if the hFile parameter was opened with FILE_FLAG_OVERLAPPED
-		NULL
+		nullptr
 	);
 
 	if (status == FALSE)
@@ -218,28 +364,18 @@ void WriteFileBytes(const std::filesystem::path& filepath, const DataType& filed
 
 		if (CloseHandle(hFile) == 0)
 		{
-			ShowError(ERROR_INFO_HR, "Failed to close file");
+			ShowError(ERROR_INFO_HR, ("Failed to close file " + filepath.string()).c_str());
 		}
 
 		SetLastError(error);
 		ShowError(ERROR_INFO_HR, ("Failed to read file " + filepath.string()).c_str());
-
 		return;
 	}
 
 	if (CloseHandle(hFile) == 0)
 	{
-		ShowError(ERROR_INFO_HR, "Failed to close file");
+		ShowError(ERROR_INFO_HR, ("Failed to close file " + filepath.string()).c_str());
 	}
 
 	assert(bytes_written == static_cast<DWORD>(filedata.size()));
 }
-
-/**
- * Write formatted source file contents back to file encoded as ANSI
- * This function converts LF to CRLF
- *
- * @param filepath	Full path and file name of a source file
- * @param filedata	ANSI string contents which to write to file
-*/
-void WriteFileA(const std::filesystem::path& filepath, const std::string& filedata);
