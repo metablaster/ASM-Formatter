@@ -50,7 +50,7 @@ namespace wsl
 	 * This function is called by error_condition constructor for error condition enum types,
 	 * and should be overloaded for all custom error condition enum types in order to
 	 * provide a mechanism to generate the appropriate error_condition objects from them.
-	 * 
+	 *
 	 * @param condition	Custom error condition
 	 * @return			error_condition object
 	*/

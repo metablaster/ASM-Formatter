@@ -3,7 +3,7 @@
  * Project: "ASM Formatter" https://github.com/metablaster/ASM-Formatter
  * Copyright(C) 2023 metablaster (zebal@protonmail.ch)
  * Licensed under the MIT license
- * 
+ *
  * NOTE: Portions of code in this file are not MIT but licensed under their own terms,
  * for more information see individual comments per function
  *

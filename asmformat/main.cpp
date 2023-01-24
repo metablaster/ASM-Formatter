@@ -13,7 +13,7 @@
  * Debug command arguments: $(SolutionDir)assets\utf8-BOM.asm
  * Debug working directory: $(SolutionDir)Build\$(Platform)\$(Configuration)
  * Debugger type: Native Only
- * 
+ *
  * TODO: Implement --codepage option
  * TODO: Implement --path and directory option
  * TODO: Implement --recurse option
@@ -76,7 +76,7 @@ int main(int argc, char* argv[]) try
 		std::cout << std::endl << "Syntax:" << std::endl;
 		std::cout << std::endl << executable_name << syntax << std::endl << std::endl;
 
-		std::cout << " --encoding\tSpecifies encoding used to read and write files (default: ansi)" << std::endl;
+		std::cout << " --encoding\tSpecifies default encoding used to read and write files (default: ansi)" << std::endl;
 		std::cout << " --tabwidth\tSpecifies tab width used in source files (default: 4)" << std::endl;
 		std::cout << " --spaces\tUse spaces instead of tabs (by default tabs are used)" << std::endl;
 		std::cout << " --linebreaks\tPerform line breaks conversion (by default line breaks are preserved)" << std::endl;
@@ -86,7 +86,8 @@ int main(int argc, char* argv[]) try
 		std::cout << " --help\t\tDisplays this help" << std::endl;
 
 		std::cout << std::endl << "Notes:" << std::endl << std::endl;
-		std::cout << "--linebreaks option doesn't have any effect on UTF-16 encoded files, UTF-16 files are always formatted with CRLF" << std::endl;
+		std::cout << "--encoding option is ignored if file encoding is auto detected, in which case a message is printed." << std::endl;
+		std::cout << "--linebreaks option doesn't have any effect on UTF-16 encoded files, UTF-16 files are always formatted with CRLF." << std::endl;
 		std::cout << "By default surplus blank lines are removed at the topand at the end of a file," << std::endl;
 		std::cout << "as well as surplus blank lines around procedure labels to make them compacted to code." << std::endl;
 		std::cout << "If you whish to replace all surplus blank lines entirely with a single blank line specify --compact option." << std::endl;
@@ -98,7 +99,7 @@ int main(int argc, char* argv[]) try
 	// TODO: There could multiple verbosities of compact
 	bool compact = false;
 	std::size_t tabwidth = 4;
-	Encoding encoding = Encoding::ANSI;
+	Encoding default_encoding = Encoding::ANSI;
 	LineBreak linebreaks = LineBreak::Preserve;
 
 	std::vector<fs::path> files;
@@ -140,11 +141,11 @@ int main(int argc, char* argv[]) try
 			{
 				if (arg == "utf8")
 				{
-					encoding = Encoding::UTF8;
+					default_encoding = Encoding::UTF8;
 				}
 				else if (arg == "utf16le")
 				{
-					encoding = Encoding::UTF16LE;
+					default_encoding = Encoding::UTF16LE;
 				}
 				else if (arg != "ansi")
 				{
@@ -231,48 +232,50 @@ int main(int argc, char* argv[]) try
 	}
 
 	std::cout << "using tab width of " << tabwidth << std::endl;
-	std::cout << "using "<< EncodingToString(encoding) << " encoding" << std::endl << std::endl;
+	std::cout << "using "<< EncodingToString(default_encoding) << " encoding" << std::endl;
 
+	Encoding encoding = default_encoding;
 	std::vector<unsigned char> bom_bytes;
-
-	switch (encoding)
-	{
-	case Encoding::ANSI:
-	case Encoding::UTF8:
-		if (!SetConsoleCodePage(default_CP.first, CP_UTF8))
-			return ExitCode(ErrorCode::FunctionFailed);
-		break;
-	case Encoding::UTF16LE:
-		// Use default code page
-		break;
-	default:
-		break;
-	}
 
 	for (const auto& file_path : files)
 	{
-		std::cout << "Formatting file " << file_path.filename() << std::endl;
-
 		const BOM bom = GetBOM(file_path, bom_bytes);
+		const Encoding file_encoding = BomToEncoding(bom);
+
+		switch (file_encoding)
+		{
+		case Encoding::UTF8:
+		case Encoding::UTF16LE:
+			if (encoding != file_encoding)
+				std::cout << EncodingToString(default_encoding) + " encoding option was ignored for file " + file_path.filename().string() + ", file is encoded as " + BomToString(bom) << std::endl;
+			encoding = file_encoding;
+			break;
+		case Encoding::Unsupported:
+			goto invalid_encoding;
+		case Encoding::Unknown:
+			// TODO: Function to detect encoding based on file contents
+			// BOM not found in file, use default or user specified encoding
+			break;
+		case Encoding::ANSI:
+			// No such thing as "ANSI BOM"
+			assert(false);
+			break;
+		default:
+			// Use default or user specified encoding
+			break;
+		}
+
+		std::cout << "Formatting file " << file_path.filename() << std::endl;
 
 		switch (encoding)
 		{
-		case Encoding::ANSI:
-		{
-			// TODO: Since we may detect encoding we should use that rather than reporting an error
-			if (bom != BOM::none)
-				goto invalid_encoding;
-
-			std::stringstream filedata(LoadFileBytes(file_path.string()));
-
-			FormatFileA(filedata, tabwidth, spaces, compact, linebreaks);
-			WriteFileBytes(file_path, filedata.str(), false);
-			break;
-		}
 		case Encoding::UTF8:
 		{
-			if ((bom != BOM::utf8) && (bom != BOM::none))
-				goto invalid_encoding;
+			// Either user specified or no BOM
+			assert((bom == BOM::utf8) || (bom == BOM::none));
+
+			if (!SetConsoleCodePage(default_CP.first, CP_UTF8))
+				return ExitCode(ErrorCode::FunctionFailed);
 
 			std::string filebytes = LoadFileBytes(file_path);
 			std::wstringstream filedata(StringCast(filebytes));
@@ -288,8 +291,11 @@ int main(int argc, char* argv[]) try
 		}
 		case Encoding::UTF16LE:
 		{
-			if (bom != BOM::utf16le)
-				goto invalid_encoding;
+			// If there is no BOM don't assume
+			assert(bom == BOM::utf16le);
+
+			if (!SetConsoleCodePage(default_CP.first, default_CP.second))
+				return ExitCode(ErrorCode::FunctionFailed);
 
 			std::wstringstream filedata(LoadFileW(file_path, encoding));
 			FormatFileW(filedata, tabwidth, spaces, compact, linebreaks);
@@ -307,10 +313,25 @@ int main(int argc, char* argv[]) try
 			#endif
 			break;
 		}
-		default:
+		case Encoding::ANSI:
+		case Encoding::Unknown:
+		{
+			assert(bom == BOM::none);
+
+			if (!SetConsoleCodePage(default_CP.first, default_CP.second))
+				return ExitCode(ErrorCode::FunctionFailed);
+
+			std::stringstream filedata(LoadFileBytes(file_path.string()));
+
+			FormatFileA(filedata, tabwidth, spaces, compact, linebreaks);
+			WriteFileBytes(file_path, filedata.str(), false);
 			break;
 		}
+		default:
+			goto invalid_encoding;
+		}
 
+		encoding = default_encoding;
 		continue;
 
 	invalid_encoding:

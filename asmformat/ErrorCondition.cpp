@@ -84,7 +84,7 @@ namespace wsl
 		 * @return	A pointer to a null-terminated byte string that specifies the name of the error category.
 		*/
 		const char* name() const noexcept override;
-		
+
 		/**
 		 * @brief		Maps error_code to error_condition
 		 *
@@ -95,10 +95,10 @@ namespace wsl
 		 * @return		The default error_condition associated with error value
 		*/
 		std::error_condition default_error_condition(int code) const noexcept override;
-		
+
 		/**
 		 * @brief			Compares error_code and error_condition for equivalence
-		 * 
+		 *
 		 * Checks whether, for the category, an error code is equivalent to an error condition, specifically
 		 * Checks whether error code is equivalent to an error condition for the error category represented by *this
 		 *
@@ -110,7 +110,7 @@ namespace wsl
 
 		/**
 		 * @brief			Compares error_code and error_condition for equivalence
-		 * 
+		 *
 		 * Checks whether, for the category, an error code is equivalent to an error condition, specifically
 		 * Checks whether error code is equivalent to an error condition for the error category represented by *this
 		 *
@@ -247,7 +247,7 @@ namespace wsl
 		return std::error_condition(
 			// A numerical value identifying an error condition
 			static_cast<int>(condition),
-			
+
 			// A reference to an error_category object
 			ConditionCategory);
 	}

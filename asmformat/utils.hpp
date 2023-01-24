@@ -3,7 +3,7 @@
  * Project: "ASM Formatter" https://github.com/metablaster/ASM-Formatter
  * Copyright(C) 2023 metablaster (zebal@protonmail.ch)
  * Licensed under the MIT license
- * 
+ *
  * NOTE: Portions of code in this file are not MIT but licensed under their own terms,
  * for more information see individual comments per function
  *
@@ -70,7 +70,7 @@ namespace wsl
 
 	/**
 	 * Used for template expansion by HasCodeMethod template
-	 * 
+	 *
 	 * AUTHOR:
 	 * https://stackoverflow.com/a/16824239/12091999
 	 * LICENSE:
@@ -88,7 +88,7 @@ namespace wsl
 	/**
 	 * Type trait to check if a class has "code" method with given signature.
 	 * Used to check if exception class has code method
-	 * 
+	 *
 	 * AUTHOR:
 	 * https://stackoverflow.com/a/16824239/12091999
 	 * LICENSE:

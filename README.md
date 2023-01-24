@@ -98,19 +98,22 @@ If you don't specify full path to file current working directory of `asmformat` 
 
 | Option         | Description                                                                              |
 | -------------- | -----------------------------------------------------------------------------------------|
-| --encoding     | Specifies encoding of source files if no BOM is present (default: ansi)                  |
+| --encoding     | Specifies default encoding used to read and write files (default: ansi)                  |
 | --tabwidth     | Specifies tab width used in source files (default: 4)                                    |
 | --spaces       | Use spaces instead of tabs (by default tabs are used)                                    |
 | --linebreaks   | Perform line breaks conversion (by default line breaks are preserved)                    |
 | --compact      | Replaces all surplus blank lines with single blank line                                  |
+| --version      | Shows program version                                                                    |
 | --nologo       | Suppresses the display of the program banner and Copyright when the asmformat starts up  |
 | --help         | Displays up to date detailed help                                                        |
 
 **Notes:**
 
+- `--encoding` option is ignored if file encoding is auto detected, in which case a message is printed
+
 - By default line breaks are preserved but you can override with `--linebreaks` option
 
-- --linebreaks option doesn't have any effect on `UTF-16` encoded files, `UTF-16` files are always formatted with `CRLF`
+- `--linebreaks` option doesn't have any effect on `UTF-16` encoded files, `UTF-16` files are always formatted with `CRLF`
 
 - By default surplus blank lines are removed at the top and at the end of a file,
   as well as surplus blank lines around procedure labels to make them compacted to code.

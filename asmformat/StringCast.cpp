@@ -87,7 +87,7 @@ namespace wsl
 			// Size, in characters, of the buffer indicated by lpWideCharStr.
 			wchar_size_needed
 		);
-		
+
 		if (wchars_written == 0)
 		{
 			ShowError(ERROR_INFO);
@@ -205,7 +205,7 @@ namespace wsl
 		}
 
 		// null pointer on failure
-		std::string old_locale = std::setlocale(LC_ALL, locale.c_str());
+		std::string old_locale = std::setlocale(LC_CTYPE, locale.c_str());
 		if (old_locale.empty())
 			ShowError(ErrorCode::FunctionFailed, "Setting locale to " + locale + " failed");
 
@@ -277,7 +277,7 @@ namespace wsl
 		}
 
 		if (!old_locale.empty())
-			if (std::setlocale(LC_ALL, old_locale.c_str()) == nullptr)
+			if (std::setlocale(LC_CTYPE, old_locale.c_str()) == nullptr)
 				ShowError(ErrorCode::FunctionFailed, "Restoring locale to " + old_locale + " failed");
 
 		return string_buff;
@@ -292,7 +292,7 @@ namespace wsl
 		}
 
 		// null pointer on failure
-		std::string old_locale = std::setlocale(LC_ALL, locale.c_str());
+		std::string old_locale = std::setlocale(LC_CTYPE, locale.c_str());
 		if (old_locale.empty())
 			ShowError(ErrorCode::FunctionFailed, "Setting locale to " + locale + " failed");
 
@@ -310,7 +310,7 @@ namespace wsl
 			std::cout << std::hex << +ch << ' ';
 		std::cout << "]" << std::endl;
 		#endif
-		
+
 		// args: destination, source, max_bytes, state
 		while (const std::size_t ret = std::mbrtoc32(&char_buff, ptr, max_bytes, &state))
 		{
@@ -358,7 +358,7 @@ namespace wsl
 		}
 
 		if (!old_locale.empty())
-			if (std::setlocale(LC_ALL, old_locale.c_str()) == nullptr)
+			if (std::setlocale(LC_CTYPE, old_locale.c_str()) == nullptr)
 				ShowError(ErrorCode::FunctionFailed, "Restoring locale to " + old_locale + " failed");
 
 		return string_buff;

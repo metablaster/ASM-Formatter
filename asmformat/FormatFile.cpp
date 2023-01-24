@@ -112,7 +112,7 @@ requires std::is_same_v<typename StringType::value_type, typename StreamType::ch
 
 	StringType nextline{};
 	PeekNextLine(filedata, nextline);
-	
+
 	if (nextline.empty() || (*(nextline.cend() - 1) != cr))
 		return LineBreak::LF;
 
@@ -122,7 +122,7 @@ requires std::is_same_v<typename StringType::value_type, typename StreamType::ch
 /**
  * Get next code line (skipping comments) in file without affecting stream position.
  * If a blank line is reached then the function breaks and does not reach next code line
- * 
+ *
  * @tparam StreamType	std::stringstream
  * @tparam StringType	std::string
  * @param filedata		string stream holding file data
@@ -237,7 +237,7 @@ void FormatFileW(std::wstringstream& filedata, std::size_t tab_width, bool space
 	// false (lf)  != true (LF)    = true
 	// false (lf)  != false (CRLF) = false
 	const bool preserve = (line_break == LineBreak::Preserve) || (crlf != (line_break != LineBreak::CRLF));
-	
+
 	// Formatting a soure file consists of 2 while loops, each looping trough lines in file,
 	// First loop trims leading and trailing spaces and tabs and calculates the widest code line containing an inline comment
 	// Second loop (later) uses this information (compacted lines and length) to perform accurate formatting
@@ -504,7 +504,7 @@ void FormatFileW(std::wstringstream& filedata, std::size_t tab_width, bool space
 			break;
 		}
 	}
-	
+
 	assert(filedata.eof());
 	// set good bit (remove eof bit)
 	filedata.clear();
@@ -812,7 +812,7 @@ void FormatFileA(std::stringstream& filedata, std::size_t tab_width, bool spaces
 			break;
 		}
 	}
-	
+
 	assert(filedata.eof());
 	// set good bit (remove eof bit)
 	filedata.clear();

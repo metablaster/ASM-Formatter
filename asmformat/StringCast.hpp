@@ -10,14 +10,14 @@
  * @file asmformat\StringCast.hpp
  *
  * String conversion function declarations
- * 
+ *
  * The following quotes and links explain why std::setlocate() is significat for conversion:
  * https://learn.microsoft.com/en-us/cpp/c-runtime-library/interpretation-of-multibyte-character-sequences
  * Most multibyte-character routines in the Microsoft run-time library recognize multibyte-character sequences relating to a multibyte code page.
  * The output value is affected by the setting of the LC_CTYPE category setting of the locale
  * https://stackoverflow.com/questions/13045682/what-encoding-does-c32rtomb-convert-to
  * The multibyte encoding used by c32rtomb() is the multibyte encoding from the default "C" locale.
- * 
+ *
  * See also code page values:
  * https://learn.microsoft.com/en-us/windows/win32/intl/code-page-identifiers
  *
@@ -74,7 +74,7 @@ namespace wsl
 		}
 
 		// null pointer on failure
-		std::string old_locale = std::setlocale(LC_ALL, locale.c_str());
+		std::string old_locale = std::setlocale(LC_CTYPE, locale.c_str());
 		if (old_locale.empty())
 			ShowError(ErrorCode::FunctionFailed, "Setting locale to " + locale + " failed");
 
@@ -117,7 +117,7 @@ namespace wsl
 		string_buff << '\0';
 
 		if (!old_locale.empty())
-			if (std::setlocale(LC_ALL, old_locale.c_str()) == nullptr)
+			if (std::setlocale(LC_CTYPE, old_locale.c_str()) == nullptr)
 				ShowError(ErrorCode::FunctionFailed, "Restoring locale to " + old_locale + " failed");
 
 		return string_buff.str();

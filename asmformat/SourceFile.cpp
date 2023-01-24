@@ -136,13 +136,29 @@ std::string EncodingToString(Encoding encoding)
 	{
 	case Encoding::UTF8:
 		return "UTF-8";
-		break;
 	case Encoding::UTF16LE:
 		return "UTF-16LE";
-		break;
 	case Encoding::ANSI:
 	default:
 		return "ANSI";
+	}
+}
+
+Encoding BomToEncoding(BOM bom)
+{
+	switch (bom)
+	{
+	case BOM::utf8:
+		return Encoding::UTF8;
+	case BOM::utf16le:
+		return Encoding::UTF16LE;
+	case BOM::utf16be:
+	case BOM::utf32le:
+	case BOM::utf32be:
+		return Encoding::Unsupported;
+	case BOM::none:
+	default:
+		return Encoding::Unknown;
 	}
 }
 

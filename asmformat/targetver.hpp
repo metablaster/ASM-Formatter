@@ -12,7 +12,7 @@
  * Including SDKDDKVer.h defines the highest available Windows platform.
  * To build your application to support a previous Windows platform, include WinSDKVer.h
  * set the _WIN32_WINNT macro to the platform you wish to support before including SDKDDKVer.h.
- * 
+ *
 */
 
 #pragma once

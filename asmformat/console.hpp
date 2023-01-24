@@ -10,7 +10,7 @@
  * @file asmformat\console.hpp
  *
  * Function declarations specific for console projects
- * 
+ *
  * MSDN: It is recommended for all new and updated command-line applications to avoid code pages and use Unicode.
  * UTF-16 formatted text can be sent to the W family of console APIs.
  * UTF-8 formatted text can be sent to the A family of console APIs after ensuring the code page is first set to 65001 (CP_UTF8)
@@ -35,7 +35,7 @@ namespace wsl
 	/**
 	 * @brief	Helper function to set console handler
 	 * NOTE: To make it work during debugging, in VS uncheck: Exception Settings -> Win32 Exceptions -> Control-C
-	 * 
+	 *
 	 * @return	true if function succeeded
 	*/
 	bool RegisterConsoleHandler() noexcept(false);
@@ -43,7 +43,7 @@ namespace wsl
 	/**
 	 * @brief Set console input and output code page
 	 * https://learn.microsoft.com/en-us/windows/win32/intl/code-page-identifiers
-	 * 
+	 *
 	 * @param input		console input code page which to set
 	 * @param output	console output code page which to set
 	 * @return			true if function succeeds

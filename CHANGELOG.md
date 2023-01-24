@@ -29,3 +29,4 @@ Here is a list of changes for each of the releases.
 - Fixed few mistakes with error and exception handling
 - Console code page is set depending on `--encoding` option to be able to print data
 contents for error reporting and during debugging
+- `--encoding` option is ignored if BOM is present in source file

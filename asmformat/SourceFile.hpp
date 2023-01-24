@@ -29,7 +29,9 @@ enum class Encoding
 {
 	ANSI,
 	UTF8,
-	UTF16LE
+	UTF16LE,
+	Unknown,	// Unknown encoding
+	Unsupported	// Unsupported encoding
 };
 
 /*
@@ -72,19 +74,26 @@ enum class BOM
  * @param bom	Specify BOM which to create
  * @return		A string which which will receive the BOM string
 */
-std::vector<unsigned char> GetBOM(BOM bom);
+[[nodiscard]] std::vector<unsigned char> GetBOM(BOM bom);
 
 /**
  * @brief Convert BOM enum to string
 */
-std::string BomToString(BOM bom);
+[[nodiscard]] std::string BomToString(BOM bom);
 
 /**
  * @brief			Convert encoding enum to string
  * @param encoding	Encoding enum
  * @return			String result
 */
-std::string EncodingToString(Encoding encoding);
+[[nodiscard]] std::string EncodingToString(Encoding encoding);
+
+/**
+ * @brief		Associate BOM enum to Encoding enum
+ * @param bom	BOM enum 
+ * @return		Encoding enum
+*/
+[[nodiscard]] Encoding BomToEncoding(BOM bom);
 
 /**
  * @brief	Get size of a file in bytes
