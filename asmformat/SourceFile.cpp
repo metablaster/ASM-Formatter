@@ -10,8 +10,6 @@
  * @file asmformat\SourceFile.cpp
  *
  * File read\write function definitions
- * TODO: CRT error handling is not well implemented, ex. override invalid parameter handler,
- * see docs for functions used in this file
  *
 */
 
@@ -229,7 +227,7 @@ std::string LoadFileBytes(const std::filesystem::path& filepath, DWORD bytes)
 		const DWORD error = GetLastError();
 
 		// MSDN: If the function fails, the return value is zero.
-		if (CloseHandle(hFile) == 0)
+		if (CloseHandle(hFile) == FALSE)
 		{
 			ShowError(ERROR_INFO_HR, ("Failed to close file " + filepath.string()).c_str());
 		}
@@ -239,7 +237,7 @@ std::string LoadFileBytes(const std::filesystem::path& filepath, DWORD bytes)
 		return std::string();
 	}
 
-	if (CloseHandle(hFile) == 0)
+	if (CloseHandle(hFile) == FALSE)
 	{
 		ShowError(ERROR_INFO_HR, ("Failed to close file" + filepath.string()).c_str());
 	}

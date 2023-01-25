@@ -6,8 +6,13 @@ Here is a list of changes for each of the releases.
 
 - [Changelog](#changelog)
   - [Table of Contents](#table-of-contents)
+  - [v0.5.0](#v050)
   - [v0.4.0](#v040)
   - [v0.3.0](#v030)
+
+## v0.5.0
+
+- Improved command line syntax validation
 
 ## v0.4.0
 

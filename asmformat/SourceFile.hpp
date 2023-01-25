@@ -362,7 +362,7 @@ void WriteFileBytes(const std::filesystem::path& filepath, const DataType& filed
 	{
 		const DWORD error = GetLastError();
 
-		if (CloseHandle(hFile) == 0)
+		if (CloseHandle(hFile) == FALSE)
 		{
 			ShowError(ERROR_INFO_HR, ("Failed to close file " + filepath.string()).c_str());
 		}
@@ -372,7 +372,7 @@ void WriteFileBytes(const std::filesystem::path& filepath, const DataType& filed
 		return;
 	}
 
-	if (CloseHandle(hFile) == 0)
+	if (CloseHandle(hFile) == FALSE)
 	{
 		ShowError(ERROR_INFO_HR, ("Failed to close file " + filepath.string()).c_str());
 	}

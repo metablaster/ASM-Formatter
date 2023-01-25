@@ -110,11 +110,12 @@ If you don't specify full path to file current working directory of `asmformat` 
 **Notes:**
 
 - `--encoding` option is ignored if file encoding is auto detected, in which case a message is
-  printed telling that the option was ignored in favor of file encoding.
+  printed telling that the option was ignored in favor of actual file encoding.
 
 - The default encoding, if not specified is `ANSI`, to override use `--encoding` option.
 
 - By default line breaks are preserved but you can override with `--linebreaks` option.
+  The `--linebreaks` option may also be used to correct inconsistent linebreaks.
 
 - `--linebreaks` option doesn't have any effect on `UTF-16` encoded files, `UTF-16` files are always
   formatted with `CRLF`.
@@ -131,6 +132,8 @@ If you don't specify full path to file current working directory of `asmformat` 
 - The default tab width, if not specified is `4`, to override use `--tabwidth` option,\
   note that tab width option also affects spaces, that is, how many spaces are used for tab in
   existing sources?
+
+- If you specify same option more than once, ex by mistake, the last one is used.
 
 ## Demonstration
 

@@ -104,6 +104,7 @@ namespace wsl
 				static_cast<UINT>(result_flags));
 		}
 
+		// TODO: There should be ? option for more help about the error
 		switch (response)
 		{
 		case 'C':
