@@ -177,6 +177,12 @@ std::size_t GetFileByteCount(const std::filesystem::path& filepath)
 
 std::string LoadFileBytes(const std::filesystem::path& filepath, DWORD bytes)
 {
+	const std::size_t filesize = bytes == 0 ? GetFileByteCount(filepath) : bytes;
+	assert(std::numeric_limits<DWORD>::max() >= filesize);
+
+	if (filesize == 0)
+		return std::string();
+
 	// https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilew
 	HANDLE hFile = CreateFileW(
 		filepath.c_str(),
@@ -200,8 +206,6 @@ std::string LoadFileBytes(const std::filesystem::path& filepath, DWORD bytes)
 		return std::string();
 	}
 
-	const std::size_t filesize = bytes == 0 ? GetFileByteCount(filepath) : bytes;
-	assert(std::numeric_limits<DWORD>::max() >= filesize);
 
 	DWORD bytes_read = 0;
 	std::string buffer;
@@ -242,6 +246,8 @@ std::string LoadFileBytes(const std::filesystem::path& filepath, DWORD bytes)
 		ShowError(ERROR_INFO_HR, ("Failed to close file" + filepath.string()).c_str());
 	}
 
-	assert(bytes_read == filesize);
+	// TODO: A solution needed to detect blank files,
+	// GetFileByteCount may return size 4 when a file is blank
+	//assert(bytes_read == filesize);
 	return buffer;
 }

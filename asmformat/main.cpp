@@ -16,8 +16,6 @@
  * Debugger type: Native Only
  *
  * TODO: Implement codepage option and locale options and defaults
- * TODO: Implement --path and directory option
- * TODO: Implement --recurse option
  *
 */
 
@@ -82,7 +80,7 @@ int main(int argc, char* argv[]) try
 
 	constexpr const char* version = "0.5.0";
 	const bool nologo = std::find(all_params.begin(), all_params.end(), "--nologo") != all_params.end();
-	constexpr const char* syntax = " path\\file1.asm [path\\file2.asm ...] [--encoding ansi|utf8|utf16le] [--tabwidth N] [--spaces] [--linebreaks crlf|lf] [--compact] [--version] [--nologo] [--help]";
+	constexpr const char* syntax = " [-path] file1.asm [dir\\file2.asm ...] [--directory DIR] [--encoding ansi|utf8|utf16le] [--tabwidth N] [--spaces] [--linebreaks crlf|lf] [--compact] [--version] [--nologo] [--help]";
 
 	// Show program version if --version was specified
 	if (std::find(all_params.begin(), all_params.end(), "--version") != all_params.end())
@@ -110,6 +108,8 @@ int main(int argc, char* argv[]) try
 		std::cout << std::endl << "Syntax:" << std::endl;
 		std::cout << std::endl << executable_name << syntax << std::endl << std::endl;
 
+		std::cout << " --path\t\tExplicitly specify path to file" << std::endl;
+		std::cout << " --directory\tSpecify directory which to search for *.asm files to format" << std::endl;
 		std::cout << " --encoding\tSpecifies the default encoding used to read and write files (default: ansi)" << std::endl;
 		std::cout << " --tabwidth\tSpecifies tab width used in source files (default: 4)" << std::endl;
 		std::cout << " --spaces\tUse spaces instead of tabs (by default tabs are used)" << std::endl;
@@ -120,19 +120,30 @@ int main(int argc, char* argv[]) try
 		std::cout << " --help\t\tDisplays this help" << std::endl;
 
 		std::cout << std::endl << "Notes:" << std::endl << std::endl;
+		std::cout << "Options and arguments mentioned in square brackets [] are optional" << std::endl << std::endl;
 
-		std::cout << "Options and arguments mentioned in [] square brackets are optional" << std::endl;
+		std::cout << "--path option specifies explicit path to single asm file which may be full path name or file name only." << std::endl;
+		std::cout << "if --path option is omitted and file name only is specified then in addition to environment's current working directory," << std::endl;
+		std::cout << "also working directory of asmformat is searched." << std::endl;
+		std::cout << "Otherwise if you specify full path to file name without --path the behavior is same." << std::endl << std::endl;
+
 		std::cout << "--encoding option is ignored if file encoding is auto detected, in which case a message is printed" << std::endl;
-		std::cout << "telling that the option was ignored in favor of actual file encoding." << std::endl;
+		std::cout << "telling that the option was ignored in favor of actual file encoding." << std::endl << std::endl;
+
 		std::cout << "--linebreaks option doesn't have any effect on UTF-16 encoded files, UTF-16 files are always formatted with CRLF." << std::endl;
-		std::cout << "By default line breaks are preserved if not specified." << std::endl;
+		std::cout << "By default line breaks are preserved if not specified." << std::endl << std::endl;
+
 		std::cout << "By default surplus blank lines are removed at the topand at the end of a file," << std::endl;
 		std::cout << "as well as surplus blank lines around procedure labels to make them compacted to code." << std::endl;
-		std::cout << "If you whish to replace all surplus blank lines entirely with a single blank line specify --compact option." << std::endl;
+		std::cout << "If you whish to replace all surplus blank lines entirely with a single blank line specify --compact option." << std::endl << std::endl;
+
 		std::cout << "By default tabs are used, to use spaces pass --spaces option to command line," << std::endl;
 		std::cout << "whether you'll use that option or not depends on whether your sources are formatted with spaces or tabs?" << std::endl;
-		std::cout << "The default tab width, if not specified is 4" << std::endl;
-		std::cout << "note that tab width option also affects spaces, that is, how many spaces are used for tab in existing sources?" << std::endl;
+		std::cout << "The default tab width, if not specified is 4." << std::endl;
+		std::cout << "Note that tab width option also affects spaces, that is, how many spaces are used for tab in existing sources?" << std::endl << std::endl;;
+
+		std::cout << "If you specify same option more than once, ex by mistake, the last one is used." << std::endl;
+		std::cout << "--path and --directory options if specified multiple times and all will be processed." << std::endl;
 		return 0;
 	}
 
@@ -169,12 +180,15 @@ int main(int argc, char* argv[]) try
 				std::cout << "using --compact option" << std::endl;
 				continue;
 			}
+			else if (param == "--recurse")
+			{
+				continue;
+			}
 
 			std::string arg{ };
-			const bool end = (i + 1) == argc;
 
 			// Make sure we aren't at the end of argv
-			if (!end)
+			if ((i + 1) != argc)
 				arg = argv[++i];
 
 			// Make sure argument doesn't use option syntax
@@ -182,77 +196,119 @@ int main(int argc, char* argv[]) try
 
 			if (param == "--encoding")
 			{
-				if (!end)
+				if (arg.empty())
+					goto endofcommand;
+
+				if (noarg)
+					goto noargerror;
+
+				if (arg == "utf8")
 				{
-					if (noarg)
-						goto noargerror;
-
-					if (arg == "utf8")
-					{
-						default_encoding = Encoding::UTF8;
-					}
-					else if (arg == "utf16le")
-					{
-						default_encoding = Encoding::UTF16LE;
-					}
-					else if (arg != "ansi")
-					{
-						ShowError(ErrorCode::InvalidOptionArgument, "The specified encoding '" + arg + "' was not recognized");
-						return ExitCode(ErrorCode::InvalidOptionArgument);
-					}
-					// This is needed if --encoding was specified more than once
-					else default_encoding = Encoding::ANSI;
-
-					continue;
+					default_encoding = Encoding::UTF8;
 				}
+				else if (arg == "utf16le")
+				{
+					default_encoding = Encoding::UTF16LE;
+				}
+				else if (arg != "ansi")
+				{
+					ShowError(ErrorCode::InvalidOptionArgument, "The specified encoding '" + arg + "' was not recognized");
+					return ExitCode(ErrorCode::InvalidOptionArgument);
+				}
+				// This is needed if --encoding was specified more than once
+				else default_encoding = Encoding::ANSI;
 			}
 			else if (param == "--tabwidth")
 			{
-				if (!end)
+				if (arg.empty())
+					goto endofcommand;
+
+				if (noarg)
+					goto noargerror;
+
+				const std::size_t width = static_cast<std::size_t>(std::stoi(arg));
+
+				if (width < 1)
 				{
-					if (noarg)
-						goto noargerror;
-
-					const std::size_t width = static_cast<std::size_t>(std::stoi(arg));
-
-					if (width < 1)
-					{
-						ShowError(ErrorCode::InvalidOptionArgument, "Tab width must be a number grater than zero");
-						return ExitCode(ErrorCode::InvalidOptionArgument);
-					}
-
-					tabwidth = width;
-					continue;
+					ShowError(ErrorCode::InvalidOptionArgument, "Tab width must be a number grater than zero");
+					return ExitCode(ErrorCode::InvalidOptionArgument);
 				}
+
+				tabwidth = width;
 			}
 			else if (param == "--linebreaks")
 			{
-				if (!end)
+				if (arg.empty())
+					goto endofcommand;
+
+				if (noarg)
+					goto noargerror;
+
+				if (arg == "crlf")
 				{
-					if (noarg)
-						goto noargerror;
+					linebreaks = LineBreak::CRLF;
+				}
+				else if (arg == "lf")
+				{
+					linebreaks = LineBreak::LF;
+				}
+				else if (arg == "cr")
+				{
+					ShowError(ErrorCode::NotImplemented, "CR linebreak is not implemented");
+					return ExitCode(ErrorCode::NotImplemented);
+				}
+				else
+				{
+					ShowError(ErrorCode::InvalidOptionArgument, "The specified linebreak '" + arg + "' was not recognized");
+					return ExitCode(ErrorCode::InvalidOptionArgument);
+				}
 
-					if (arg == "crlf")
-					{
-						linebreaks = LineBreak::CRLF;
-					}
-					else if (arg == "lf")
-					{
-						linebreaks = LineBreak::LF;
-					}
-					else if (arg == "cr")
-					{
-						ShowError(ErrorCode::NotImplemented, "CR linebreak is not implemented");
-						return ExitCode(ErrorCode::NotImplemented);
-					}
-					else
-					{
-						ShowError(ErrorCode::InvalidOptionArgument, "The specified linebreak '" + arg + "' was not recognized");
-						return ExitCode(ErrorCode::InvalidOptionArgument);
-					}
+				std::cout << "forcing " << arg << " line breaks" << std::endl;
+			}
+			else if (param == "--directory")
+			{
+				if (arg.empty())
+					goto endofcommand;
 
-					std::cout << "forcing " << arg << " line breaks" << std::endl;
-					continue;
+				if (noarg)
+					goto noargerror;
+
+				if (fs::is_directory(arg))
+				{
+					if (std::find(all_params.begin(), all_params.end(), "--recurse") != all_params.end())
+						for (const auto& dir_entry : fs::recursive_directory_iterator(arg))
+						{
+							if (dir_entry.path().extension() == ".asm")
+								files.push_back(dir_entry.path());
+						}
+					else for (const auto& dir_entry : fs::directory_iterator(arg))
+						if (dir_entry.path().extension() == ".asm")
+							files.push_back(dir_entry.path());
+
+					if (files.empty())
+						ShowError(Exception(ErrorCode::BadResult, "Directory " + arg + " contains no *.asm files"), ERROR_INFO, MB_ICONINFORMATION);
+				}
+				else
+				{
+					ShowError(Exception(ErrorCode::InvalidCommand, param + " is not a directory and was ignored"), ERROR_INFO, MB_ICONINFORMATION);
+				}
+			}
+			else if (param == "--path")
+			{
+				if (arg.empty())
+					goto endofcommand;
+
+				if (noarg)
+					goto noargerror;
+
+				if (fs::exists(arg))
+				{
+					files.push_back(arg);
+				}
+				else
+				{
+					ShowError(ErrorCode::InvalidCommand, "File '" + arg + "' was not found");
+					return ExitCode(ErrorCode::InvalidCommand);
 				}
 			}
 			else
@@ -261,6 +317,9 @@ int main(int argc, char* argv[]) try
 				return ExitCode(ErrorCode::UnknownOption);
 			}
 
+			continue;
+
+		endofcommand:
 			// Will happen when a valid option is at the end without an argument
 			ShowError(ErrorCode::InvalidOptionArgument, param + " option requires one argument");
 			return ExitCode(ErrorCode::InvalidOptionArgument);

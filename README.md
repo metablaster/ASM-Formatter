@@ -90,24 +90,36 @@ Otherwise you can as well run the formatter on command line, for ex:
 asmformat.exe .\filename.asm --encoding utf8 --tabwidth 4 --compact
 ```
 
-Any command line argument which doesn't start with `"--"` is interpreted as path to asm file,
-this means you can specify multiple files at once.\
-If you don't specify full path to file current working directory of `asmformat` is searched.
-
 ## Formatter command line syntax
 
-| Option         | Description                                                                              |
-| -------------- | -----------------------------------------------------------------------------------------|
-| --encoding     | Specifies default encoding used to read and write files (default: ansi)                  |
-| --tabwidth     | Specifies tab width used in source files (default: 4)                                    |
-| --spaces       | Use spaces instead of tabs (by default tabs are used)                                    |
-| --linebreaks   | Perform line breaks conversion (by default line breaks are preserved)                    |
-| --compact      | Replaces all surplus blank lines with single blank line                                  |
-| --version      | Shows program version                                                                    |
-| --nologo       | Suppresses the display of the program banner and Copyright when the asmformat starts up  |
-| --help         | Displays up to date detailed help                                                        |
+```
+[-path] file1.asm [dir\\file2.asm ...] [--directory DIR] [--encoding ansi|utf8|utf16le] [--tabwidth N] [--spaces] [--linebreaks crlf|lf] [--compact] [--version] [--nologo] [--help]
+```
+
+Options and arguments mentioned in square brackets `[]` are optional
+
+| Option         | Argument         | Description                                                               |
+| -------------- | ---------------- | ------------------------------------------------------------------------- |
+| --path         | file path        | Explicitly specify path to file                                           |
+| --directory    | directory name   | Specifies directory which to search for *.asm files to format             |
+| --encoding     | encoding ID      | Specifies default encoding used to read and write files (default: ansi)   |
+| --tabwidth     | positive integer | Specifies tab width used in source files (default: 4)                     |
+| --spaces       | none             | Use spaces instead of tabs (by default tabs are used)                     |
+| --linebreaks   | linebreak ID     | Perform line breaks conversion (by default line breaks are preserved)     |
+| --compact      | none             | Replaces all surplus blank lines with single blank line                   |
+| --version      | none             | Shows program version                                                     |
+| --nologo       | none             | Suppresses the display of the program banner when the asmformat starts up |
+| --help         | none             | Displays up to date detailed help                                         |
 
 **Notes:**
+
+Any command line argument which doesn't start with `"--"` is interpreted as asm file or path to asm file,
+this means you can specify multiple files at once.
+
+- `--path` option specifies explicit path to single asm file which may be full path name or file name only.
+  If `--path` option is omitted and file name only is specified then in addition to environment's current working
+  directory, also working directory of asmformat is searched.
+  Otherwise if you specify full path to file name without `--path` the behavior is same.
 
 - `--encoding` option is ignored if file encoding is auto detected, in which case a message is
   printed telling that the option was ignored in favor of actual file encoding.
@@ -134,6 +146,7 @@ If you don't specify full path to file current working directory of `asmformat` 
   existing sources?
 
 - If you specify same option more than once, ex by mistake, the last one is used.
+  `--path` and `--directory` options can be specified multiple times and all will be processed.
 
 ## Demonstration
 

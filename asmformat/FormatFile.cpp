@@ -110,7 +110,7 @@ requires std::is_same_v<typename StringType::value_type, typename StreamType::ch
 		cr = L'\r';
 	else cr = '\r';
 
-	StringType nextline{};
+	StringType nextline{ };
 	PeekNextLine(filedata, nextline);
 
 	if (nextline.empty() || (*(nextline.cend() - 1) != cr))
@@ -178,7 +178,7 @@ template<typename StringType, typename StreamType>
 requires std::is_same_v<typename StringType::value_type, typename StreamType::char_type>
 [[nodiscard]] inline std::size_t GetBlankCount(StreamType& filedata, bool crlf)
 {
-	StringType line{};
+	StringType line{ };
 	std::size_t count = 0;
 	const std::streampos pos = filedata.tellg();
 

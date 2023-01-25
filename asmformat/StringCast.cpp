@@ -203,9 +203,9 @@ namespace wsl
 		if (old_locale.empty())
 			ShowError(ErrorCode::FunctionFailed, "Setting locale to " + locale + " failed");
 
-		char16_t char_buff{};
-		std::mbstate_t state{};
-		std::u16string string_buff{};
+		char16_t char_buff{ };
+		std::mbstate_t state{ };
+		std::u16string string_buff{ };
 
 		const char* ptr = param.c_str();
 		const char* end = param.c_str() + param.size() + 1; // + null character
@@ -284,9 +284,9 @@ namespace wsl
 		if (old_locale.empty())
 			ShowError(ErrorCode::FunctionFailed, "Setting locale to " + locale + " failed");
 
-		char32_t char_buff{};
-		std::mbstate_t state{};
-		std::u32string string_buff{};
+		char32_t char_buff{ };
+		std::mbstate_t state{ };
+		std::u32string string_buff{ };
 
 		const char* ptr = param.c_str();
 		const char* end = param.c_str() + param.size() + 1; // + null character

@@ -13,6 +13,7 @@ Here is a list of changes for each of the releases.
 ## v0.5.0
 
 - Improved command line syntax validation
+- Added `--directory` and `--recurse` options
 
 ## v0.4.0
 

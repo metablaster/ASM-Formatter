@@ -254,6 +254,7 @@
 //#pragma warning (disable : 26401)	// Do not delete a raw pointer that is not an owner<T>
 //#pragma warning (disable : 26429)	// Symbol is never tested for nullness, it can be marked as gsl::not_null
 //#pragma warning (disable : 26446)	// Prefer to use gsl::at() instead of unchecked subscript operator
+//#pragma warning (disable : 26448)	// Consider using gsl::finally if final action is intended
 
 #endif // MANUAL_CODE_ANALYISIS
 #pragma endregion Filter out only user code info messages

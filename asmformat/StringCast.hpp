@@ -86,9 +86,9 @@ namespace wsl
 			func = std::c8rtomb;
 		#endif
 
-		std::mbstate_t state{};
-		std::stringstream string_buff{};
-		char char_buff[MB_LEN_MAX]{};
+		std::mbstate_t state{ };
+		std::stringstream string_buff{ };
+		char char_buff[MB_LEN_MAX]{ };
 
 		for (const char_type char_value : param)
 		{

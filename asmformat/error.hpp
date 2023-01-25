@@ -137,7 +137,7 @@ namespace wsl
 		error_message.append(std::to_string(line));
 		error_message.append("\r\nCategory:\t");
 
-		DWORD error_code{};
+		DWORD error_code{ };
 
 		if constexpr (HasCodeMethod<ExceptionClass, const std::error_code & ()>::value)
 		{
@@ -164,7 +164,7 @@ namespace wsl
 			error_message.append("Unable to determine category");
 		}
 
-		std::string error_info{};
+		std::string error_info{ };
 		error_message.append("\r\nError:\t\t");
 
 		if constexpr (is_cutom_exception<ExceptionClass>::value)
