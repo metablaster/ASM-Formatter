@@ -109,23 +109,28 @@ If you don't specify full path to file current working directory of `asmformat` 
 
 **Notes:**
 
-- `--encoding` option is ignored if file encoding is auto detected, in which case a message is printed
+- `--encoding` option is ignored if file encoding is auto detected, in which case a message is
+  printed telling that the option was ignored in favor of file encoding.
 
-- By default line breaks are preserved but you can override with `--linebreaks` option
+- The default encoding, if not specified is `ANSI`, to override use `--encoding` option.
 
-- `--linebreaks` option doesn't have any effect on `UTF-16` encoded files, `UTF-16` files are always formatted with `CRLF`
+- By default line breaks are preserved but you can override with `--linebreaks` option.
+
+- `--linebreaks` option doesn't have any effect on `UTF-16` encoded files, `UTF-16` files are always
+  formatted with `CRLF`.
 
 - By default surplus blank lines are removed at the top and at the end of a file,
   as well as surplus blank lines around procedure labels to make them compacted to code.
 
-- If you whish to replace all surplus blank lines entirely with a single blank line specify `--compact` option.
+- If you whish to replace all surplus blank lines entirely with a single blank line specify
+  `--compact` option.
 
-- Default encoding, if not specified is `ANSI`, to override use `--encoding` option.
+- By default tabs are used, to use spaces pass `--spaces` option to command line, whether you'll
+  use that option or not depends on whether your sources are formatted with spaces or tabs?
 
-- Default tab width, if not specified is `4`, to override use `--tabwidth` option,\
-  note that tab width option also affects spaces.
-
-- By default tabs are used, to use spaces pass `--spaces` option to command line.
+- The default tab width, if not specified is `4`, to override use `--tabwidth` option,\
+  note that tab width option also affects spaces, that is, how many spaces are used for tab in
+  existing sources?
 
 ## Demonstration
 

@@ -57,10 +57,10 @@
 	; 𒀠 𒁂 𒂷 𒅉 𒉶 𓀤 𓂚 𓂶 𝅙 🀄 🌳 🍰 🔑 😁
 	vmovdqa ymmword ptr[edx], ymm2
 	vmovdqa ymmword ptr[edx+32], ymm3
-	vmovdqa ymmword ptr[edx+64], ymm4
-	vmovdqa ymmword ptr[edx+96], ymm5
-	vmovdqa ymmword ptr[edx+128], ymm6
-	vmovdqa ymmword ptr[edx+160], ymm7
+			vmovdqa ymmword ptr[edx+64], ymm4
+			vmovdqa ymmword ptr[edx+96], ymm5
+					vmovdqa ymmword ptr[edx+128], ymm6
+					vmovdqa ymmword ptr[edx+160], ymm7
 
 	vzeroupper					; avoid performance penalties
 
@@ -89,8 +89,8 @@ AVXPackedInt_32 PROC
 
 
 	vphaddd ymm2, ymm0, ymm1	;		horizontal add, leading tabs in comment
-	vphsubd ymm3, ymm0, ymm1	; horizontal sub
-	vpmulld ymm4, ymm0, ymm1	; signed mul
+vphsubd ymm3, ymm0, ymm1	; horizontal sub
+vpmulld ymm4, ymm0, ymm1	; signed mul
 	vpsllvd ymm5, ymm0, ymm1	; logical shift left
 	vpsravd ymm6, ymm0, ymm1	; arimethic  shift 		right, this comment 	contains surplus   spaces within comment
 

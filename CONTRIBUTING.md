@@ -8,38 +8,39 @@ contributions are acceptable
 
 Here is a list of introductory material to help you get started.
 
-The following two pages below explain general starting guidelines regarding open source
+The following two pages below explain general starting guidelines regarding open source:
 
 - [How to contribute to open source][contribute to open source]
 - [Open Source Contribution Etiquette][open source etiquette]
 
-First step is to fork a project
+First step is to fork a project:
 
 - [Forking a repo][Forking a repo]
 
-Next if needed, you might want to set up your `SSH` keys
+Next if needed, you might want to set up your `SSH` keys:
 
 - [Connecting to GitHub with SSH][github ssh]
 
-Regarding license and Copyright practices adopted by this project see
+Regarding license and Copyright practices adopted by this project see:
 
 - [Maintaining file-scope copyright notices][filescope copyright]
 - [Requirements under U.S. and E.U. Copyright Law][copyright law]
 - [Copyright Notices][copyright notices]
 
-Regarding versioning adopted see
+Regarding versioning adopted see:
 
 - [Semantic Versioning 2.0.0][semantic versioning]
 
-For quick markdown references
+For quick markdown references:
 
 - [Mastering Markdown][markdown mastering]
 - [Markdown Style Guide][markdown style]
 - [Markdown tables generator][markdown tables]
 
-Language specific
+Language specific:
 
 - [C++ Core Guidelines][guidelines]
+- [C and C++ in Visual Studio][vcpp]
 
 ## Contributing
 
@@ -56,15 +57,23 @@ preferences must not dictate how the formatter will work.
 
 - Implementation for other operating systems.
 
-- Support for more file encodings.
+- Support for more file encodings and auto detection mechanism.
 
 - Bugfixes, optimizations, improvements and tests of existing code base.
 
-If you wish to do something unorthodox or if you believe some new feature might be useful then
-please open a new issue to discuss it first.
+If you wish to do something unorthodox or if you believe some new formatting feature might be useful
+then please open a new issue to discuss it first.
 
 Formatting implementation for other assemblers should be a new function rather than mixed with
 existing formatting functions due to potential complexity and for easier code maintenance.
+
+As a rule of thumb, if your special formatting functionality goes beyond basic or expected
+functionality then it should be implemented as an option, that is, a command line option.
+
+## Coding style
+
+No style guidelines are pushed upon you but your coding style, naming convention, formatting,
+commenting etc. should be as close as possible to exiting code base.
 
 ## Development environment
 
@@ -88,3 +97,4 @@ Please do:
 [markdown style]: https://cirosantilli.com/markdown-style-guide "Visit markdown guide"
 [markdown tables]: https://www.tablesgenerator.com/markdown_tables "Visit table generator site"
 [guidelines]: https://github.com/isocpp/CppCoreGuidelines/blob/master/CppCoreGuidelines.md "Visit GitHub page"
+[vcpp]: https://learn.microsoft.com/en-us/cpp/overview/visual-cpp-in-visual-studio "Visit Microsoft page"
