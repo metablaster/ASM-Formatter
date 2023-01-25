@@ -199,7 +199,7 @@ requires std::is_same_v<std::string, StringType> || std::is_same_v<std::wstring,
 	return buffer;
 
 bad_argument:
-	ShowError(ErrorCode::BadArgument, (std::string("Invalid combination of arguments: ") + typeid(typename StringType::value_type).name() + " and " + EncodingToString(encoding)).c_str());
+	ShowError(ErrorCode::InvalidArgument, (std::string("Invalid combination of arguments: ") + typeid(typename StringType::value_type).name() + " and " + EncodingToString(encoding)).c_str());
 	return StringType();
 }
 
@@ -280,7 +280,7 @@ void WriteFile(const std::filesystem::path& filepath, const StringType& filedata
 	return;
 
 bad_argument:
-	ShowError(ErrorCode::BadArgument, (std::string("Invalid combination of arguments: ") + typeid(typename StringType::value_type).name() + " and " + EncodingToString(encoding)).c_str());
+	ShowError(ErrorCode::InvalidArgument, (std::string("Invalid combination of arguments: ") + typeid(typename StringType::value_type).name() + " and " + EncodingToString(encoding)).c_str());
 	return;
 }
 

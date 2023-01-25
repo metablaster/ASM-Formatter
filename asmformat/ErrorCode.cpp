@@ -145,7 +145,7 @@ namespace wsl
 		{
 		case ErrorCode::Success:
 			return make_error_condition(ErrorCondition::no_error);
-		case ErrorCode::BadArgument:
+		case ErrorCode::InvalidArgument:
 		case ErrorCode::InvalidPointer:
 		case ErrorCode::NotImplemented:
 		case ErrorCode::OutOfRange:
@@ -175,7 +175,7 @@ namespace wsl
 		case ErrorCode::ConversionFailed:
 			return make_error_condition(ErrorCondition::code_error);
 		case ErrorCode::UnknownOption:
-		case ErrorCode::InvalidParameter:
+		case ErrorCode::InvalidOptionArgument:
 		case ErrorCode::InvalidCommand:
 			return make_error_condition(ErrorCondition::user_error);
 		case ErrorCode::UnspecifiedError:
@@ -203,8 +203,8 @@ namespace wsl
 		case ErrorCode::Success:
 			return "All operations completed successfully";
 			// Code error
-		case ErrorCode::BadArgument:
-			return "Bad Argument";
+		case ErrorCode::InvalidArgument:
+			return "Invalid function argument";
 		case ErrorCode::InvalidPointer:
 			return "Invalid pointer";
 		case ErrorCode::NotImplemented:
@@ -262,8 +262,8 @@ namespace wsl
 			// User error
 		case ErrorCode::UnknownOption:
 			return "Unknown option";
-		case ErrorCode::InvalidParameter:
-			return "Invalid option parameter";
+		case ErrorCode::InvalidOptionArgument:
+			return "Invalid option argument";
 		case ErrorCode::InvalidCommand:
 			return "Invalid command";
 			// Unspecified

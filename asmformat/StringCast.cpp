@@ -28,7 +28,7 @@ namespace wsl
 		// Returns a nonzero value if the code page is valid, or 0 if the code page is invalid
 		if (IsValidCodePage(code_page) == FALSE)
 		{
-			ShowError(ErrorCode::BadArgument, "Code page is not valid");
+			ShowError(ErrorCode::InvalidArgument, "Code page " + std::to_string(code_page) + " is not valid");
 			return std::wstring();
 		}
 
@@ -106,7 +106,7 @@ namespace wsl
 		// Returns a nonzero value if the code page is valid, or 0 if the code page is invalid
 		if (IsValidCodePage(code_page) == FALSE)
 		{
-			ShowError(ErrorCode::BadArgument, "Code page is not valid");
+			ShowError(ErrorCode::InvalidArgument, "Code page " + std::to_string(code_page) + " is not valid");
 			return std::string();
 		}
 
@@ -198,12 +198,6 @@ namespace wsl
 
 	std::u16string StringCast16(const std::string& param, const std::string locale)
 	{
-		if (locale.empty())
-		{
-			ShowError(ErrorCode::BadArgument, "locale cannot be empty string");
-			return std::u16string();
-		}
-
 		// null pointer on failure
 		std::string old_locale = std::setlocale(LC_CTYPE, locale.c_str());
 		if (old_locale.empty())
@@ -217,7 +211,7 @@ namespace wsl
 		const char* end = param.c_str() + param.size() + 1; // + null character
 		std::ptrdiff_t max_bytes = end - ptr;
 
-		#if _DEBUG
+		#ifdef _DEBUG
 		std::cout << "Processing " << param.size() << " bytes: [ " << std::showbase;
 		for (const unsigned char ch : param)
 			std::cout << std::hex << +ch << ' ';
@@ -249,7 +243,7 @@ namespace wsl
 			case static_cast<size_t>(-3):
 				// MSDN: The next wide character resulting from a previous call to the function has been stored in destination
 				// No bytes from source are consumed by this call to the function
-				#if _DEBUG
+				#ifdef _DEBUG
 				// https://unicode.org/faq/utf_bom.html#utf16-2
 				std::cout << "earlier surrogate pair" << std::endl;
 				#endif
@@ -261,7 +255,7 @@ namespace wsl
 				// The character converted from source (and stored in destination if non-null) was the null character
 			default:
 				// The number of bytes of the multibyte character converted from source
-				#if _DEBUG
+				#ifdef _DEBUG
 				std::cout << std::dec << ret << " bytes [ ";
 				for (std::size_t bytes = 0; bytes < ret; ++bytes)
 					std::cout << std::hex << +static_cast<unsigned char>(ptr[bytes]) << ' ';
@@ -285,12 +279,6 @@ namespace wsl
 
 	std::u32string StringCast32(const std::string& param, const std::string locale)
 	{
-		if (locale.empty())
-		{
-			ShowError(ErrorCode::BadArgument, "locale cannot be empty string");
-			return std::u32string();
-		}
-
 		// null pointer on failure
 		std::string old_locale = std::setlocale(LC_CTYPE, locale.c_str());
 		if (old_locale.empty())
@@ -304,7 +292,7 @@ namespace wsl
 		const char* end = param.c_str() + param.size() + 1; // + null character
 		std::ptrdiff_t max_bytes = end - ptr;
 
-		#if _DEBUG
+		#ifdef _DEBUG
 		std::cout << "Processing " << param.size() << " bytes: [ " << std::showbase;
 		for (const unsigned char ch : param)
 			std::cout << std::hex << +ch << ' ';
@@ -342,7 +330,7 @@ namespace wsl
 				// The character converted from source (and stored in destination if non-null) was the null character
 			default:
 				// The number of bytes of the multibyte character converted from source
-				#if _DEBUG
+				#ifdef _DEBUG
 				std::cout << std::dec << ret << " bytes [ ";
 				for (std::size_t bytes = 0; bytes < ret; ++bytes)
 					std::cout << std::hex << +static_cast<unsigned char>(ptr[bytes]) << ' ';

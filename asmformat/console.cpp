@@ -58,17 +58,20 @@ namespace wsl
 	{
 		// MSDN: Determines if a specified code page is valid
 		// Returns a nonzero value if the code page is valid, or 0 if the code page is invalid
-		bool failed = (IsValidCodePage(input) == FALSE) || (IsValidCodePage(output) == FALSE);
-
-		if (failed)
+		if (IsValidCodePage(input) == FALSE)
 		{
-			ShowError(ErrorCode::BadArgument, "Code page is not valid");
+			ShowError(ErrorCode::InvalidArgument, "Input code page " + std::to_string(input) + " is not valid");
+			return false;
+		}
+		else if (IsValidCodePage(output) == FALSE)
+		{
+			ShowError(ErrorCode::InvalidArgument, "Output code page " + std::to_string(output) + " is not valid");
 			return false;
 		}
 
 		// MSDN: Sets the output code page used by the console associated with the calling process
 		// If the function succeeds, the return value is nonzero
-		failed = SetConsoleOutputCP(output) == FALSE;
+		bool failed = SetConsoleOutputCP(output) == FALSE;
 
 		if (failed)
 		{

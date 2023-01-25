@@ -28,7 +28,7 @@ namespace wsl
 		Success = 0,		// No error
 
 		// Code error
-		BadArgument = 100,	// bad argument passed to function
+		InvalidArgument = 100,	// Invalid argument passed to function
 		InvalidPointer,		// Pointer is invalid
 		NotImplemented,		// Not implemented
 		OutOfRange,			// Out of range
@@ -59,7 +59,7 @@ namespace wsl
 
 		// User errors
 		UnknownOption = 200,// Unrecognized option passed to program
-		InvalidParameter,	// Invalid program option parameter specified
+		InvalidOptionArgument,	// Invalid program option argument specified
 		InvalidCommand,		// Invalid command passed to program
 
 		UnspecifiedError = 300	// The type of error is undefined or unknown

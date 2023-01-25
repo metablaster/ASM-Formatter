@@ -67,12 +67,6 @@ namespace wsl
 	std::is_same_v<typename StringType::value_type, char32_t>
 	[[nodiscard]] std::string StringCast(const StringType& param, const std::string locale = "en_US.utf8")
 	{
-		if (locale.empty())
-		{
-			ShowError(ErrorCode::BadArgument, "locale cannot be empty string");
-			return std::string();
-		}
-
 		// null pointer on failure
 		std::string old_locale = std::setlocale(LC_CTYPE, locale.c_str());
 		if (old_locale.empty())

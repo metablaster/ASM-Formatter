@@ -164,7 +164,7 @@ namespace wsl
 			if (code_category_param == code_category_enum)
 				switch (static_cast<ErrorCode>(code.value()))
 				{
-				case ErrorCode::BadArgument:
+				case ErrorCode::InvalidArgument:
 				case ErrorCode::InvalidPointer:
 				case ErrorCode::NotImplemented:
 				case ErrorCode::OutOfRange:
@@ -203,7 +203,7 @@ namespace wsl
 				switch (static_cast<ErrorCode>(code.value()))
 				{
 				case ErrorCode::UnknownOption:
-				case ErrorCode::InvalidParameter:
+				case ErrorCode::InvalidOptionArgument:
 				case ErrorCode::InvalidCommand:
 					return true;
 				default:

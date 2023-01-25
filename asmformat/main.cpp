@@ -165,8 +165,8 @@ int main(int argc, char* argv[]) try
 			// Make sure we aren't at the end of argv
 			if ((i + 1) == argc)
 			{
-				ShowError(ErrorCode::InvalidParameter, param + " option requires one argument");
-				return ExitCode(ErrorCode::InvalidParameter);
+				ShowError(ErrorCode::InvalidOptionArgument, param + " option requires one argument");
+				return ExitCode(ErrorCode::InvalidOptionArgument);
 			}
 
 			std::string arg = argv[++i];
@@ -183,8 +183,8 @@ int main(int argc, char* argv[]) try
 				}
 				else if (arg != "ansi")
 				{
-					ShowError(ErrorCode::InvalidParameter, "The specified encoding '" + arg + "' was not recognized");
-					return ExitCode(ErrorCode::InvalidParameter);
+					ShowError(ErrorCode::InvalidOptionArgument, "The specified encoding '" + arg + "' was not recognized");
+					return ExitCode(ErrorCode::InvalidOptionArgument);
 				}
 			}
 			else if (param == "--tabwidth")
@@ -193,8 +193,8 @@ int main(int argc, char* argv[]) try
 
 				if (width < 1)
 				{
-					ShowError(ErrorCode::InvalidParameter, "Tab width must be a number grater than zero");
-					return ExitCode(ErrorCode::InvalidParameter);
+					ShowError(ErrorCode::InvalidOptionArgument, "Tab width must be a number grater than zero");
+					return ExitCode(ErrorCode::InvalidOptionArgument);
 				}
 
 				tabwidth = width;
@@ -216,8 +216,8 @@ int main(int argc, char* argv[]) try
 				}
 				else
 				{
-					ShowError(ErrorCode::InvalidParameter, "The specified linebreak '" + arg + "' was not recognized");
-					return ExitCode(ErrorCode::InvalidParameter);
+					ShowError(ErrorCode::InvalidOptionArgument, "The specified linebreak '" + arg + "' was not recognized");
+					return ExitCode(ErrorCode::InvalidOptionArgument);
 				}
 
 				std::cout << "forcing " << arg << " line breaks" << std::endl;
@@ -281,8 +281,10 @@ int main(int argc, char* argv[]) try
 		case Encoding::UTF8:
 		case Encoding::UTF16LE:
 			if (encoding != file_encoding)
+			{
+				encoding = file_encoding;
 				std::cout << EncodingToString(default_encoding) + " encoding option was ignored for file " + file_path.filename().string() + ", file is encoded as " + BomToString(bom) << std::endl;
-			encoding = file_encoding;
+			}
 			break;
 		case Encoding::Unsupported:
 			goto invalid_encoding;
@@ -305,8 +307,9 @@ int main(int argc, char* argv[]) try
 		{
 		case Encoding::UTF8:
 		{
+			const bool has_bom = bom == BOM::utf8;
 			// Either user specified or no BOM
-			assert((bom == BOM::utf8) || (bom == BOM::none));
+			assert(has_bom || (bom == BOM::none));
 
 			if (!SetConsoleCodePage(default_CP.first, CP_UTF8))
 				return ExitCode(ErrorCode::FunctionFailed);
@@ -316,11 +319,11 @@ int main(int argc, char* argv[]) try
 
 			FormatFileW(filedata, tabwidth, spaces, compact, linebreaks);
 
-			if (bom == BOM::utf8)
+			if (has_bom)
 				WriteFileBytes(file_path, bom_bytes, false);
 
 			filebytes = StringCast(filedata.str());
-			WriteFileBytes(file_path, filebytes, true);
+			WriteFileBytes(file_path, filebytes, has_bom);
 			break;
 		}
 		case Encoding::UTF16LE:
@@ -338,12 +341,12 @@ int main(int argc, char* argv[]) try
 			// TODO: Converts from LF to CRLF
 			WriteFile(file_path, filedata.str(), encoding);
 			#else
-			// TODO: Not working and unclear if LoadFileW loads BOM
+			// TODO: Not working and unclear if LoadFile loads BOM
 			if (bom == BOM::utf16le)
 				WriteFileBytes(file_path, bom_bytes, false);
 
 			std::string converted = StringCast(filedata.str());
-			WriteFileBytes(file_path, converted, true);
+			WriteFileBytes(file_path, converted, bom == BOM::utf16le);
 			#endif
 			break;
 		}
@@ -361,6 +364,7 @@ int main(int argc, char* argv[]) try
 			WriteFileBytes(file_path, filedata.str(), false);
 			break;
 		}
+		case Encoding::Unsupported:
 		default:
 			goto invalid_encoding;
 		}
@@ -369,7 +373,7 @@ int main(int argc, char* argv[]) try
 		continue;
 
 	invalid_encoding:
-		ShowError(ErrorCode::InvalidParameter, EncodingToString(encoding) + " was specified but file " + file_path.filename().string() + " is encoded as " + BomToString(bom));
+		ShowError(ErrorCode::UnsuportedOperation, EncodingToString(encoding) + " was specified but file " + file_path.filename().string() + " is encoded as " + BomToString(bom));
 		encoding = default_encoding;
 	}
 
