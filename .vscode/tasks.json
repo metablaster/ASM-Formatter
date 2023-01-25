@@ -1,0 +1,28 @@
+{
+	// For the documentation about the tasks.json format see:
+	// https://code.visualstudio.com/docs/editor/tasks
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "asm: format",
+			"detail": "format current file",
+			"type": "process",
+			// TODO: Update path to asmformat
+			"command": "${workspaceFolder}\\Build\\x64\\Release\\asmformat.exe",
+			"args": [
+				// TODO: Run: asmformat --help and specify correct args
+				"${file}",
+				"--encoding",
+				"ansi",
+				"--tabwidth",
+				"4",
+				"--compact",
+				"--nologo"
+			],
+			"presentation": {
+				"showReuseMessage": false
+			},
+			"problemMatcher": []
+		}
+	]
+}

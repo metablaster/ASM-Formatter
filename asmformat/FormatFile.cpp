@@ -342,7 +342,7 @@ void FormatFileW(std::wstringstream& filedata, std::size_t tab_width, bool space
 				const bool next_indent = !isblank && TestIndentLine(codeinfo);
 
 				// Make only one space between semicolon and comment
-				regex = L";\\s*";
+				regex = L"^;\\s*";
 				const std::wstring replacement = next_indent ? tab + L"; " : L"; ";
 				line = std::regex_replace(line, regex, replacement);
 
@@ -394,7 +394,7 @@ void FormatFileW(std::wstringstream& filedata, std::size_t tab_width, bool space
 					std::wstring comment = std::regex_replace(line, regex, L"$4");
 
 					// Make between semicolon and comment only one space
-					regex = L";\\s*";
+					regex = L"^;\\s*";
 					comment = std::regex_replace(comment, regex, L"; ");
 
 					// Character length difference of current code line compared to max length code line
@@ -651,7 +651,7 @@ void FormatFileA(std::stringstream& filedata, std::size_t tab_width, bool spaces
 				const bool next_indent = !isblank && TestIndentLine(codeinfo);
 
 				// Make only one space between semicolon and comment
-				regex = ";\\s*";
+				regex = "^;\\s*";
 				const std::string replacement = next_indent ? tab + "; " : "; ";
 				line = std::regex_replace(line, regex, replacement);
 
@@ -703,7 +703,7 @@ void FormatFileA(std::stringstream& filedata, std::size_t tab_width, bool spaces
 					std::string comment = std::regex_replace(line, regex, "$4");
 
 					// Make between semicolon and comment only one space
-					regex = ";\\s*";
+					regex = "^;\\s*";
 					comment = std::regex_replace(comment, regex, "; ");
 
 					// Character length difference of current code line compared to max length code line

@@ -13,7 +13,7 @@
 	.MODEL flat, c
 
 	.CODE
-; Comment prior proc should stay here, procedure label should not be indented
+; Comment prior proc should stay here, procedure label should not be indented, semicolon; and trailing semicolons(1_23); ;;
 			AVXPackedInt_16 proc
 
 
@@ -25,7 +25,7 @@
 
 	mov eax, [ebp+8]									         ; eax = *a, inline comment is misaligned
 	mov	ecx, [ebp+12]; ecx = *b, inline comment is too close
-	mov edx, [ebp+16]			;    	 edx = *c, inline comment has leading and trailing spaces
+	mov edx, [ebp+16]			;    	 edx = *c, inline comment has leading and trailing spaces    			  
 
 ; Multiple blank lines follow
 
@@ -36,7 +36,7 @@
 			                    vmovdqa ymm0, ymmword ptr[eax]	; ymm0 = a, code is misaligned and has an incomplete tab
 	vmovdqa ymm1, ymmword ptr[ecx]	; ymm1 = b
 
-; Comment with trailing spaces and tabs
+; Comment with trailing spaces and tabs    			  
 	vpaddw ymm2, ymm0, ymm1		; ymm2 = ymm0 + ymm1
 	vpaddsw ymm3, ymm0, ymm1	; ymm3 = ymm0 + ymm1, signed saturation
 
@@ -44,7 +44,7 @@
 	vpsubw ymm4, ymm0, ymm1
 	vpsubsw ymm5, ymm0, ymm1
 
-		; Blank line follows this comment so it won't be indented
+		; Blank line follows this comment so this comment won't be indented
 
 	vpminsw ymm6, ymm0, ymm1	; signed minimum
 	vpmaxsw ymm7, ymm0, ymm1	; signed maximum
@@ -64,8 +64,8 @@
 
 	vzeroupper					; avoid performance penalties
 
-	pop ebp
-	ret
+	pop ebp  ;this comment contains additional semicolon; and trailing semicolons(1_23); ;;
+	ret      ;  this comment has spaces after final semicolon;  		 	
 
 
 	; Comment prior endp, endp should not be indented, blank line should follow endp

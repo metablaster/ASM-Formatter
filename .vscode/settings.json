@@ -1,0 +1,14 @@
+// https://code.visualstudio.com/docs/getstarted/settings#_default-settings
+{
+	// Test files must not be formatted
+	"files.autoSave": "afterDelay",
+	"files.autoSaveDelay": 500,
+	"files.insertFinalNewline": false,
+	"files.trimFinalNewlines": false,
+	"files.trimTrailingWhitespace": false,
+	"editor.formatOnPaste": false,
+	"editor.formatOnSave": false,
+	"editor.formatOnType": false,
+	"editor.insertSpaces": false,
+	"editor.trimAutoWhitespace": false
+}
