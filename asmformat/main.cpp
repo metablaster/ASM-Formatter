@@ -11,7 +11,8 @@
  *
  * Defines the entry point for application
  *
- * Debug command arguments: $(SolutionDir)assets\utf8-BOM.asm
+ * Debug command arguments: $(SolutionDir)assets\utf8-BOM.asm --compact
+ * Debug command arguments: --directory $(SolutionDir)assets --recurse --compact
  * Debug working directory: $(SolutionDir)Build\$(Platform)\$(Configuration)
  * Debugger type: Native Only
  *
@@ -440,7 +441,7 @@ int main(int argc, char* argv[]) try
 			// TODO: Converts from LF to CRLF
 			WriteFile(file_path, filedata.str(), encoding);
 			#else
-			// TODO: Not working and unclear if LoadFile loads BOM
+			// TODO: Not working
 			if (bom == BOM::utf16le)
 				WriteFileBytes(file_path, bom_bytes, false);
 

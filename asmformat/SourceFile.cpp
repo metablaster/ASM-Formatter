@@ -175,15 +175,14 @@ std::size_t GetFileByteCount(const std::filesystem::path& filepath)
 	return static_cast<std::size_t>(fileinfo.st_size);
 }
 
-std::string LoadFileBytes(const std::filesystem::path& filepath, DWORD bytes)
+std::string LoadFileBytes(const std::filesystem::path& filepath, std::size_t bytes)
 {
-	const std::size_t filesize = bytes == 0 ? GetFileByteCount(filepath) : bytes;
-	assert(std::numeric_limits<DWORD>::max() >= filesize);
+	const std::size_t filesize = GetFileByteCount(filepath);
+	const std::size_t file_bytes = bytes == 0 ? filesize : std::min(bytes, filesize);
 
-	if (filesize == 0)
+	if (file_bytes == 0)
 		return std::string();
 
-	// https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilew
 	HANDLE hFile = CreateFileW(
 		filepath.c_str(),
 		// Read access
@@ -206,39 +205,53 @@ std::string LoadFileBytes(const std::filesystem::path& filepath, DWORD bytes)
 		return std::string();
 	}
 
-
-	DWORD bytes_read = 0;
 	std::string buffer;
-	buffer.resize(filesize);
+	buffer.resize(file_bytes);
 
-	// https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-readfile
-	const BOOL status = ReadFile(
-		hFile,
-		&(buffer.front()),
-		// The maximum number of bytes to be read
-		static_cast<DWORD>(filesize),
-		// A pointer to the variable that receives the number of bytes read when using a synchronous hFile parameter
-		// ReadFile sets this value to zero before doing any work or error checking
-		&bytes_read,
-		// A pointer to an OVERLAPPED structure is required if the hFile parameter was opened with FILE_FLAG_OVERLAPPED
-		nullptr
-	);
+	char* data = buffer.data();
+	std::size_t size = buffer.size();
+	std::size_t total_bytes_read = 0;
 
-	// MSDN: If the function fails, or is completing asynchronously, the return value is zero (FALSE)
-	// To get extended error information, call the GetLastError function
-	if (status == FALSE)
+	while (size)
 	{
-		const DWORD error = GetLastError();
+		DWORD bytes_read = 0;
+		// To prevent data overflow read up to size of DWORD
+		const DWORD bytes_to_read = static_cast<DWORD>(std::min<std::size_t>(size, std::numeric_limits<DWORD>::max()));
 
-		// MSDN: If the function fails, the return value is zero.
-		if (CloseHandle(hFile) == FALSE)
+		const BOOL status = ReadFile(
+			hFile, data,
+			// The maximum number of bytes to be read
+			bytes_to_read,
+			// A pointer to the variable that receives the number of bytes read when using a synchronous hFile parameter
+			// ReadFile sets this value to zero before doing any work or error checking
+			&bytes_read,
+			// A pointer to an OVERLAPPED structure is required if the hFile parameter was opened with FILE_FLAG_OVERLAPPED
+			nullptr
+		);
+
+		// MSDN: If the function fails, or is completing asynchronously, the return value is zero (FALSE)
+		// To get extended error information, call the GetLastError function
+		if (status == FALSE)
 		{
-			ShowError(ERROR_INFO_HR, ("Failed to close file " + filepath.string()).c_str());
+			const DWORD error = GetLastError();
+
+			if (CloseHandle(hFile) == FALSE)
+			{
+				ShowError(ERROR_INFO_HR, ("Failed to close file " + filepath.string()).c_str());
+			}
+
+			SetLastError(error);
+			ShowError(ERROR_INFO_HR, ("Failed to read file " + filepath.string()).c_str());
+			return std::string();
 		}
 
-		SetLastError(error);
-		ShowError(ERROR_INFO_HR, ("Failed to read file " + filepath.string()).c_str());
-		return std::string();
+		// If no bytes are read then infinite loop
+		if (bytes_read == 0)
+			break;
+
+		size -= bytes_read;
+		data += bytes_read;
+		total_bytes_read += bytes_read;
 	}
 
 	if (CloseHandle(hFile) == FALSE)
@@ -246,8 +259,6 @@ std::string LoadFileBytes(const std::filesystem::path& filepath, DWORD bytes)
 		ShowError(ERROR_INFO_HR, ("Failed to close file" + filepath.string()).c_str());
 	}
 
-	// TODO: A solution needed to detect blank files,
-	// GetFileByteCount may return size 4 when a file is blank
-	//assert(bytes_read == filesize);
+	assert(total_bytes_read == file_bytes);
 	return buffer;
 }

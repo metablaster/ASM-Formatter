@@ -47,7 +47,7 @@
 #include <cassert>		// assert (FormatFile.cpp)
 #include <limits>		// std::numeric_limits (SourceFile.spp)
 #include <cstring>		// std::strrchr (ErrorMacros.hpp)
-#include <algorithm>	// std::find (main.cpp)
+#include <algorithm>	// std::find, std::min (main.cpp, SourceFile.hpp)
 #include <clocale>		// std::setlocale (StringCast.cpp)
 
 // C Standard header files

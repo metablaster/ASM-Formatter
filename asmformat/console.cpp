@@ -26,11 +26,17 @@ namespace wsl
 		switch (signal)
 		{
 		case CTRL_C_EVENT:
-			ExitProcess(0u);
+			// Restore modified console code page and exit program
+			// Using SetConsoleCodePage() would produce infinite loop if code page is invalid
+			SetConsoleCP(default_CP.first);
+			SetConsoleOutputCP(default_CP.second);
+			ExitProcess(0);
 		case CTRL_BREAK_EVENT:
 			break;
 		case CTRL_CLOSE_EVENT:
-			ExitProcess(0u);
+			SetConsoleCP(default_CP.first);
+			SetConsoleOutputCP(default_CP.second);
+			ExitProcess(0);
 		case CTRL_LOGOFF_EVENT:
 		case CTRL_SHUTDOWN_EVENT:
 			break;

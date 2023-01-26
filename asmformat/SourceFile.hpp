@@ -206,10 +206,10 @@ bad_argument:
 /**
  * @brief			Read source file into memory as byte stream
  * @param filepath	Full path and file name of a source file
- * @param bytes		Specify how many bytes to read, if 0 all bytes are read
+ * @param bytes		Specify maximum bytes to read, if 0 all bytes are read
  * @return			Source file contents as ANSI string
 */
-[[nodiscard]] std::string LoadFileBytes(const std::filesystem::path& filepath, DWORD bytes = 0);
+[[nodiscard]] std::string LoadFileBytes(const std::filesystem::path& filepath, std::size_t bytes = 0);
 
 /**
  * Write formatted source file contents back to file encoded as ANSI, UTF-8, UTF-16 or UTF-16LE.
@@ -295,6 +295,10 @@ template<typename DataType>
 requires std::is_same_v<std::vector<unsigned char>, DataType> || std::is_same_v<std::string, DataType>
 void WriteFileBytes(const std::filesystem::path& filepath, const DataType& filedata, bool append)
 {
+	std::size_t size = filedata.size();
+	if (size == 0)
+		return;
+
 	HANDLE hFile = CreateFileW(
 		filepath.c_str(),
 		// Append or overwrite
@@ -339,37 +343,57 @@ void WriteFileBytes(const std::filesystem::path& filepath, const DataType& filed
 
 		if (bytes_moved == INVALID_SET_FILE_POINTER)
 		{
+			const DWORD error = GetLastError();
+			if (CloseHandle(hFile) == FALSE)
+			{
+				ShowError(ERROR_INFO_HR, ("Failed to close file " + filepath.string()).c_str());
+			}
+
+			SetLastError(error);
 			ShowError(ERROR_INFO_HR, ("Failed to move file pointer to the end of file " + filepath.string()).c_str());
 			return;
 		}
 	}
 
-	DWORD bytes_written = 0;
-	assert(std::numeric_limits<DWORD>::max() >= filedata.size());
+	auto data = filedata.data();
+	std::size_t total_bytes_written = 0;
 
-	const BOOL status = WriteFile(
-		hFile,
-		filedata.data(),
-		// The number of bytes to be written to the file
-		static_cast<DWORD>(filedata.size()),
-		// A pointer to the variable that receives the number of bytes written when using a synchronous hFile parameter
-		&bytes_written,
-		// A pointer to an OVERLAPPED structure is required if the hFile parameter was opened with FILE_FLAG_OVERLAPPED
-		nullptr
-	);
-
-	if (status == FALSE)
+	while (size)
 	{
-		const DWORD error = GetLastError();
+		DWORD bytes_written = 0;
+		// To prevent data overflow write up to size of DWORD
+		const DWORD bytes_to_write = static_cast<DWORD>(std::min<std::size_t>(size, std::numeric_limits<DWORD>::max()));
 
-		if (CloseHandle(hFile) == FALSE)
+		const BOOL status = WriteFile(
+			hFile, data,
+			// The number of bytes to be written to the file
+			bytes_to_write,
+			// A pointer to the variable that receives the number of bytes written when using a synchronous hFile parameter
+			&bytes_written,
+			// A pointer to an OVERLAPPED structure is required if the hFile parameter was opened with FILE_FLAG_OVERLAPPED
+			nullptr
+		);
+
+		if (status == FALSE)
 		{
-			ShowError(ERROR_INFO_HR, ("Failed to close file " + filepath.string()).c_str());
+			const DWORD error = GetLastError();
+			if (CloseHandle(hFile) == FALSE)
+			{
+				ShowError(ERROR_INFO_HR, ("Failed to close file " + filepath.string()).c_str());
+			}
+
+			SetLastError(error);
+			ShowError(ERROR_INFO_HR, ("Failed to read file " + filepath.string()).c_str());
+			return;
 		}
 
-		SetLastError(error);
-		ShowError(ERROR_INFO_HR, ("Failed to read file " + filepath.string()).c_str());
-		return;
+		// If no bytes are writen then infinite loop
+		if (bytes_written == 0)
+			break;
+
+		size -= bytes_written;
+		data += bytes_written;
+		total_bytes_written += bytes_written;
 	}
 
 	if (CloseHandle(hFile) == FALSE)
@@ -377,5 +401,5 @@ void WriteFileBytes(const std::filesystem::path& filepath, const DataType& filed
 		ShowError(ERROR_INFO_HR, ("Failed to close file " + filepath.string()).c_str());
 	}
 
-	assert(bytes_written == static_cast<DWORD>(filedata.size()));
+	assert(total_bytes_written == filedata.size());
 }

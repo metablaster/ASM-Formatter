@@ -22,6 +22,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Test Files", "Test Files", 
 		assets\ANSI.txt = assets\ANSI.txt
 		assets\ASCII.asm = assets\ASCII.asm
 		assets\ASCII.txt = assets\ASCII.txt
+		assets\blank-BOM.asm = assets\blank-BOM.asm
 		assets\blank.asm = assets\blank.asm
 		assets\utf16be.asm = assets\utf16be.asm
 		assets\utf16le-LF.asm = assets\utf16le-LF.asm
