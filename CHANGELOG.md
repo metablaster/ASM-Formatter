@@ -16,6 +16,11 @@ Here is a list of changes for each of the releases.
 - Added `--directory` and `--recurse` options
 - Fixed a bug leading to potential data overflow
 
+- Formatter changes
+
+  - Remove blank lines after `ENDP` if `END` follows
+  - Indentation and one blank line before `.data` and `.code` directives
+
 ## v0.4.0
 
 - `--encoding` option is ignored if `BOM` is present in source file

@@ -10,7 +10,7 @@
  * @file asmformat\FormatFile.cpp
  *
  * ASM source file formatting function definitions
- * TODO: Maybe using macros or templates to conditionally use wide and ansi strings to reduce code bloat?
+ * TODO: Maybe using macros or templates to conditionally use wide or ansi strings to reduce code bloat?
  *
 */
 
@@ -22,18 +22,30 @@
 
 
 /**
+ * @brief MASM directives
+*/
+enum class Directive
+{
+	none,	// Not a diretive
+	proc,
+	endp,
+	data,
+	code,
+	option
+};
+
+/**
  * @brief Provides information about a line
 */
 struct LineInfo
 {
-	bool proc = false;
-	bool endp = false;
 	bool comment = false;
 	bool blank = false;
+	Directive directive = Directive::none;
 };
 
 /**
- * @brief				Get detailed information about the line
+ * @brief				Get detailed information about a line
  * @tparam StringType	std::string
  * @tparam RegexType	std::regex
  * @param line			line which to check
@@ -43,23 +55,36 @@ template<typename RegexType, typename StringType>
 requires std::is_same_v<typename RegexType::value_type, typename StringType::value_type>
 [[nodiscard]] LineInfo GetLineInfo(const StringType& line)
 {
+	// Not testing if comment or blank because no use of it
 	LineInfo lineinfo = { 0 };
 
 	if constexpr (std::is_base_of_v<std::basic_string<wchar_t>, StringType>)
 	{
-		if (lineinfo.proc = std::regex_search(line, RegexType(L"\\w+\\s+proc", std::regex_constants::icase)); lineinfo.proc)
-			return lineinfo;
+		if (std::regex_search(line, RegexType(L"\\w+\\s+proc", std::regex_constants::icase)))
+			lineinfo.directive = Directive::proc;
 
-		if (lineinfo.endp = std::regex_search(line, RegexType(L"\\w+\\s+endp", std::regex_constants::icase)); lineinfo.endp)
-			return lineinfo;
+		else if (std::regex_search(line, RegexType(L"\\w+\\s+endp", std::regex_constants::icase)))
+			lineinfo.directive = Directive::endp;
+
+		else if (std::regex_search(line, RegexType(L"\\w+\\s+\\.data", std::regex_constants::icase)))
+			lineinfo.directive = Directive::data;
+
+		else if (std::regex_search(line, RegexType(L"\\w+\\s+\\.code", std::regex_constants::icase)))
+			lineinfo.directive = Directive::code;
 	}
 	else
 	{
-		if (lineinfo.proc = std::regex_search(line, RegexType("\\w+\\s+proc", std::regex_constants::icase)); lineinfo.proc)
-			return lineinfo;
+		if (std::regex_search(line, RegexType("\\w+\\s+proc", std::regex_constants::icase)))
+			lineinfo.directive = Directive::proc;
 
-		if (lineinfo.endp = std::regex_search(line, RegexType("\\w+\\s+endp", std::regex_constants::icase)); lineinfo.endp)
-			return lineinfo;
+		else if (std::regex_search(line, RegexType("\\w+\\s+endp", std::regex_constants::icase)))
+			lineinfo.directive = Directive::endp;
+
+		else if (std::regex_search(line, RegexType("\\.data", std::regex_constants::icase)))
+			lineinfo.directive = Directive::data;
+
+		else if (std::regex_search(line, RegexType("\\.code", std::regex_constants::icase)))
+			lineinfo.directive = Directive::code;
 	}
 
 	return lineinfo;
@@ -67,12 +92,13 @@ requires std::is_same_v<typename RegexType::value_type, typename StringType::val
 
 /**
  * @brief		Check if line should be indented
- * @param line	line which to check
+ * @param line	Line which to check
  * @return		true if the line should be indented
 */
 [[nodiscard]] inline bool TestIndentLine(const LineInfo& lineinfo) noexcept
 {
-	return !(lineinfo.proc || lineinfo.endp);
+	const Directive& dir = lineinfo.directive;
+	return !(dir == Directive::proc || dir == Directive::endp || dir == Directive::code || dir == Directive::data);
 }
 
 /**
@@ -102,7 +128,7 @@ inline void PeekNextLine(StreamType& filedata, StringType& nextline)
 */
 template<typename StringType, typename StreamType>
 requires std::is_same_v<typename StringType::value_type, typename StreamType::char_type>
-[[nodiscard]] inline LineBreak GetLineBreak(StreamType& filedata)
+[[nodiscard]] LineBreak GetLineBreak(StreamType& filedata)
 {
 	typename StringType::value_type cr;
 
@@ -121,20 +147,23 @@ requires std::is_same_v<typename StringType::value_type, typename StreamType::ch
 
 /**
  * Get next code line (skipping comments) in file without affecting stream position.
- * If a blank line is reached then the function breaks and does not reach next code line
+ * If a blank line is reached then the function breaks and does not reach next code line.
+ * Optionally skip blank lines as well, if eof is reached the function returns true.
+ * If next code line is not reached the codeline parameter contains last line processed.
  *
  * @tparam StreamType	std::stringstream
  * @tparam StringType	std::string
  * @param filedata		string stream holding file data
- * @param codeline		string which receives next code line
+ * @param codeline		string which receives next code line if any
  * @param crlf			Is line break CRLF?
- * @return				true if blank line was reached before code line, false otherwise
+ * @param skip_blanks	Skip blank lines too?
+ * @return				true if blank line (by default) or EOF was reached before code line, false otherwise
 */
 template<typename StreamType, typename StringType>
 requires std::is_same_v<typename StreamType::char_type, typename StringType::value_type>
-[[nodiscard]] inline bool PeekNextCodeLine(StreamType& filedata, StringType& codeline, bool crlf)
+[[nodiscard]] bool PeekNextCodeLine(StreamType& filedata, StringType& codeline, bool crlf, bool skip_blanks)
 {
-	bool isblank = false;
+	bool fail = false;
 	StringType semicolon;
 	const std::streampos pos = filedata.tellg();
 
@@ -154,16 +183,19 @@ requires std::is_same_v<typename StreamType::char_type, typename StringType::val
 			}
 
 			if (codeline.empty())
-				isblank = true;
+				if (skip_blanks)
+					continue;
+				else fail = true;
 
 			break;
 		}
 	}
 
+	fail = fail || filedata.eof();
 	filedata.clear();
 	filedata.seekg(pos);
 
-	return isblank;
+	return fail;
 }
 
 /**
@@ -176,7 +208,7 @@ requires std::is_same_v<typename StreamType::char_type, typename StringType::val
 */
 template<typename StringType, typename StreamType>
 requires std::is_same_v<typename StringType::value_type, typename StreamType::char_type>
-[[nodiscard]] inline std::size_t GetBlankCount(StreamType& filedata, bool crlf)
+[[nodiscard]] std::size_t GetBlankCount(StreamType& filedata, bool crlf)
 {
 	StringType line{ };
 	std::size_t count = 0;
@@ -335,7 +367,7 @@ void FormatFileW(std::wstringstream& filedata, std::size_t tab_width, bool space
 				std::wstring nextcode;
 
 				// Peek at next code line unless blank line is reached
-				const bool isblank = PeekNextCodeLine(filedata, nextcode, crlf);
+				const bool isblank = PeekNextCodeLine(filedata, nextcode, crlf, false);
 				const LineInfo codeinfo = isblank ? LineInfo{ 0 } : GetLineInfo<std::wregex>(nextcode);
 
 				// Will next code line be indented?
@@ -346,7 +378,7 @@ void FormatFileW(std::wstringstream& filedata, std::size_t tab_width, bool space
 				const std::wstring replacement = next_indent ? tab + L"; " : L"; ";
 				line = std::regex_replace(line, regex, replacement);
 
-				if (codeinfo.proc && !previous_line.comment)
+				if (!previous_line.comment && (codeinfo.directive == Directive::proc))
 					result += linebreak;
 
 				previous_line.comment = true;
@@ -355,16 +387,11 @@ void FormatFileW(std::wstringstream& filedata, std::size_t tab_width, bool space
 			{
 				const LineInfo lineinfo = GetLineInfo<std::wregex>(line);
 
-				// Is code line indented with tab?
-				const bool indent = TestIndentLine(lineinfo);
-
-				if (indent)
+				switch (lineinfo.directive)
 				{
-					// Indent line by inserting tab
-					line.insert(0, tab);
-				}
-
-				if (lineinfo.proc)
+				case Directive::proc:
+				case Directive::data:
+				case Directive::code:
 				{
 					// if previous line is not blank and this is procedure insert blank line so that procedure blocks are sectioned
 					// if previous line is comment blank line was already inserted
@@ -373,11 +400,37 @@ void FormatFileW(std::wstringstream& filedata, std::size_t tab_width, bool space
 
 					// Remove blank lines that follow proc label
 					skiplines = GetBlankCount<std::wstring>(filedata, crlf);
+					break;
 				}
-				else if (lineinfo.endp)
+				case Directive::endp:
 				{
-					// Insert blank line later when done processing current line
-					insert_blankline = true;
+					std::wstring nextcode;
+					const bool isend = PeekNextCodeLine(filedata, nextcode, crlf, true);
+
+					if (!isend)
+					{
+						regex = std::wregex(L"^end", std::regex_constants::icase);
+						if (std::regex_search(nextcode, regex))
+						{
+							// Remove blank lines that follow endp label up until a comment if any
+							skiplines = GetBlankCount<std::wstring>(filedata, crlf);
+						}
+						// Insert blank line later when done processing current line
+						else insert_blankline = true;
+					}
+					break;
+				}
+				default:
+					break;
+				}
+
+				// Is code line indented with tab?
+				const bool indent = TestIndentLine(lineinfo);
+
+				if (indent)
+				{
+					// Indent line by inserting tab
+					line.insert(0, tab);
 				}
 
 				// Format inline comments to start on same column
@@ -644,7 +697,7 @@ void FormatFileA(std::stringstream& filedata, std::size_t tab_width, bool spaces
 				std::string nextcode;
 
 				// Peek at next code line unless blank line is reached
-				const bool isblank = PeekNextCodeLine(filedata, nextcode, crlf);
+				const bool isblank = PeekNextCodeLine(filedata, nextcode, crlf, false);
 				const LineInfo codeinfo = isblank ? LineInfo{ 0 } : GetLineInfo<std::regex>(nextcode);
 
 				// Will next code line be indented?
@@ -655,7 +708,7 @@ void FormatFileA(std::stringstream& filedata, std::size_t tab_width, bool spaces
 				const std::string replacement = next_indent ? tab + "; " : "; ";
 				line = std::regex_replace(line, regex, replacement);
 
-				if (codeinfo.proc && !previous_line.comment)
+				if (!previous_line.comment && (codeinfo.directive == Directive::proc))
 					result += linebreak;
 
 				previous_line.comment = true;
@@ -664,16 +717,11 @@ void FormatFileA(std::stringstream& filedata, std::size_t tab_width, bool spaces
 			{
 				const LineInfo lineinfo = GetLineInfo<std::regex>(line);
 
-				// Is code line indented with tab?
-				const bool indent = TestIndentLine(lineinfo);
-
-				if (indent)
+				switch (lineinfo.directive)
 				{
-					// Indent line by inserting tab
-					line.insert(0, tab);
-				}
-
-				if (lineinfo.proc)
+				case Directive::proc:
+				case Directive::data:
+				case Directive::code:
 				{
 					// if previous line is not blank and this is procedure insert blank line so that procedure blocks are sectioned
 					// if previous line is comment blank line was already inserted
@@ -682,11 +730,37 @@ void FormatFileA(std::stringstream& filedata, std::size_t tab_width, bool spaces
 
 					// Remove blank lines that follow proc label
 					skiplines = GetBlankCount<std::string>(filedata, crlf);
+					break;
 				}
-				else if (lineinfo.endp)
+				case Directive::endp:
 				{
-					// Insert blank line later when done processing current line
-					insert_blankline = true;
+					std::string nextcode;
+					const bool isend = PeekNextCodeLine(filedata, nextcode, crlf, true);
+
+					if (!isend)
+					{
+						regex = std::regex("^end", std::regex_constants::icase);
+						if (std::regex_search(nextcode, regex))
+						{
+							// Remove blank lines that follow endp label up until a comment if any
+							skiplines = GetBlankCount<std::string>(filedata, crlf);
+						}
+						// Insert blank line later when done processing current line
+						else insert_blankline = true;
+					}
+					break;
+				}
+				default:
+					break;
+				}
+
+				// Is code line indented with tab?
+				const bool indent = TestIndentLine(lineinfo);
+
+				if (indent)
+				{
+					// Indent line by inserting tab
+					line.insert(0, tab);
 				}
 
 				// Format inline comments to start on same column
