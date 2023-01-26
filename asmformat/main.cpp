@@ -52,7 +52,7 @@ extern "C" void RunTimeLibraryError(
 	UNREFERENCED_PARAMETER(pReserved);
 
 	#ifdef _DEBUG
-	ShowError(Exception(ErrorCode::RunTimeLibraryError, StringCast(expression).c_str()), StringCast(file).c_str(), StringCast(function).c_str(), line);
+	ShowError(Exception(ErrorCode::RunTimeLibraryError, StringCast(expression).c_str()), StringCast(file).c_str(), StringCast(function).c_str(), static_cast<int>(line));
 	#else
 	UNREFERENCED_PARAMETER(expression);
 	UNREFERENCED_PARAMETER(function);
@@ -60,7 +60,7 @@ extern "C" void RunTimeLibraryError(
 	UNREFERENCED_PARAMETER(line);
 	#endif
 
-	std::abort();
+	std::exit(ExitCode(ErrorCode::RunTimeLibraryError));
 }
 
 int main(int argc, char* argv[]) try
@@ -80,8 +80,6 @@ int main(int argc, char* argv[]) try
 	std::vector<std::string> all_params(argv + 1, argv + argc);
 
 	constexpr const char* version = "0.5.0";
-	const bool nologo = std::find(all_params.begin(), all_params.end(), "--nologo") != all_params.end();
-	constexpr const char* syntax = " [-path] file1.asm [dir\\file2.asm ...] [--directory DIR] [--encoding ansi|utf8|utf16le] [--tabwidth N] [--spaces] [--linebreaks crlf|lf] [--compact] [--version] [--nologo] [--help]";
 
 	// Show program version if --version was specified
 	if (std::find(all_params.begin(), all_params.end(), "--version") != all_params.end())
@@ -89,6 +87,9 @@ int main(int argc, char* argv[]) try
 		std::cout << "asmformat version " << version;
 		return 0;
 	}
+
+	const bool nologo = std::find(all_params.begin(), all_params.end(), "--nologo") != all_params.end();
+	constexpr const char* syntax = " [-path] file1.asm [dir\\file2.asm ...] [--directory DIR] [--encoding ansi|utf8|utf16le] [--tabwidth N] [--spaces] [--linebreaks crlf|lf] [--compact] [--version] [--nologo] [--help]";
 
 	if (!nologo)
 	{

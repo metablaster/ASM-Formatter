@@ -26,9 +26,11 @@
 namespace wsl
 {
 	/**
-	 * MSND: An application-defined function used with the SetConsoleCtrlHandler function.
+	 * MSDN: An application-defined function used with the SetConsoleCtrlHandler function.
 	 * A console process uses this function to handle control signals received by the process.
 	 * When the signal is received, the system creates a new thread in the process to execute the function.
+	 *
+	 * @param signal	The type of control signal received by the handler
 	*/
 	BOOL WINAPI HandlerRoutine(DWORD signal) noexcept;
 

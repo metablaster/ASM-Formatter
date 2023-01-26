@@ -19,9 +19,9 @@
 
 namespace wsl
 {
-	/*
-	 * Custom exception class used to pass into ShowError function
-	 * it's interface provides basic functions to retrieve more
+	/**
+	 * Custom exception class used to pass into ShowError function.
+	 * The interface provides basic functions to retrieve more
 	 * information about the error than what the standard exception class provides.
 	*/
 	class Exception :

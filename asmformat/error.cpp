@@ -42,8 +42,8 @@ namespace wsl
 		const std::string& error_title,
 		std::string& error_message,
 		const std::string& error_info,
-		const DWORD& error_code,
-		const long& flags)
+		const DWORD error_code,
+		const long flags)
 	{
 		int response = 0;
 		const bool console = IsConsole();
@@ -222,7 +222,7 @@ namespace wsl
 			error_message.append("COM error");
 			error_message.append("\r\nError:\t\t");
 
-			error_code = static_cast<unsigned long>(hr);
+			error_code = static_cast<DWORD>(hr);
 			if (SUCCEEDED(error_code))
 			{
 				error_title = "No error";

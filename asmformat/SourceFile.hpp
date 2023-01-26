@@ -35,7 +35,7 @@ enum class Encoding
 	Unsupported	// Unsupported encoding
 };
 
-/*
+/**
  * Byte Order Mark enum
  * Bytes		Encoding Form
  * 00 00 FE FF	UTF-32, big endian
@@ -56,7 +56,7 @@ enum class BOM
 
 /**
  * @brief			Get Byte Order Mark from file if there is one
- * @param filepath	full path to file
+ * @param filepath	Full path to file
  * @param bom		receives BOM enumeration
  * @return			BOM enumeration which also handles no BOM case
 */
@@ -64,8 +64,8 @@ enum class BOM
 
 /**
  * @brief			Get Byte Order Mark from string buffer if there is one
- * @param filepath	string buffer containing file data
- * @param bom		receives BOM bytes
+ * @param buffer	String buffer containing file data
+ * @param bom		Receives BOM bytes
  * @return			BOM enumeration which also handles no BOM case
 */
 [[nodiscard]] BOM GetBOM(const std::string& buffer, std::vector<unsigned char>& bom);
@@ -97,9 +97,9 @@ enum class BOM
 [[nodiscard]] Encoding BomToEncoding(BOM bom) noexcept;
 
 /**
- * @brief	Get size of a file in bytes
- * @param	filepath file path for which to get byte count
- * @return	Size of the file in bytes
+ * @brief			Get size of a file in bytes
+ * @param filepath	file path for which to get byte count
+ * @return			Size of the file in bytes
 */
 [[nodiscard]] std::size_t GetFileByteCount(const std::filesystem::path& filepath);
 
@@ -223,7 +223,7 @@ bad_argument:
 */
 template<typename StringType>
 requires std::is_same_v<std::string, StringType> || std::is_same_v<std::wstring, StringType>
-void WriteFile(const std::filesystem::path& filepath, const StringType& filedata, const Encoding& encoding)
+void WriteFile(const std::filesystem::path& filepath, const StringType& filedata, const Encoding encoding)
 {
 	FILE* file = nullptr;
 	using namespace wsl;
@@ -284,9 +284,13 @@ bad_argument:
 	return;
 }
 
+// 'argument': conversion from 'int'\'long' to 'DWORD', signed/unsigned mismatch
+PUSH DISABLE(4365)
+
 /**
  * Write formatted source file contents back to file as byte stream
  *
+ * @tparam DataType	Type of data which to write to file
  * @param filepath	Full path and file name of a source file
  * @param filedata	ANSI string contents which to write to file
  * @param append	Set to true to append data to file, by default file contents are replaced
@@ -403,3 +407,5 @@ void WriteFileBytes(const std::filesystem::path& filepath, const DataType& filed
 
 	assert(total_bytes_written == filedata.size());
 }
+
+POP

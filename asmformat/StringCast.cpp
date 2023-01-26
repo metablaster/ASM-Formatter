@@ -19,16 +19,16 @@
 
 namespace wsl
 {
-	std::wstring StringCast(const std::string& param, UINT code_page)
+	std::wstring StringCast(const std::string& param, UINT codepage)
 	{
 		if (param.empty())
 			return std::wstring();
 
 		// MSDN: Determines if a specified code page is valid
 		// Returns a nonzero value if the code page is valid, or 0 if the code page is invalid
-		if (IsValidCodePage(code_page) == FALSE)
+		if (IsValidCodePage(codepage) == FALSE)
 		{
-			ShowError(ErrorCode::InvalidArgument, "Code page " + std::to_string(code_page) + " is not valid");
+			ShowError(ErrorCode::InvalidArgument, "Code page " + std::to_string(codepage) + " is not valid");
 			return std::wstring();
 		}
 
@@ -37,7 +37,7 @@ namespace wsl
 		// Use glyph characters instead of control characters
 		// flags |= MB_USEGLYPHCHARS;
 
-		switch (code_page)
+		switch (codepage)
 		{
 		case 50220:
 		case 50221:
@@ -59,13 +59,14 @@ namespace wsl
 			break;
 		default:
 			// Must be 0, otherwise, the function fails with ERROR_INVALID_FLAGS
-			if ((code_page >= 57002) && (code_page <= 57011))
+			if ((codepage >= 57002) && (codepage <= 57011))
 				flags = 0;
 			break;
 		}
 
+		// TODO: Should be converting up to size of int
 		const int source_string_size = static_cast<int>(param.size());
-		const int wchar_size_needed = MultiByteToWideChar(code_page, flags, param.c_str(),
+		const int wchar_size_needed = MultiByteToWideChar(codepage, flags, param.c_str(),
 			// Size, in bytes, of the string indicated by the lpMultiByteStr parameter
 			source_string_size,
 			// Pointer to a buffer that receives the converted string
@@ -81,9 +82,9 @@ namespace wsl
 			return std::wstring();
 		}
 
-		std::wstring result(static_cast<const unsigned int>(wchar_size_needed), 0);
+		std::wstring result(static_cast<std::size_t>(wchar_size_needed), '\0');
 		// Returns the number of characters written to the buffer indicated by lpWideCharStr if successful
-		const int wchars_written = MultiByteToWideChar(code_page, flags, param.c_str(), source_string_size,	&result[0],
+		const int wchars_written = MultiByteToWideChar(codepage, flags, param.c_str(), source_string_size,	&result[0],
 			// Size, in characters, of the buffer indicated by lpWideCharStr.
 			wchar_size_needed
 		);
@@ -97,16 +98,16 @@ namespace wsl
 		return result;
 	}
 
-	std::string StringCast(const std::wstring& param, UINT code_page)
+	std::string StringCast(const std::wstring& param, UINT codepage)
 	{
 		if (param.empty())
 			return std::string();
 
 		// MSDN: Determines if a specified code page is valid
 		// Returns a nonzero value if the code page is valid, or 0 if the code page is invalid
-		if (IsValidCodePage(code_page) == FALSE)
+		if (IsValidCodePage(codepage) == FALSE)
 		{
-			ShowError(ErrorCode::InvalidArgument, "Code page " + std::to_string(code_page) + " is not valid");
+			ShowError(ErrorCode::InvalidArgument, "Code page " + std::to_string(codepage) + " is not valid");
 			return std::string();
 		}
 
@@ -116,9 +117,9 @@ namespace wsl
 		// flags |= WC_COMPOSITECHECK;
 
 		// MSDN: For the CP_UTF7 and CP_UTF8 settings for CodePage, this parameter must be set to NULL.
-		LPCCH default_char = ((code_page == CP_UTF7) || (code_page == CP_UTF8)) ? nullptr : nullptr;
+		LPCCH default_char = ((codepage == CP_UTF7) || (codepage == CP_UTF8)) ? nullptr : nullptr;
 
-		switch (code_page)
+		switch (codepage)
 		{
 		case 50220:
 		case 50221:
@@ -140,15 +141,16 @@ namespace wsl
 			break;
 		default:
 			// Must be 0, otherwise, the function fails with ERROR_INVALID_FLAGS
-			if ((code_page >= 57002) && (code_page <= 57011))
+			if ((codepage >= 57002) && (codepage <= 57011))
 				flags = 0;
 			break;
 		}
 
+		// TODO: Should be converting up to size of int
 		const int source_wchar_size = static_cast<int>(param.size());
 
 		// If the function succeeds and cbMultiByte is 0, the return value is the required size, in bytes, for the buffer indicated by lpMultiByteStr
-		const int char_size_needed = WideCharToMultiByte(code_page, flags, param.c_str(),
+		const int char_size_needed = WideCharToMultiByte(codepage, flags, param.c_str(),
 			// Size, in characters, of the string indicated by lpWideCharStr
 			source_wchar_size,
 			// Pointer to a buffer that receives the converted string
@@ -164,10 +166,10 @@ namespace wsl
 		}
 
 		BOOL default_used = FALSE;
-		std::string result(static_cast<const unsigned int>(char_size_needed), 0);
+		std::string result(static_cast<std::size_t>(char_size_needed), '\0');
 
 		// If successful, returns the number of bytes written to the buffer pointed to by lpMultiByteStr
-		const int bytes_written = WideCharToMultiByte(code_page, flags, param.c_str(), source_wchar_size, &result[0],
+		const int bytes_written = WideCharToMultiByte(codepage, flags, param.c_str(), source_wchar_size, &result[0],
 			// Size, in bytes, of the buffer indicated by lpMultiByteStr.
 			char_size_needed,
 			// Pointer to the character to use if a character cannot be represented in the specified code page
@@ -193,14 +195,13 @@ namespace wsl
 	}
 
 	// 'setlocale(0, locale.c_str())' could be '0', and is a copy of the value found in 'setlocale()`252'
-	// Functions handle it's not null but not if same
-	#pragma warning (disable: 28183)
+	PUSH DISABLE(28183)
 
 	std::u16string StringCast16(const std::string& param, const std::string locale)
 	{
 		// null pointer on failure
-		std::string old_locale = std::setlocale(LC_CTYPE, locale.c_str());
-		if (old_locale.empty())
+		const char* const old_locale = std::setlocale(LC_CTYPE, locale.c_str());
+		if (old_locale == nullptr)
 			ShowError(ErrorCode::FunctionFailed, "Setting locale to " + locale + " failed");
 
 		char16_t char_buff{ };
@@ -213,13 +214,14 @@ namespace wsl
 
 		#ifdef _DEBUG
 		std::cout << "Processing " << param.size() << " bytes: [ " << std::showbase;
-		for (const unsigned char ch : param)
-			std::cout << std::hex << +ch << ' ';
+		for (const char ch : param)
+			std::cout << std::hex << +static_cast<unsigned char>(ch) << ' ';
 		std::cout << "]" << std::endl;
 		#endif
 
 		// args: destination, source, max_bytes, state
-		while (const std::size_t ret = std::mbrtoc16(&char_buff, ptr, end - ptr, &state))
+		SUPPRESS(4365)	// Converting from ptrdif_t to size_t
+		while (const std::size_t ret = std::mbrtoc16(&char_buff, ptr, max_bytes, &state))
 		{
 			#ifdef _DEBUG
 			std::cout << "Next UTF-16 char: " << std::hex << static_cast<int>(char_buff) << " obtained from ";
@@ -232,7 +234,7 @@ namespace wsl
 				// The next max_bytes or fewer bytes don't contribute to a complete and valid UTF-8 multibyte character
 				// No value is stored in destination
 				// EILSEQ is stored in errno and the conversion state value state is unspecified
-				ShowError(ErrorCode::ConversionFailed, "Conversion to char32_t failed - Illegal byte sequence");
+				ShowError(ErrorCode::ConversionFailed, "Conversion to char16_t failed - Illegal byte sequence");
 				return std::u16string();
 			case static_cast<size_t>(-2):
 				// MSDN: The next max_bytes bytes represent an incomplete, but potentially valid, UTF-8 multibyte character.
@@ -270,9 +272,9 @@ namespace wsl
 			}
 		}
 
-		if (!old_locale.empty())
-			if (std::setlocale(LC_CTYPE, old_locale.c_str()) == nullptr)
-				ShowError(ErrorCode::FunctionFailed, "Restoring locale to " + old_locale + " failed");
+		if (old_locale != nullptr)
+			if (std::setlocale(LC_CTYPE, old_locale) == nullptr)
+				ShowError(ErrorCode::FunctionFailed, std::string("Restoring locale to ") + old_locale + " failed");
 
 		return string_buff;
 	}
@@ -280,8 +282,8 @@ namespace wsl
 	std::u32string StringCast32(const std::string& param, const std::string locale)
 	{
 		// null pointer on failure
-		std::string old_locale = std::setlocale(LC_CTYPE, locale.c_str());
-		if (old_locale.empty())
+		const char* const old_locale = std::setlocale(LC_CTYPE, locale.c_str());
+		if (old_locale == nullptr)
 			ShowError(ErrorCode::FunctionFailed, "Setting locale to " + locale + " failed");
 
 		char32_t char_buff{ };
@@ -294,12 +296,13 @@ namespace wsl
 
 		#ifdef _DEBUG
 		std::cout << "Processing " << param.size() << " bytes: [ " << std::showbase;
-		for (const unsigned char ch : param)
-			std::cout << std::hex << +ch << ' ';
+		for (const char ch : param)
+			std::cout << std::hex << +static_cast<unsigned char>(ch) << ' ';
 		std::cout << "]" << std::endl;
 		#endif
 
 		// args: destination, source, max_bytes, state
+		SUPPRESS(4365)	// Converting from ptrdif_t to size_t
 		while (const std::size_t ret = std::mbrtoc32(&char_buff, ptr, max_bytes, &state))
 		{
 			#ifdef _DEBUG
@@ -345,12 +348,12 @@ namespace wsl
 			}
 		}
 
-		if (!old_locale.empty())
-			if (std::setlocale(LC_CTYPE, old_locale.c_str()) == nullptr)
-				ShowError(ErrorCode::FunctionFailed, "Restoring locale to " + old_locale + " failed");
+		if (old_locale != nullptr)
+			if (std::setlocale(LC_CTYPE, old_locale) == nullptr)
+				ShowError(ErrorCode::FunctionFailed, std::string("Restoring locale to ") + old_locale + " failed");
 
 		return string_buff;
 	}
 
-	#pragma warning (default: 28183)
+	POP
 }

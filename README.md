@@ -37,6 +37,9 @@ Download or clone this repository, open VS solution, select `Release` configurat
 then copy `asmformat.exe` from `Build` directory somewhere where it will be accessible, ex. `PATH`.\
 Alternatively you can download already built executable from `Releases` section.
 
+**NOTE:** If you whish to compile for an older version of Windows, open `targetver.hpp` header and
+uncomment appropriate macros then in addition install VC++ redistributable package for target `MSVC`.
+
 First step is to run `asmformat.exe --help` for an up to date help to learn formatter options.
 
 You have to be careful to specify correct encoding which depends on encoding of your asm sources,\

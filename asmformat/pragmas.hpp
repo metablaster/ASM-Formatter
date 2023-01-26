@@ -52,7 +52,6 @@
 // Warning level modifications
 //
 
-// Not /Wall
 // (W3) Your code uses a function, class member, variable, or typedef that's marked deprecated
 // Default is warning level 3 anyway, without this SDL check would turn it into an error
 // This is needed since standard says it's warning not error.
@@ -63,19 +62,17 @@
 // Disable compiler warnings for user code (also disables warnings for library code)
 //
 
-// Only /Wall warnings
-#pragma warning (disable : 4514)	// (W4) unreferenced inline function has been removed
+#pragma warning (disable : 4514)	// (W4 /All) unreferenced inline function has been removed
 // Overriding pragma
-#pragma warning (disable : 4571)	// (W4) catch(...) structured exceptions (SEH) are not caught
-#pragma warning (disable : 4820)	// (W4) 'x' bytes padding added after data member 'member name'
+#pragma warning (disable : 4571)	// (W4 /All) catch(...) structured exceptions (SEH) are not caught
+#pragma warning (disable : 4820)	// (W4 /All) 'x' bytes padding added after data member 'member name'
 
 // /Qspectre - Specifies compiler generation of instructions to mitigate certain
 // Spectre variant 1 security vulnerabilities.
 // NOTE: This warning will pop up regardless of /Qspectre switch (unknown if this is /Wall)
-#pragma warning (disable : 5045)	// (W3 ?) Compiler will insert Spectre mitigation for memory load if /Qspectre switch specified
+#pragma warning (disable : 5045)	// (W3? /All) Compiler will insert Spectre mitigation for memory load if /Qspectre switch specified
 
 #ifdef NDEBUG
-// Not /Wall
 #pragma warning (disable : 4711)	// (W1) function 'function' selected for inline expansion ( raised in release builds only )
 #endif // NDEBUG
 
@@ -83,9 +80,9 @@
 // Disable compiler rules temporarily (consider toggling on/off from time to time)
 //
 
-#pragma warning (disable : 4365)	// (W4) conversion from 'type_1' to 'type_2', signed/unsigned mismatch
-//#pragma warning (disable : 5219)	// (W2) implicit conversion from 'type-1' to 'type-2', possible loss of data
-#pragma warning (disable: 4061)		// (W4) enumerator 'enum name' in switch of enum 'enum name' is not explicitly handled by a case label
+//#pragma warning (disable : 4365)	// (W4 /All) conversion from 'type_1' to 'type_2', signed/unsigned mismatch
+//#pragma warning (disable : 5219)	// (W2 /All) implicit conversion from 'type-1' to 'type-2', possible loss of data
+#pragma warning (disable: 4061)		// (W4 /All) enumerator 'enum name' in switch of enum 'enum name' is not explicitly handled by a case label
 
 //
 // Disable static analysis rules temporarily for user code (consider toggling on/off from time to time)
@@ -102,13 +99,12 @@
 //
 // Disable compiler warnings for user code (specific for test projects)
 //
-// Only /Wall warnings
-#pragma warning (disable : 4626)	// (W4) assignment operator was implicitly defined as deleted
-#pragma warning (disable : 4710)	// (W4) function not inlined
-#pragma warning (disable : 5027)	// (W1, W4) move assignment operator implicitly defined as deleted
+#pragma warning (disable : 4626)	// (W4 /All) assignment operator was implicitly defined as deleted
+#pragma warning (disable : 4710)	// (W4 /All) function not inlined
+#pragma warning (disable : 5027)	// (W1, W4 /All) move assignment operator implicitly defined as deleted
 
 // Duplicate pragma (warning introduced after update to 16.11.0, consider toggling off)
-#pragma warning (disable : 5246)	// (W1)	'member': the initialization of a subobject should be wrapped in braces
+#pragma warning (disable : 5246)	// (W1 /All) 'member': the initialization of a subobject should be wrapped in braces
 
 //
 // Disable static analysis rules for user code (specific for test projects)
@@ -124,49 +120,47 @@
 // NOTE: (push, 0) does not work, need to disable warning by warning!
 //
 #pragma warning (push)
-// Only /Wall warnings
-//#pragma warning (disable : 4061)	// (W4) enumerator in switch of enum is not explicitly handled by a case label
-#pragma warning (disable : 4191)	// (W3) 'type cast' unsafe conversion from 'x' to 'y'
-//#pragma warning (disable : 4355)	// (?) 'this' used in base member initializer list
-#pragma warning (disable : 4365)	// (W4) signed/unsigned mismatch
-#pragma warning (disable : 4371)	// (W3) layout of class may have changed from a previous version of the compiler due to better packing of member
-#pragma warning (disable : 4388)	// (W4) '==' signed/unsigned mismatch
+//#pragma warning (disable : 4061)	// (W4 /All) enumerator in switch of enum is not explicitly handled by a case label
+#pragma warning (disable : 4191)	// (W3 /All) 'type cast' unsafe conversion from 'x' to 'y'
+//#pragma warning (disable : 4355)	// (? /All) 'this' used in base member initializer list
+#pragma warning (disable : 4365)	// (W4 /All) signed/unsigned mismatch
+#pragma warning (disable : 4371)	// (W3 /All) layout of class may have changed from a previous version of the compiler due to better packing of member
+#pragma warning (disable : 4388)	// (W4 /All) '==' signed/unsigned mismatch
 // Overriding pragma
-//#pragma warning (disable : 4571)	// (W4) catch(...) semantics changed since Visual C++ 7.1; structured exceptions (SEH) are no longer caught
-#pragma warning (disable : 4619)	// (W3) pragma warning: there is no waring number 'xxxx'
-#pragma warning (disable : 4623)	// (W4) default constructor was implicitly defined as deleted
-#pragma warning (disable : 4625)	// (W4) copy constructor was implicitly defined as deleted
-#pragma warning (disable : 4626)	// (W4) assignment operator was implicitly defined as deleted
-#pragma warning (disable : 4643)	// (W4) Forward declaring 'xxx' in namespace std is not permitted by the C++ Standard.
-#pragma warning (disable : 4668)	// (W4) 'MACRO' is not defined as a preprocessor macro, replacing with '0' for #if/#elif
-#pragma warning (disable : 4710)	// (W4) function not inlined
-#pragma warning (disable : 4738)	// (W3) storing 32-bit float result in memory, possible loss of performance
-//#pragma warning (disable : 4774)	// (W4) 'function' format string expected in argument 'x' is not a string literal
-#pragma warning (disable : 4800)	// (W4) implicit conversion from 'type' to 'type' possible information loss
-#pragma warning (disable : 4868)	// (W4) compiler may not enforce left-to-right evaluation order in braced initializer list
-#pragma warning (disable : 5026)	// (W1, W4) move constructor implicitly defined as deleted
-#pragma warning (disable : 5027)	// (W1, W4) move assignment operator implicitly defined as deleted
-#pragma warning (disable : 5031)	// (W4) #pragma warning(pop): likely mismatch, popping warning state pushed in different file
-#pragma warning (disable : 5246)	// (W1)	'member': the initialization of a subobject should be wrapped in braces
+//#pragma warning (disable : 4571)	// (W4 /All) catch(...) semantics changed since Visual C++ 7.1; structured exceptions (SEH) are no longer caught
+#pragma warning (disable : 4619)	// (W3 /All) pragma warning: there is no waring number 'xxxx'
+#pragma warning (disable : 4623)	// (W4 /All) default constructor was implicitly defined as deleted
+#pragma warning (disable : 4625)	// (W4 /All) copy constructor was implicitly defined as deleted
+#pragma warning (disable : 4626)	// (W4 /All) assignment operator was implicitly defined as deleted
+#pragma warning (disable : 4643)	// (W4 /All) Forward declaring 'xxx' in namespace std is not permitted by the C++ Standard.
+#pragma warning (disable : 4668)	// (W4 /All) 'MACRO' is not defined as a preprocessor macro, replacing with '0' for #if/#elif
+#pragma warning (disable : 4710)	// (W4 /All) function not inlined
+#pragma warning (disable : 4738)	// (W3 /All) storing 32-bit float result in memory, possible loss of performance
+//#pragma warning (disable : 4774)	// (W4 /All) 'function' format string expected in argument 'x' is not a string literal
+#pragma warning (disable : 4800)	// (W4 /All) implicit conversion from 'type' to 'type' possible information loss
+#pragma warning (disable : 4868)	// (W4 /All) compiler may not enforce left-to-right evaluation order in braced initializer list
+#pragma warning (disable : 5026)	// (W1, W4 /All) move constructor implicitly defined as deleted
+#pragma warning (disable : 5027)	// (W1, W4 /All) move assignment operator implicitly defined as deleted
+#pragma warning (disable : 5031)	// (W4 /All) #pragma warning(pop): likely mismatch, popping warning state pushed in different file
+#pragma warning (disable : 5246)	// (W1 /All)	'member': the initialization of a subobject should be wrapped in braces
 
-// (W4) pointer or reference to potentially throwing function passed to extern C function under - EHc.
+// (W4 /All) pointer or reference to potentially throwing function passed to extern C function under - EHc.
 // Undefined behavior may occur if this function throws an exception.Roulette
 #pragma warning (disable : 5039)
 
-// (W4) 'name': a non-static data member with a volatile qualified type no longer implies that compiler generated copy/move
+// (W4 /All) 'name': a non-static data member with a volatile qualified type no longer implies that compiler generated copy/move
 // constructors and copy/move assignment operators are not trivial
 #pragma warning (disable : 5220)
 
-// (W3) 'Class': class has virtual functions, but its trivial destructor is not virtual;
+// (W3 /All) 'Class': class has virtual functions, but its trivial destructor is not virtual;
 // instances of objects derived from this class may not be destructed correctly
 #pragma warning (disable : 5204)
 
-#pragma warning (disable : 5243)	// (W1) 'function' using incomplete class 'class' can cause potential one definition rule violation due to ABI limitation
-#pragma warning (disable : 5262)	// (W1) implicit fall-through occurs here; are you missing a break statement? Use [[fallthrough]] when a break statement is intentionally omitted between cases
-#pragma warning (disable : 5264)	// (W4) 'variable-name': 'const' variable is not used
-#pragma warning (disable : 4464)	// (W4) relative include path contains '..'
+#pragma warning (disable : 5243)	// (W1 /All) 'function' using incomplete class 'class' can cause potential one definition rule violation due to ABI limitation
+#pragma warning (disable : 5262)	// (W1 /All) implicit fall-through occurs here; are you missing a break statement? Use [[fallthrough]] when a break statement is intentionally omitted between cases
+#pragma warning (disable : 5264)	// (W4 /All) 'variable-name': 'const' variable is not used
+#pragma warning (disable : 4464)	// (W4 /All) relative include path contains '..'
 
-// Not /Wall warnings
 #pragma warning (disable : 4996)	// (W3) Your code uses a function, class member, variable, or typedef that's marked deprecated
 #pragma warning (disable : 5105)	// (W1) macro expansion producing 'defined' has undefined behavior
 #pragma warning (disable : 5054)	// (?) operator '&' deprecated between enumerations of different types
@@ -217,8 +211,8 @@
 
 #pragma region ruleset_modification
 //
-// The following analyzer warnings are reported as "Info" in ruleset for user code
-// Disabling (uncommenting) them won't have any effect on user code (infos), only to library code.
+// The following analyzer warnings are reported as "Info" in ruleset which applies to user code.
+// Disabling (uncommenting) them here won't have any effect on user code (infos), only to library code.
 // TODO: Some library (not user) code warnings always appear as warning, even is set as info.
 //
 
@@ -234,7 +228,7 @@
 //
 // The following analyzer warnings are "Hidden" and "None" (respectively) in ruleset for all code,
 // if you see them review the ruleset and/or update project files to read from ruleset instead!
-// https://docs.microsoft.com/en-us/visualstudio/code-quality/working-in-the-code-analysis-rule-set-editor
+// https://learn.microsoft.com/en-us/visualstudio/code-quality/working-in-the-code-analysis-rule-set-editor
 //
 
 // Hidden:
@@ -266,17 +260,13 @@
 // (toggle on (uncomment) if it's disabled (commented) for user code, toggle off otherwise)
 //
 
-// Only /Wall warnings
-//#pragma warning (disable : 4514)	// (W4) unreferenced inline function has been removed
-//#pragma warning (disable : 4571)	// (W4) catch(...) structured exceptions (SEH) are not caught
-//#pragma warning (disable : 4820)	// (W4) 'x' bytes padding added after data member 'member'
-
-// Unknown if this is /Wall
-//#pragma warning (disable : 5045)	// (?) /Qspectre - Specifies compiler generation of instructions to mitigate certain Spectre variant 1 security vulnerabilities.
+//#pragma warning (disable : 4514)	// (W4 /All) unreferenced inline function has been removed
+//#pragma warning (disable : 4571)	// (W4 /All) catch(...) structured exceptions (SEH) are not caught
+//#pragma warning (disable : 4820)	// (W4 /All) 'x' bytes padding added after data member 'member'
+//#pragma warning (disable : 5045)	// (W3? /All) /Qspectre - Specifies compiler generation of instructions to mitigate certain Spectre variant 1 security vulnerabilities.
 
 // Additional warnings raised in release build (disabled globally)
 #ifdef NDEBUG
-// Not /Wall
 //#pragma warning (disable : 4711)	// (W1) function 'function' selected for inline expansion
 #endif
 #pragma endregion Toggle specific user code pragmas

@@ -43,7 +43,7 @@ namespace wsl
 	{
 	};
 
-	/* error message buffer size used by ForamtMessage API **/
+	/* Error message buffer size used by ForamtMessage API **/
 	constexpr short msg_buff_size = 512;
 
 	/**
@@ -68,24 +68,23 @@ namespace wsl
 		const std::string& error_title,
 		std::string& error_message,
 		const std::string& error_info,
-		const DWORD& error_code,
-		const long& flags);
+		const DWORD error_code,
+		const long flags);
 
 	/**
 	 * Format error code into a string and show in message box or Console.
 	 * COM and Win32 errors
 	 *
-	 * NOTE: use ERROR_INFO macro to fill first 3 parameters, or ERR_INFO_HR
+	 * NOTE: Use ERROR_INFO macro to fill first 3 parameters, or ERR_INFO_HR
 	 * to fill first 4 parameters to default values
 	 *
-	 * @param file_name		source code file name, use FILE_NAME macro for this
-	 * @param func_namce	name of the function where error occurred
-	 * @param line			line number in source file where error happened
+	 * @param file_name		Source code file name, use FILE_NAME macro for this
+	 * @param func_namce	Name of the function where an error occurred
+	 * @param line			Line number in source file where error happened
 	 * @param hr			HRESULT value which will be formated to string
-	 * @param info			custom string to show in error message
-	 * @param flags			sound of error message and in case of Window app,
+	 * @param info			Custom string to show in error message
+	 * @param flags			Sound of error message and in case of Window app,
 	 *						message box appearance
-	 * @return				returns raw error code, the code depends on type of error
 	*/
 	void ShowErrorA(
 		PCSTR file_name,
@@ -110,13 +109,12 @@ namespace wsl
 	 * Show error message from exception objects in MessageBox or Console.
 	 * Accepts std exceptions and custom Exception class
 	 *
-	 * @param exception		exception object
-	 * @param file_name		source code file name, use FILE_NAME macro for this
-	 * @param func_namce	name of the function where error occurred
-	 * @param line			source file line number, use __LINE__ macro for this
-	 * @param flags			sound of error message and in case of Window app,
+	 * @param exception		std or custom Exception object
+	 * @param file_name		Source code file name, use FILE_NAME macro for this
+	 * @param func_namce	Name of the function where error occurred
+	 * @param line			Source file line number, use __LINE__ macro for this
+	 * @param flags			Sound of error message and in case of Window app,
 	 *						message box appearance
-	 * @return				returns raw error code, the code depends on type of error
 	*/
 	template <typename ExceptionClass>
 	requires std::is_base_of_v<std::exception, ExceptionClass>

@@ -30,14 +30,22 @@
 #define NOEXCEPT noexcept
 #endif // _DEBUG
 
+// If defined show all suppressed warnings
+#ifdef SHOW_WARNINGS
+#define PUSH
+#define POP
+#define SUPPRESS(...)
+#define DISABLE(...)
+#else
 // Useful inline pragmas for warnings
 #define PUSH __pragma(warning(push))
 #define POP __pragma(warning(pop))
 #define SUPPRESS(...) __pragma(warning(suppress : __VA_ARGS__))
 #define DISABLE(...) __pragma(warning(disable : __VA_ARGS__))
+#endif
 
-#if defined _DEBUG || !defined SHOW_ERRORS
-// used for empty macro functions to avoid warning for "empty statement found ';' "
+#if !defined _DEBUG && !defined SHOW_ERRORS
+// Used for empty macro functions to avoid warning for "empty statement found ';' "
 #define EMPTY_STATEMENT static_cast<void>(0)
 #endif
 
@@ -49,22 +57,22 @@
 // some of these macros must always be defined since some non-ShowError
 // functions use them.
 
-// we need this workaround because MSVC is not compliant
+// This workaround is needed because MSVC is not compliant
 #define EXPAND(x) x
 
-// show only file name instead of full path ANSI version
+// Show only file name instead of full path ANSI version
 #define FILE_NAME PUSH DISABLE(26485) /* no array to pointer decay */ \
 	(std::strrchr(__FILE__, '\\') ? \
 	std::strrchr(__FILE__, '\\') + 1 : __FILE__) POP
 
-// string function name
+// ANSI string function name
 #define FUNC_NAME __FUNCTION__
 
-// Boilerplate macro
+// Boilerplate macros
 #define ERROR_INFO FILE_NAME, FUNC_NAME, __LINE__
 #define ERROR_INFO_HR FILE_NAME, FUNC_NAME, __LINE__, S_OK
 
-#if defined SHOW_ERRORS || defined _DEBUG
+#if defined _DEBUG || defined SHOW_ERRORS
 
 // ShowError function
 #define ERR_FUNC wsl::ShowErrorA
@@ -100,31 +108,31 @@
 */
 #define ShowError(...) EXPAND(GET_ERR_FUNC(__VA_ARGS__, ERR_FUNC6, ERR_FUNC5, ERR_FUNC4, ERR_FUNC3, ERR_FUNC2, ERR_FUNC1)(__VA_ARGS__))
 
-// show message if failed hr
+// Show message if failed hr
 #define CHECK_HR(hresult) if(FAILED(hresult)) { ShowError(ERROR_INFO, hresult); }
 
-// if failed hr return hr
+// If failed hr return hr
 #define CHECK_HR_RETURN(hresult) if(FAILED(hresult)) { ShowError(ERROR_INFO, hresult); return hresult; }
 
-// show message if Win32 error
+// Show message if Win32 error
 #define CHECK_WIN32(win32_error) if(win32_error) { ShowError(ERROR_INFO); }
 
-// show message if pointer not valid
+// Show message if pointer not valid
 #define CHECK_POINTER(ptr) if(ptr == nullptr) { ShowError(wsl::ErrorCode::InvalidPointer); }
 
 #else
 
-// not used
+// Not used
 #define ShowError(...) EMPTY_STATEMENT
-// not used
+// Not used
 #define ShowCrtError(...) EMPTY_STATEMENT
-// not used
+// Not used
 #define CHECK_HR(hresult) EMPTY_STATEMENT
-// not used
+// Not used
 #define CHECK_HR_RETURN(hresult) EMPTY_STATEMENT
-// not used
+// Not used
 #define CHECK_WIN32(win32_error) EMPTY_STATEMENT
-// not used
+// Not used
 #define CHECK_POINTER(ptr) EMPTY_STATEMENT
 
 #endif // SHOW_ERRORS | _DEBUG

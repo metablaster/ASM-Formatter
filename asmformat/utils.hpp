@@ -109,7 +109,6 @@ namespace wsl
 
 	public:
 		using type = decltype(check<ClassType>(0));
-
 		static constexpr bool value = type::value;
 	};
 

@@ -10,6 +10,7 @@
  * @file asmformat\ErrorCondition.hpp
  *
  * Declaration of custom error_condition
+ * For information about std error handling see comment in soruce file
  *
 */
 

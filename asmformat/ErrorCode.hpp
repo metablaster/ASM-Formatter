@@ -10,6 +10,7 @@
  * @file asmformat\ErrorCode.hpp
  *
  * Declaration of custom error_code
+ * For information about std error handling see comment in soruce file
  *
 */
 
@@ -65,7 +66,7 @@ namespace wsl
 		UnspecifiedError = 300	// The type of error is undefined or unknown
 	};
 
-	/** Exit status code from error enum */
+	/** Exit status code from custom error enum */
 	[[nodiscard]] int ExitCode(ErrorCode err_enum) noexcept;		// can't be inlined
 }
 

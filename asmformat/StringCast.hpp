@@ -38,21 +38,20 @@ namespace wsl
 {
 	/**
 	 * @brief			Function to convert from string to wstring
-	 * @param param		string to convert
+	 * @param param		String to convert
 	 * @param codepage	Code page identifier for the code page to check
 	*/
-	[[nodiscard]] std::wstring StringCast(const std::string& param, UINT code_page = CP_UTF8);
+	[[nodiscard]] std::wstring StringCast(const std::string& param, UINT codepage = CP_UTF8);
 
 	/**
 	 * @brief			Function to convert from wstring to string
 	 * @param param		string to convert
 	 * @param codepage	Code page identifier for the code page to check
 	*/
-	[[nodiscard]] std::string StringCast(const std::wstring& param, UINT code_page = CP_UTF8);
+	[[nodiscard]] std::string StringCast(const std::wstring& param, UINT codepage = CP_UTF8);
 
 	// 'setlocale(0, locale.c_str())' could be '0', and is a copy of the value found in 'setlocale()`252'
-	// Functions handle it's not null but not if same
-	#pragma warning (disable: 28183)
+	PUSH DISABLE(28183)
 
 	/**
 	 * @brief				Converts a UTF string to its narrow multibyte representation
@@ -68,8 +67,8 @@ namespace wsl
 	[[nodiscard]] std::string StringCast(const StringType& param, const std::string locale = "en_US.utf8")
 	{
 		// null pointer on failure
-		std::string old_locale = std::setlocale(LC_CTYPE, locale.c_str());
-		if (old_locale.empty())
+		const char* const old_locale = std::setlocale(LC_CTYPE, locale.c_str());
+		if (old_locale == nullptr)
 			ShowError(ErrorCode::FunctionFailed, "Setting locale to " + locale + " failed");
 
 		using char_type = typename StringType::value_type;
@@ -110,14 +109,14 @@ namespace wsl
 
 		string_buff << '\0';
 
-		if (!old_locale.empty())
-			if (std::setlocale(LC_CTYPE, old_locale.c_str()) == nullptr)
-				ShowError(ErrorCode::FunctionFailed, "Restoring locale to " + old_locale + " failed");
+		if (old_locale != nullptr)
+			if (std::setlocale(LC_CTYPE, old_locale) == nullptr)
+				ShowError(ErrorCode::FunctionFailed, std::string("Restoring locale to ") + old_locale + " failed");
 
 		return string_buff.str();
 	}
 
-	#pragma warning (default: 28183)
+	POP
 
 	/**
 	 * @brief			Converts a narrow multibyte character to UTF-16 character representation

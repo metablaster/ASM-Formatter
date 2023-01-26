@@ -14,6 +14,7 @@ Here is a list of changes for each of the releases.
 
 - Improved command line syntax validation
 - Added `--directory` and `--recurse` options
+- Fixed a bug leading to potential data overflow
 
 ## v0.4.0
 
