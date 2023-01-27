@@ -10,7 +10,6 @@
  * @file asmformat\FormatFile.cpp
  *
  * ASM source file formatting function definitions
- * TODO: Maybe using macros or templates to conditionally use wide or ansi strings to reduce code bloat?
  *
 */
 
@@ -45,6 +44,27 @@ struct LineInfo
 };
 
 /**
+ * @brief			Implementation for STRING macro
+ * @tparam CharType Character type, either char or wchar_t
+ * @param ansi		Exclusive ANSI string literal
+ * @param wide		Exclusive Wide string literal
+ * @return			Either Wide or ANSI version of string literal
+*/
+template<typename CharType>
+constexpr auto ConditionalString([[maybe_unused]] const char* ansi, [[maybe_unused]] const wchar_t* wide)
+{
+	if constexpr (std::is_same_v<CharType, char>)
+		return ansi;
+
+	if constexpr (std::is_same_v<CharType, wchar_t>)
+		return wide;
+}
+
+// TODO: This string macro can be used to reduce code bloat and have a single formatting function
+// Conditional Wide or ANSI string literal
+#define STRING(StringType, string) ConditionalString<typename StringType::value_type>(string, L ## string)
+
+/**
  * @brief				Get detailed information about a line
  * @tparam StringType	std::string
  * @tparam RegexType	std::regex
@@ -58,34 +78,17 @@ requires std::is_same_v<typename RegexType::value_type, typename StringType::val
 	// Not testing if comment or blank because no use of it
 	LineInfo lineinfo = { 0 };
 
-	if constexpr (std::is_base_of_v<std::basic_string<wchar_t>, StringType>)
-	{
-		if (std::regex_search(line, RegexType(L"\\w+\\s+proc", std::regex_constants::icase)))
-			lineinfo.directive = Directive::proc;
+	if (std::regex_search(line, RegexType(STRING(StringType, "\\w+\\s+proc"), std::regex_constants::icase)))
+		lineinfo.directive = Directive::proc;
 
-		else if (std::regex_search(line, RegexType(L"\\w+\\s+endp", std::regex_constants::icase)))
-			lineinfo.directive = Directive::endp;
+	else if (std::regex_search(line, RegexType(STRING(StringType, "\\w+\\s+endp"), std::regex_constants::icase)))
+		lineinfo.directive = Directive::endp;
 
-		else if (std::regex_search(line, RegexType(L"\\w+\\s+\\.data", std::regex_constants::icase)))
-			lineinfo.directive = Directive::data;
+	else if (std::regex_search(line, RegexType(STRING(StringType, "\\.data"), std::regex_constants::icase)))
+		lineinfo.directive = Directive::data;
 
-		else if (std::regex_search(line, RegexType(L"\\w+\\s+\\.code", std::regex_constants::icase)))
-			lineinfo.directive = Directive::code;
-	}
-	else
-	{
-		if (std::regex_search(line, RegexType("\\w+\\s+proc", std::regex_constants::icase)))
-			lineinfo.directive = Directive::proc;
-
-		else if (std::regex_search(line, RegexType("\\w+\\s+endp", std::regex_constants::icase)))
-			lineinfo.directive = Directive::endp;
-
-		else if (std::regex_search(line, RegexType("\\.data", std::regex_constants::icase)))
-			lineinfo.directive = Directive::data;
-
-		else if (std::regex_search(line, RegexType("\\.code", std::regex_constants::icase)))
-			lineinfo.directive = Directive::code;
-	}
+	else if (std::regex_search(line, RegexType(STRING(StringType, "\\.code"), std::regex_constants::icase)))
+		lineinfo.directive = Directive::code;
 
 	return lineinfo;
 }
