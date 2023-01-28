@@ -6,12 +6,13 @@ This is an **experimental** formatter for assembly source files.\
 
 It's currently designed for [MASM][masm] assembler syntax and at the moment supports the following:
 
-- Consistent formatting of comments
+- Consistent formatting of comments, depnding on context
 - Formatting inline comments so that all are equally distant from code
 - Consistent code indentation
 - Removal of leading and trailing white spaces
 - Removal of starting and ending surplus blank lines
-- Procedures are separated by blank line and compacted
+- Procedures and labels are sectioned (by blank line) and compacted to code
+- Section directives are sectioned (by blank like) and not indented
 - Optional removal of surplus blank lines
 - Conversion from tabs to spaces and vice versa
 - Conversion from `LF` to `CRLF` and vice versa

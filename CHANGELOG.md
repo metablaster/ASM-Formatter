@@ -19,7 +19,8 @@ Here is a list of changes for each of the releases.
 - Formatter changes
 
   - Remove blank lines after `ENDP` if `END` follows
-  - Indentation and one blank line before `.data` and `.code` directives
+  - Labels, `.data`, `.code` and `.const` sections are no longer indented
+  - `.data`, `.code`, `.const` and `call` are sectioned (by blank line)
 
 ## v0.4.0
 
