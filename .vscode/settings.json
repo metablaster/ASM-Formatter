@@ -10,5 +10,8 @@
 	"editor.formatOnSave": false,
 	"editor.formatOnType": false,
 	"editor.insertSpaces": false,
-	"editor.trimAutoWhitespace": false
+	"editor.trimAutoWhitespace": false,
+
+	// Extensions
+	"asm-code-lens.enableCodeLenses": false
 }

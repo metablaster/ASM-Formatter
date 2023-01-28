@@ -152,6 +152,7 @@ int main(int argc, char* argv[]) try
 	// Default values
 	bool spaces = false;
 	// TODO: There could multiple verbosities of compact
+	// ex. lvl 2, removing all blanks completely prior to formatting
 	bool compact = false;
 	std::size_t tabwidth = 4;
 	Encoding default_encoding = Encoding::ANSI;

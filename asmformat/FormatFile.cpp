@@ -18,6 +18,7 @@
 #include "StringCast.hpp"
 #include "error.hpp"
 #include "ErrorCode.hpp"
+namespace rc = std::regex_constants;
 
 
 /**
@@ -29,7 +30,7 @@
 */
 enum class Directive
 {
-	none,	// Not a diretive
+	none,	// Unprocessed or not a diretive
 	proc,
 	endp,
 	_data,
@@ -45,7 +46,7 @@ enum class Directive
 */
 enum class Mnemonic
 {
-	none,	// Noa a mnemonic
+	none,	// Unprocessed or not a mnemonic
 	call
 };
 
@@ -78,7 +79,8 @@ template<typename CharType>
 		return wide;
 }
 
-// TODO: This string macro can be used to reduce code bloat and have a single formatting function
+// TODO: This string macro can be used to reduce code bloat and have a single formatting function,
+// but is not used because of better intellisense without templated formatter
 // Conditional Wide or ANSI string literal
 #define STRING(StringType, string) ConditionalString<typename StringType::value_type>(string, L ## string)
 
@@ -99,28 +101,28 @@ requires std::is_same_v<typename RegexType::value_type, typename StringType::val
 	//
 	// The order of regex tests must begin with more likely toward less likely matches
 	//
-	if (std::regex_search(line, RegexType(STRING(StringType, "^call"), std::regex_constants::icase)))
+	if (std::regex_search(line, RegexType(STRING(StringType, "^call"), rc::icase)))
 		lineinfo.mnemonic = Mnemonic::call;
 
-	else if (std::regex_search(line, RegexType(STRING(StringType, "^\\w+\\s+proc"), std::regex_constants::icase)))
+	else if (std::regex_search(line, RegexType(STRING(StringType, "^\\w+\\s+proc"), rc::icase)))
 		lineinfo.directive = Directive::proc;
 
-	else if (std::regex_search(line, RegexType(STRING(StringType, "^\\w+\\s+endp"), std::regex_constants::icase)))
+	else if (std::regex_search(line, RegexType(STRING(StringType, "^\\w+\\s+endp"), rc::icase)))
 		lineinfo.directive = Directive::endp;
 
-	else if (std::regex_search(line, RegexType(STRING(StringType, "^\\w+:"), std::regex_constants::icase)))
+	else if (std::regex_search(line, RegexType(STRING(StringType, "^\\w+:"), rc::icase)))
 		lineinfo.label = true;
 
-	else if (std::regex_search(line, RegexType(STRING(StringType, "^\\.data"), std::regex_constants::icase)))
+	else if (std::regex_search(line, RegexType(STRING(StringType, "^\\.data"), rc::icase)))
 		lineinfo.directive = Directive::_data;
 
-	else if (std::regex_search(line, RegexType(STRING(StringType, "^\\.code"), std::regex_constants::icase)))
+	else if (std::regex_search(line, RegexType(STRING(StringType, "^\\.code"), rc::icase)))
 		lineinfo.directive = Directive::_code;
 
-	else if (std::regex_search(line, RegexType(STRING(StringType, "^\\.const"), std::regex_constants::icase)))
+	else if (std::regex_search(line, RegexType(STRING(StringType, "^\\.const"), rc::icase)))
 		lineinfo.directive = Directive::_const;
 
-	else if (std::regex_search(line, RegexType(STRING(StringType, "^end"), std::regex_constants::icase)))
+	else if (std::regex_search(line, RegexType(STRING(StringType, "^end"), rc::icase)))
 		lineinfo.directive = Directive::end;
 
 	return lineinfo;
@@ -281,15 +283,17 @@ requires std::is_same_v<typename StringType::value_type, typename StreamType::ch
 // Minimum capacity for strings
 constexpr std::size_t MIN_CAPACITY = 1000;
 
+// TODO: currently not used
 // Information about previous line
 static LineInfo previous_line;
 
-// Insert new blank line?
+// Insert new blank line after currently processed line?
 static bool insert_blankline = false;
 
 void FormatFileW(std::wstringstream& filedata, std::size_t tab_width, bool spaces, bool compact, LineBreak line_break)
 {
 	#ifdef _DEBUG
+	assert(!insert_blankline);
 	std::wstring maxlenline;
 	#endif // DEBUG
 
@@ -408,10 +412,9 @@ void FormatFileW(std::wstringstream& filedata, std::size_t tab_width, bool space
 		{
 			std::wstring nextcode;
 
-			// How comments are indented depends on what's after those comments
+			// Comments are indented only if right aove some code
 			if (line.starts_with(L";"))
 			{
-
 				// Peek at next code line unless blank line is reached
 				const bool isblank = PeekNextCodeLine(filedata, nextcode, crlf, false);
 				const LineInfo nextcodeinfo = isblank ? LineInfo{ 0 } : GetLineInfo<std::wregex>(nextcode);
@@ -424,27 +427,14 @@ void FormatFileW(std::wstringstream& filedata, std::size_t tab_width, bool space
 				const std::wstring replacement = next_indent ? tab + L"; " : L"; ";
 				line = std::regex_replace(line, regex, replacement);
 
-				// For sectionaing purposes blank line must be inserted before next code that requires it is reached
-				if (!(previous_line.blank || previous_line.comment))
-					switch (nextcodeinfo.directive)
-					{
-					case Directive::proc:
-					case Directive::_data:
-					case Directive::_code:
-					case Directive::_const:
-						result += linebreak;
-						break;
-					default:
-						break;
-					}
-
 				previous_line.comment = true;
 			}
-			else
+			else // code line
 			{
-				const bool isend = PeekNextCodeLine(filedata, nextcode, crlf, true);
+				bool ignore_nextcode = PeekNextCodeLine(filedata, nextcode, crlf, true);
 				const LineInfo lineinfo = GetLineInfo<std::wregex>(line);
-				const LineInfo nextcodeinfo = GetLineInfo<std::wregex>(nextcode);
+				const LineInfo nextcodeinfo = ignore_nextcode ? LineInfo{ 0 } : GetLineInfo<std::wregex>(nextcode);
+				const std::size_t blanks = GetBlankCount<std::wstring>(filedata, crlf);
 
 				switch (lineinfo.directive)
 				{
@@ -452,55 +442,60 @@ void FormatFileW(std::wstringstream& filedata, std::size_t tab_width, bool space
 				case Directive::_data:
 				case Directive::_code:
 				case Directive::_const:
-				{
-					// if previous line is not blank and this is non indented directive insert blank line to section these directives
-					// if previous line is comment, blank line was already inserted
-					if (!(previous_line.blank || previous_line.comment))
-						result += linebreak;
-
-					// Remove blank lines that follow
-					skiplines = GetBlankCount<std::wstring>(filedata, crlf);
+					ignore_nextcode = true;
+					// Consume blank lines that follow to make these directives compacted to code
+					skiplines = blanks;
 					break;
-				}
 				case Directive::endp:
-				{
-					if (!isend)
+					if (nextcodeinfo.directive == Directive::end)
 					{
-						const std::size_t blanks = GetBlankCount<std::wstring>(filedata, crlf);
-						if (nextcodeinfo.directive == Directive::end)
-						{
-							// Remove blank lines that follow endp label up until a comment if any
-							skiplines = blanks;
-						}
-						else if (blanks == 0)
-						{
-							// Insert blank line later when done processing current line
-							insert_blankline = true;
-						}
+						// Consume blank lines that follow endp label up until a comment if any
+						skiplines = blanks;
+					}
+					else if (blanks == 0)
+					{
+						// Insert blank line later when done processing current line
+						insert_blankline = true;
 					}
 					break;
-				}
 				case Directive::none:
 				default:
-				{
 					switch (lineinfo.mnemonic)
 					{
 					case Mnemonic::call:
 						// Section code by call to function or procedure
-						insert_blankline = true;
+						if (blanks == 0)
+							insert_blankline = true;
 						break;
 					case Mnemonic::none:
 					default:
-						if (!isend)
-						{
-							if (nextcodeinfo.label)
-								insert_blankline = true;
-						}
+						if (lineinfo.label && (blanks != 0))
+							skiplines = blanks;
 						break;
 					}
-				}
 					break;
 				}
+
+				// For sectionaing purposes blank line is inserted prior next code that requires it is reached.
+				// This way comments in between are simply pushed down together with next code
+				if (!ignore_nextcode)
+					switch (nextcodeinfo.directive)
+					{
+					case Directive::proc:
+					case Directive::_data:
+					case Directive::_code:
+					case Directive::_const:
+						if (blanks == 0)
+							insert_blankline = true;
+						break;
+					case Directive::endp:
+						skiplines = blanks;
+						break;
+					default:
+						if (nextcodeinfo.label && (blanks == 0))
+							insert_blankline = true;
+						break;
+					}
 
 				// Is code line indented with tab?
 				const bool indent = TestIndentLine(lineinfo);
@@ -597,10 +592,15 @@ void FormatFileW(std::wstringstream& filedata, std::size_t tab_width, bool space
 	}
 
 	regex = L"^(" + linebreak + L"){2,}";
+
+	#if FALSE && defined _DEBUG
+	// This should pass during testing of files without surplus blanks to make sure surplus blanks are not created by previous code,
+	// we want to remove only blanks that already existed without creating additional surplus blanks for performance reasons.
+	assert(!std::regex_search(result, regex, rc::match_continuous));
+	#endif
+
 	if (compact)
 	{
-		// TODO: This should be commented out during testing to make sure surplus blanks are not created by previous code,
-		// we want to remove only blanks that already existed without creating additional surplus blanks for performance reasons.
 		// TODO: This should handle blank lines at the end of file but it doesn't.
 		// Remove all surplus blank lines
 		result = std::regex_replace(result, regex, linebreak);
@@ -608,12 +608,8 @@ void FormatFileW(std::wstringstream& filedata, std::size_t tab_width, bool space
 	else
 	{
 		// Remove surplus blank lines at the top of a file
-		result = std::regex_replace(result, regex, linebreak, std::regex_constants::match_continuous);
+		result = std::regex_replace(result, regex, linebreak, rc::match_continuous);
 	}
-
-	// Remove all blank lines before endproc
-	regex = std::wregex(L"^(" + linebreak + L")+(?=\\w+\\s+endp)", std::regex_constants::icase);
-	result = std::regex_replace(result, regex, L"");
 
 	// Remove surplus blank lines at the end of a file
 	regex = L"(" + linebreak + L"){2,}$";
@@ -655,6 +651,7 @@ void FormatFileW(std::wstringstream& filedata, std::size_t tab_width, bool space
 void FormatFileA(std::stringstream& filedata, std::size_t tab_width, bool spaces, bool compact, LineBreak line_break)
 {
 	#ifdef _DEBUG
+	assert(!insert_blankline);
 	std::string maxlenline;
 	#endif // DEBUG
 
@@ -773,7 +770,7 @@ void FormatFileA(std::stringstream& filedata, std::size_t tab_width, bool spaces
 		{
 			std::string nextcode;
 
-			// How comments are indented depends on what's after those comments
+			// Comments are indented only if right aove some code
 			if (line.starts_with(";"))
 			{
 				// Peek at next code line unless blank line is reached
@@ -788,27 +785,14 @@ void FormatFileA(std::stringstream& filedata, std::size_t tab_width, bool spaces
 				const std::string replacement = next_indent ? tab + "; " : "; ";
 				line = std::regex_replace(line, regex, replacement);
 
-				// For sectionaing purposes blank line must be inserted before next code that requires it is reached
-				if (!(previous_line.blank || previous_line.comment))
-					switch (nextcodeinfo.directive)
-					{
-					case Directive::proc:
-					case Directive::_data:
-					case Directive::_code:
-					case Directive::_const:
-						result += linebreak;
-						break;
-					default:
-						break;
-					}
-
 				previous_line.comment = true;
 			}
-			else
+			else // code line
 			{
-				const bool isend = PeekNextCodeLine(filedata, nextcode, crlf, true);
+				bool ignore_nextcode = PeekNextCodeLine(filedata, nextcode, crlf, true);
 				const LineInfo lineinfo = GetLineInfo<std::regex>(line);
-				const LineInfo nextcodeinfo = GetLineInfo<std::regex>(nextcode);
+				const LineInfo nextcodeinfo = ignore_nextcode ? LineInfo{ 0 } : GetLineInfo<std::regex>(nextcode);
+				const std::size_t blanks = GetBlankCount<std::string>(filedata, crlf);
 
 				switch (lineinfo.directive)
 				{
@@ -816,55 +800,60 @@ void FormatFileA(std::stringstream& filedata, std::size_t tab_width, bool spaces
 				case Directive::_data:
 				case Directive::_code:
 				case Directive::_const:
-				{
-					// if previous line is not blank and this is non indented directive insert blank line to section these directives
-					// if previous line is comment, blank line was already inserted
-					if (!(previous_line.blank || previous_line.comment))
-						result += linebreak;
-
-					// Remove blank lines that follow
-					skiplines = GetBlankCount<std::string>(filedata, crlf);
+					ignore_nextcode = true;
+					// Consume blank lines that follow to make these directives compacted to code
+					skiplines = blanks;
 					break;
-				}
 				case Directive::endp:
-				{
-					if (!isend)
+					if (nextcodeinfo.directive == Directive::end)
 					{
-						const std::size_t blanks = GetBlankCount<std::string>(filedata, crlf);
-						if (nextcodeinfo.directive == Directive::end)
-						{
-							// Remove blank lines that follow endp label up until a comment if any
-							skiplines = blanks;
-						}
-						else if (blanks == 0)
-						{
-							// Insert blank line later when done processing current line
-							insert_blankline = true;
-						}
+						// Consume blank lines that follow endp label up until a comment if any
+						skiplines = blanks;
+					}
+					else if (blanks == 0)
+					{
+						// Insert blank line later when done processing current line
+						insert_blankline = true;
 					}
 					break;
-				}
 				case Directive::none:
 				default:
-				{
 					switch (lineinfo.mnemonic)
 					{
 					case Mnemonic::call:
 						// Section code by call to function or procedure
-						insert_blankline = true;
+						if (blanks == 0)
+							insert_blankline = true;
 						break;
 					case Mnemonic::none:
 					default:
-						if (!isend)
-						{
-							if (nextcodeinfo.label)
-								insert_blankline = true;
-						}
+						if (lineinfo.label && (blanks != 0))
+							skiplines = blanks;
 						break;
 					}
+					break;
 				}
-				break;
-				}
+
+				// For sectionaing purposes blank line is inserted prior next code that requires it is reached.
+				// This way comments in between are simply pushed down together with next code
+				if (!ignore_nextcode)
+					switch (nextcodeinfo.directive)
+					{
+					case Directive::proc:
+					case Directive::_data:
+					case Directive::_code:
+					case Directive::_const:
+						if (blanks == 0)
+							insert_blankline = true;
+						break;
+					case Directive::endp:
+						skiplines = blanks;
+						break;
+					default:
+						if (nextcodeinfo.label && (blanks == 0))
+							insert_blankline = true;
+						break;
+					}
 
 				// Is code line indented with tab?
 				const bool indent = TestIndentLine(lineinfo);
@@ -961,10 +950,15 @@ void FormatFileA(std::stringstream& filedata, std::size_t tab_width, bool spaces
 	}
 
 	regex = "^(" + linebreak + "){2,}";
+
+	#if FALSE && defined _DEBUG
+	// This should pass during testing of files without surplus blanks to make sure surplus blanks are not created by previous code,
+	// we want to remove only blanks that already existed without creating additional surplus blanks for performance reasons.
+	assert(!std::regex_search(result, regex, rc::match_continuous));
+	#endif
+
 	if (compact)
 	{
-		// TODO: This should be commented out during testing to make sure surplus blanks are not created by previous code,
-		// we want to remove only blanks that already existed without creating additional surplus blanks for performance reasons.
 		// TODO: This should handle blank lines at the end of file but it doesn't.
 		// Remove all surplus blank lines
 		result = std::regex_replace(result, regex, linebreak);
@@ -972,12 +966,8 @@ void FormatFileA(std::stringstream& filedata, std::size_t tab_width, bool spaces
 	else
 	{
 		// Remove surplus blank lines at the top of a file
-		result = std::regex_replace(result, regex, linebreak, std::regex_constants::match_continuous);
+		result = std::regex_replace(result, regex, linebreak, rc::match_continuous);
 	}
-
-	// Remove all blank lines before endproc
-	regex = std::regex("^(" + linebreak + ")+(?=\\w+\\s+endp)", std::regex_constants::icase);
-	result = std::regex_replace(result, regex, "");
 
 	// Remove surplus blank lines at the end of a file
 	regex = "(" + linebreak + "){2,}$";

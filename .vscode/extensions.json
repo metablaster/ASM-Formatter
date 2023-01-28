@@ -3,6 +3,8 @@
 	// Extension identifier format: ${publisher}.${name}. Example: vscode.csharp
 	// List of extensions which should be recommended for users of this workspace.
 	"recommendations": [
+		// ASM Code Lens
+		"maziac.asm-code-lens",
 		// Hightlight Bad Chars
 		"wengerk.highlight-bad-chars",
 		// Markdown All in One

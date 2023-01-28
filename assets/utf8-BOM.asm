@@ -11,7 +11,18 @@
 	; *****************************************************************
 
 	.MODEL flat, c
+; New data declaration section.
+; .const holds data values for read-only constants.
+ .const
+ttlStr byte 'Listing 2-4', 0
+moPrompt byte 'Enter current month: ', 0
+dayPrompt byte 'Enter current day: ', 0
+yearPrompt byte 'Enter current year '
+ byte '(last 2 digits only): ', 0
 
+packed byte 'Packed date is %04x', nl, 0
+theDate byte 'The date is %02d/%02d/%02d'
+ byte nl, 0
 	.CODE
 ; Comment prior proc should stay here, procedure label should not be indented, semicolon; and trailing semicolons(1_23); ;;
 			AVXPackedInt_16 proc
@@ -64,6 +75,20 @@
 
 	vzeroupper					; avoid performance penalties
 
+; Label comment:
+badDay:
+ lea rcx, badDayStr
+ call printf
+ jmp allDone
+ ; label comment 1
+ ; label comment 2
+; Come down here if a bad month was entered:
+badMonth:
+ lea rcx, badMonthStr
+ call printf
+ jmp allDone
+allDone: ;blank line follows this label, should be removed
+
 	pop ebp  ;this comment contains additional semicolon; and trailing semicolons(1_23); ;;
 	ret      ;  this comment has spaces after final semicolon;  		 	
 
@@ -87,7 +112,30 @@ AVXPackedInt_32 PROC
 
 
 
-
+; Several call's should be separated:
+ lea rcx, moPrompt
+ call readNum
+; Verify the month is in the range 1..12:
+ cmp rax, 1
+ jl badMonth
+ cmp rax, 12
+ jg badMonth
+; Good month, save it for now:
+ mov month, al ; 1..12 fits in a byte
+; Read the day:
+ lea rcx, dayPrompt
+ call readNum
+; We'll be lazy here and verify only that the day is in the range
+; 1..31.
+ cmp rax, 1
+ jl badDay
+ cmp rax, 31
+ jg badDay
+; Good day, save it for now:
+ mov day, al ; 1..31 fits in a byte
+; Read the year:
+ lea rcx, yearPrompt
+ call readNum
 	vphaddd ymm2, ymm0, ymm1	;		horizontal add, leading tabs in comment
 vphsubd ymm3, ymm0, ymm1	; horizontal sub
 vpmulld ymm4, ymm0, ymm1	; signed mul
