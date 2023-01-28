@@ -432,7 +432,7 @@ void FormatFileW(std::wstringstream& filedata, std::size_t tab_width, bool space
 			else // code line
 			{
 				bool ignore_nextcode = PeekNextCodeLine(filedata, nextcode, crlf, true);
-				const LineInfo lineinfo = GetLineInfo<std::wregex>(line);
+				LineInfo lineinfo = GetLineInfo<std::wregex>(line);
 				const LineInfo nextcodeinfo = ignore_nextcode ? LineInfo{ 0 } : GetLineInfo<std::wregex>(nextcode);
 				const std::size_t blanks = GetBlankCount<std::wstring>(filedata, crlf);
 
@@ -469,8 +469,23 @@ void FormatFileW(std::wstringstream& filedata, std::size_t tab_width, bool space
 						break;
 					case Mnemonic::none:
 					default:
-						if (lineinfo.label && (blanks != 0))
-							skiplines = blanks;
+						if (lineinfo.label)
+						{
+							if (blanks != 0)
+								skiplines = blanks;
+
+							// If there is code on same line as label put it to new line
+							regex = L"^(\\w+:)\\s*(.+)";
+							std::wsmatch match;
+
+							if (std::regex_search(line, match, regex))
+							{
+								ignore_nextcode = true;
+								lineinfo.label = false;
+								result += std::regex_replace(line, regex, L"$1" + linebreak);
+								line = std::regex_replace(line, regex, L"$2");
+							}
+						}
 						break;
 					}
 					break;
@@ -790,7 +805,7 @@ void FormatFileA(std::stringstream& filedata, std::size_t tab_width, bool spaces
 			else // code line
 			{
 				bool ignore_nextcode = PeekNextCodeLine(filedata, nextcode, crlf, true);
-				const LineInfo lineinfo = GetLineInfo<std::regex>(line);
+				LineInfo lineinfo = GetLineInfo<std::regex>(line);
 				const LineInfo nextcodeinfo = ignore_nextcode ? LineInfo{ 0 } : GetLineInfo<std::regex>(nextcode);
 				const std::size_t blanks = GetBlankCount<std::string>(filedata, crlf);
 
@@ -827,8 +842,23 @@ void FormatFileA(std::stringstream& filedata, std::size_t tab_width, bool spaces
 						break;
 					case Mnemonic::none:
 					default:
-						if (lineinfo.label && (blanks != 0))
-							skiplines = blanks;
+						if (lineinfo.label)
+						{
+							if (blanks != 0)
+								skiplines = blanks;
+
+							// If there is code on same line as label put it to new line
+							regex = "^(\\w+:)\\s*(.+)";
+							std::smatch match;
+
+							if (std::regex_search(line, match, regex))
+							{
+								ignore_nextcode = true;
+								lineinfo.label = false;
+								result += std::regex_replace(line, regex, "$1" + linebreak);
+								line = std::regex_replace(line, regex, "$2");
+							}
+						}
 						break;
 					}
 					break;

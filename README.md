@@ -12,6 +12,7 @@ It's currently designed for [MASM][masm] assembler syntax and at the moment supp
 - Removal of leading and trailing white spaces
 - Removal of starting and ending surplus blank lines
 - Procedures and labels are sectioned (by blank line) and compacted to code
+- Code which start on same line as label is moved to new line
 - Section directives are sectioned (by blank like) and not indented
 - Optional removal of surplus blank lines
 - Conversion from tabs to spaces and vice versa

@@ -83,8 +83,9 @@ badDay:
  ; label comment 1
  ; label comment 2
 ; Come down here if a bad month was entered:
-badMonth:
- lea rcx, badMonthStr
+badMonth:  lea rcx, badMonthStr; lea rcx, badMonthStr with comment and 2 blank lines that follow
+
+
  call printf
  jmp allDone
 allDone: ;blank line follows this label, should be removed
