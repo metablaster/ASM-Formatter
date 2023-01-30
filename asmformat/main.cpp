@@ -112,6 +112,7 @@ int main(int argc, char* argv[]) try
 
 		std::cout << " --path\t\tExplicitly specify path to file" << std::endl;
 		std::cout << " --directory\tSpecify directory which to search for *.asm files to format" << std::endl;
+		std::cout << " --recurse\tRecurse into directory specified by --directory" << std::endl;
 		std::cout << " --encoding\tSpecifies the default encoding used to read and write files (default: ansi)" << std::endl;
 		std::cout << " --tabwidth\tSpecifies tab width used in source files (default: 4)" << std::endl;
 		std::cout << " --spaces\tUse spaces instead of tabs (by default tabs are used)" << std::endl;

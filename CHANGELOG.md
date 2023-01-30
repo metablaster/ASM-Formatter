@@ -21,7 +21,7 @@ Here is a list of changes for each of the releases.
   - Remove blank lines after `ENDP` if `END` follows
   - Labels, `.data`, `.code` and `.const` sections are no longer indented
   - `.data`, `.code`, `.const` and `call` are sectioned (by blank line)
-  - labels are sectioned and code following a label is put on new line
+  - labels are sectioned and if code follows a label it is put on new line
 
 ## v0.4.0
 

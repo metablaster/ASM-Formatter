@@ -72,7 +72,7 @@ functionality then it should be implemented as an option, that is, a command lin
 
 ## Coding style
 
-No style guidelines are pushed upon you but your coding style, naming convention, formatting,
+No style guidelines are pushed upon you, however your coding style, naming convention, formatting,
 commenting etc. should be as close as possible to exiting code base.
 
 ## Development environment
