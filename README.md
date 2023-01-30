@@ -98,7 +98,7 @@ asmformat.exe .\filename.asm --encoding utf8 --tabwidth 4 --compact
 ## Formatter command line syntax
 
 ```
-[-path] file1.asm [dir\file2.asm ...] [--directory DIR] [--encoding ansi|utf8|utf16le] [--tabwidth N] [--spaces] [--linebreaks crlf|lf] [--compact] [--version] [--nologo] [--help]
+[-path] file1.asm [dir\file2.asm ...] [--directory DIR] [--recurse] [--encoding ansi|utf8|utf16le] [--tabwidth N] [--spaces] [--linebreaks crlf|lf] [--compact] [--version] [--nologo] [--help]
 ```
 
 Options and arguments mentioned in square brackets `[]` are optional

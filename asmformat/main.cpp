@@ -89,7 +89,7 @@ int main(int argc, char* argv[]) try
 	}
 
 	const bool nologo = std::find(all_params.begin(), all_params.end(), "--nologo") != all_params.end();
-	constexpr const char* syntax = " [-path] file1.asm [dir\\file2.asm ...] [--directory DIR] [--encoding ansi|utf8|utf16le] [--tabwidth N] [--spaces] [--linebreaks crlf|lf] [--compact] [--version] [--nologo] [--help]";
+	constexpr const char* syntax = " [-path] file1.asm [dir\\file2.asm ...] [--directory DIR] [--recurse] [--encoding ansi|utf8|utf16le] [--tabwidth N] [--spaces] [--linebreaks crlf|lf] [--compact] [--version] [--nologo] [--help]";
 
 	if (!nologo)
 	{
